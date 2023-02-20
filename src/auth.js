@@ -4,7 +4,7 @@
  * @param {*} password 
  * @param {*} nameFirst 
  * @param {*} nameLast 
- * @returns 
+ * @returns  { authUserId: 1 }
  */
 function authRegisterV1(email, password, nameFirst, nameLast) {
     return {
