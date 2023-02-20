@@ -5,7 +5,7 @@
  * channelDetailsV1
  * @param {*} authUserId 
  * @param {*} channelId 
- * @returns 
+ * @returns user Object
  */
 
 function channelDetailsV1(authUserId, channelId) {
@@ -29,5 +29,5 @@ function channelDetailsV1(authUserId, channelId) {
             handleStr: 'haydenjacobs',
             }
         ],
-    }
+    };
 }
