@@ -1,13 +1,15 @@
 /**
- * channelsCreateV1
+ * channelsListV1
  * @param {*} authUserId 
- * @param {*} name 
- * @param {*} isPublic 
- * @returns { channelId: 1 }
+ * @returns 
  */
-function channelsCreateV1(authUserId, name, isPublic) {
+function channelsListV1(authUserId) {
     return {
-        channelId: 1,
-    };
-  }
-  
+        channels: [
+          {
+            channelId: 1,
+            name: 'My Channel',
+          }
+        ],
+    }
+}
