@@ -11,5 +11,5 @@ function channelsListV1(authUserId) {
             name: 'My Channel',
           }
         ],
-    }
+    };
 }
