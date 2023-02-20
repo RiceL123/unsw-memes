@@ -2,7 +2,7 @@
  * authLoginV1
  * @param {*} email 
  * @param {*} password 
- * @returns 
+ * @returns { authUserId: 1 }
  */
 function authLoginV1(email, password) {
     return {
