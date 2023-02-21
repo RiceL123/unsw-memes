@@ -1,13 +1,6 @@
 // Sample stub for the channelDetailsV1 function
-// Returns a stub value
+// Returns sample stub data.
     
-/**
- * channelDetailsV1
- * @param {*} authUserId 
- * @param {*} channelId 
- * @returns user Object
- */
-
 function channelDetailsV1(authUserId, channelId) {
     return {
         name: 'Hayden',
