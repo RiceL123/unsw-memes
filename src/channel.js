@@ -6,3 +6,12 @@ function channelJoinV1(authUserId, channelId) {
 
     };
 }
+
+// Sample stub for the channelInviteV1 function
+// Returns a blank stub value
+
+function channelInviteV1(authUserId, channelId, uId) {
+    return {
+
+    };
+}
