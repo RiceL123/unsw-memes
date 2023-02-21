@@ -1,10 +1,6 @@
-/**
- * channelMessagesV1
- * @param {*} authUserId 
- * @param {*} channelId 
- * @param {*} start 
- * @returns objectMessages
- */
+// Sample stub for the channelMessagesV1 function
+// Returns given stub return value
+
 function channelMessagesV1(authUserId, channelId, start) {
     return {
         messages: [
