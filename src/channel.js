@@ -24,6 +24,7 @@ function channelDetailsV1(authUserId, channelId) {
         ],
     };
 }
+
 // Sample stub for the channelJoinV1 function
 // Returns a blank stub value
 
