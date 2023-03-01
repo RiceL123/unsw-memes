@@ -4,7 +4,7 @@ import { authLoginV1, authRegisterV1 } from './auth.js';
 const ERROR = { error: expect.any(String) };
 
 beforeEach(() => {
-    clear();
+    clearV1();
 });
 
 describe('authLoginV1', () => {
