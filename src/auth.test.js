@@ -79,6 +79,11 @@ describe('authLoginV1', () => {
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
     const authUserObj3 = authRegisterV1(user3.email, user3.password, user3.nameFirst, user3.nameLast);
 
+    // Check that they authUserIds generated are not the same / unique
+    expect(authUserObj1.authUserId).not.toEqual(authUserObj2.authUserId);
+    expect(authUserObj1.authUserId).not.toEqual(authUserObj3.authUserId);
+    expect(authUserObj2.authUserId).not.toEqual(authUserObj3.authUserId);
+
     expect(authLoginV1(user1.email, user1.password)).toStrictEqual({
       authUserId: authUserObj1.authUserId
     });
