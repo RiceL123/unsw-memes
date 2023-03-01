@@ -92,7 +92,7 @@ describe('authLoginV1', () => {
       authUserId: authUserObj2.authUserId
     });
 
-    expect(authLoginV1(user3.email, user2.password)).toStrictEqual({
+    expect(authLoginV1(user3.email, user3.password)).toStrictEqual({
       authUserId: authUserObj3.authUserId
     });
   });
