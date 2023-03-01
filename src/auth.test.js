@@ -160,7 +160,7 @@ describe('authRegisterV1', () => {
   test('invalid nameFirst - nameFirst.length > 50', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password'; 
-    const nameFirst = '111111111100000000001111111111000000000011111111110000000000';
+    const nameFirst = '111111111100000000001111111111000000000011111111110';
     const nameLast = 'Mishra';
 
     expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual(ERROR);
@@ -179,7 +179,7 @@ describe('authRegisterV1', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password'; 
     const nameFirst = 'Madhav';
-    const nameLast = '111111111100000000001111111111000000000011111111110000000000';
+    const nameLast = '111111111100000000001111111111000000000011111111110';
 
     expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual(ERROR);
   });
@@ -187,6 +187,61 @@ describe('authRegisterV1', () => {
   test('valid user', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password'; 
+    const nameFirst = 'Madhav';
+    const nameLast = 'Mishra';
+
+    expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
+      authUserId: expect.any(Number)
+    });
+  });
+
+  test('valid user - nameFirst.length = 1', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = 'M';
+    const nameLast = 'Mishra';
+
+    expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
+      authUserId: expect.any(Number)
+    });
+  });
+
+  test('valid user - nameFirst.length = 50', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = '11111111110000000000111111111100000000001111111111';
+    const nameLast = 'Mishra';
+
+    expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
+      authUserId: expect.any(Number)
+    });
+  });
+
+  test('valid user - nameLast.length = 1', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = 'Madhav';
+    const nameLast = '1';
+
+    expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
+      authUserId: expect.any(Number)
+    });
+  });
+
+  test('valid user - nameLast.length = 50', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = 'Madhav';
+    const nameLast = '11111111110000000000111111111100000000001111111111';
+
+    expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
+      authUserId: expect.any(Number)
+    });
+  });
+
+  test('valid user - password.length = 6', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = '123456'; 
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
 
