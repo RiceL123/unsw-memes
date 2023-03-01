@@ -1,4 +1,4 @@
-function clear() {
+function clearV1() {
   let data = getData();
   
   data.users = [];
@@ -9,4 +9,4 @@ function clear() {
   return {};
 }
 
-export { clear };
+export { clearV1 };
