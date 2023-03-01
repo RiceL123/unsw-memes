@@ -1,3 +1,5 @@
+import { getData, setData } from './dataStore.js';
+
 function clearV1() {
   let data = getData();
   
