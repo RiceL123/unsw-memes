@@ -188,7 +188,7 @@ describe('authRegisterV1', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password'; 
     const nameFirst = 'Madhav';
-    const nameLast = '111111111100000000001111111111000000000011111111110000000000';
+    const nameLast = 'Mishra';
 
     expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
       authUserId: expect.any(Number)
