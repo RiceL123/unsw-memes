@@ -2,6 +2,44 @@ import { getData, setData } from './dataStore.js';
 import validator from 'validator';
 
 /**
+  * generateHandle passes in nameFirst, nameLast and data
+  * it generates a handle by concatenating nameFirst and nameLast
+  * it then removes all non-ascii characters and caps the length at 20
+  * with the expection of collisions of existing users whereby a number
+  * starting from 0 incremented by 1 will be added
+  * 
+  * @param {string} nameFirst - to be casted to lower-case alphanumeric
+  * @param {string} nameLast - to be casted to lower-case alphanumeric
+  * @param {object} data - to check if existing users already have the handle
+  *  
+  * @returns {string} - returns casted handle that is unique
+*/
+function generateHandle(nameFirst, nameLast, data) {
+  let handle = nameFirst + nameLast;
+
+  handle = handle.toLowerCase();
+
+  handle = handle.replace(/[^\x00-\x7F]|[^a-z0-9]/gu, '');
+
+  if (handle.length > 20) {
+    handle = handle.slice(0, 20);
+  }
+
+  let num = 0;
+  let concatenatedLength = handle.length;
+
+  // if the handle already exists, create a new handle by appending num 
+  while (data.users.some(x => x.handleStr === handle)) {
+    handle = handle.slice(0, concatenatedLength);
+    handle = handle + num.toString();
+    num += 1;
+  }
+
+  return handle;
+}
+
+
+/**
   * authLoginV1 passes in an email and password. If they match an existing 
   * user, the user's id will be returned as value in an object with a key
   * called authUserId
@@ -75,12 +113,18 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: 'could not generate new authUserId' };
   }
 
+  const handle = generateHandle(nameFirst, nameLast, data);
+  if (!(handle.match(/[a-z0-9]{1,20}\d*/))) {
+    return { error: 'could not generate a handle' };
+  }
+
   const newUser = {
     uId: uId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
-    password: password
+    password: password,
+    handleStr: handle
   };
 
   data.users.push(newUser);
