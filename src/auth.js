@@ -9,7 +9,7 @@ import validator from 'validator';
   * @param {string} email - will valid if already exists
   * @param {string} password - will be valid if matches to corresponding email
   *  
-  * @returns {{authUserId: Number}} - description of condition for return
+  * @returns {{authUserId: Number}} - returns the userObj
 */
 function authLoginV1(email, password) {
   let data = getData();

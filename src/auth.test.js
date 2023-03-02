@@ -52,7 +52,7 @@ describe('authLoginV1', () => {
     });
   });
 
-  test(' multiple valid users', () => {
+  test('multiple valid users', () => {
     const user1 = {
       email: 'z5555555@ad.unsw.edu.au',
       password: 'password1',
@@ -99,7 +99,7 @@ describe('authLoginV1', () => {
 });
 
 describe('authRegisterV1', () => {
-  test('invalid email', () => {
+  test('invalid email - no @', () => {
     const email = 'InvalidEmail';
     const password = 'password';
     const nameFirst = 'Madhav';
@@ -108,7 +108,7 @@ describe('authRegisterV1', () => {
     expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual(ERROR);
   });
 
-  test('invalid email', () => {
+  test('invalid email - two @', () => {
     const email = '@_@';
     const password = 'password';
     const nameFirst = 'Madhav';
@@ -184,7 +184,7 @@ describe('authRegisterV1', () => {
     expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual(ERROR);
   });
 
-  test('valid user', () => {
+  test('valid user - control test', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password'; 
     const nameFirst = 'Madhav';
