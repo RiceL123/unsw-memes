@@ -6,7 +6,7 @@ import validator from 'validator';
   * it generates a handle by concatenating nameFirst and nameLast
   * it then removes all non-ascii characters and caps the length at 20
   * with the expection of collisions of existing users whereby a number
-  * starting from 0 incremented by 1 will be added
+  * starting from 0 incremented by 1 will be appended
   * 
   * @param {string} nameFirst - to be casted to lower-case alphanumeric
   * @param {string} nameLast - to be casted to lower-case alphanumeric
@@ -25,19 +25,18 @@ function generateHandle(nameFirst, nameLast, data) {
     handle = handle.slice(0, 20);
   }
 
-  let num = 0;
+  let numToAppend = 0;
   let concatenatedLength = handle.length;
 
-  // if the handle already exists, create a new handle by appending num 
+  // if the handle already exists, create a new handle by appending numToAppend 
   while (data.users.some(x => x.handleStr === handle)) {
     handle = handle.slice(0, concatenatedLength);
-    handle = handle + num.toString();
-    num += 1;
+    handle = handle + numToAppend.toString();
+    numToAppend += 1;
   }
 
   return handle;
 }
-
 
 /**
   * authLoginV1 passes in an email and password. If they match an existing 

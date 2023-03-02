@@ -20,8 +20,7 @@ describe('authLoginV1', () => {
     const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
-    
-    // add the user into the data
+
     authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1('wrong_email', password)).toStrictEqual(ERROR);
@@ -32,8 +31,7 @@ describe('authLoginV1', () => {
     const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
-    
-    // add the user into the data
+
     authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1(email, 'wrong_password')).toStrictEqual(ERROR);
@@ -45,7 +43,6 @@ describe('authLoginV1', () => {
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
     
-    // add the user into the data
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1(email, password)).toStrictEqual({
@@ -75,7 +72,6 @@ describe('authLoginV1', () => {
       nameLast: 'AverageLastName',
     }
 
-    // add the user into the data
     const authUserObj1 = authRegisterV1(user1.email, user1.password, user1.nameFirst, user1.nameLast);
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
     const authUserObj3 = authRegisterV1(user3.email, user3.password, user3.nameFirst, user3.nameLast);
@@ -483,9 +479,11 @@ describe('authRegisterV1 - handleStr generation', () => {
       }
     });
 
-    // writing a loop to test if the generated string appends numbers correctly up
+    // loop to check appending of int from 0 is correct
+    let email;
     for (let i = 0; i < 100; i++) {
-      authUserObj = authRegisterV1('z5555555' + i + '@ad.unsw.edu.au', password, nameFirst, nameLast);
+      email = 'z5555555' + i + '@ad.unsw.edu.au';
+      authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
       console.log('madhavmishra' + i.toString());
       expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
         user: {
@@ -508,14 +506,14 @@ describe('authRegisterV1 - handleStr generation', () => {
     expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj.authUserId,
-        email: email,
+        email: email, 
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'aaaaaaaaaabbbbbbbbbb'
       }
     });
 
-    // writing a loop to test if the generated string appends numbers correctly up
+    // loop to check appending of int from 0 is correct
     let email;
     for (let i = 0; i <= 100; i++) {
       email = 'z5555555' + i + '@ad.unsw.edu.au';
