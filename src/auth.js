@@ -102,9 +102,10 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   }
 
   // generating a new Id by adding 1 to the current Id
-  let uId = 1;
+  let uId = 1;  
   if (data.users.length > 0) {
     uId = Math.max.apply(null, data.users.map(x => x.uId)) + 1;
+    
   }
 
   // if the newly generated uId already exists, then return error
@@ -117,13 +118,20 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: 'could not generate a handle' };
   }
 
+  // users get permission id's of 2 if they are not the first user
+  let permission = 2;
+  if (data.users.length === 0) {
+    permission = 1;
+  }
+
   const newUser = {
     uId: uId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
     password: password,
-    handleStr: handle
+    handleStr: handle,
+    permission: permission
   };
 
   data.users.push(newUser);
