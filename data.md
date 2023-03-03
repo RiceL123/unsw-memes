@@ -6,8 +6,9 @@ let data = {
         nameFirst: 'Hayden',
         nameLast: 'Jacobs',
         email: 'example@gmail.com',
-        handleStr: 'haydenjacobs',
         password: 'password',
+        handleStr: 'haydenjacobs',
+        permission: 1,
     }
   ],
 
@@ -34,7 +35,7 @@ let data = {
 [Optional] short description: 
 
 ## Using the data
-The data will be stored in this variable called data and it can only be accessed and updated through the use of the `getData()` and `setData()` functions found in `src/dataStore.js`. 
+The data will be stored in memory in this variable called data and it can only be accessed and updated through the use of the `getData()` and `setData()` functions found in `src/dataStore.js`. 
 
 This means that in each file found in `src` that has a function which either reads data or writes data (or both), the file will need to include the following line of code
 
