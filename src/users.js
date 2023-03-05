@@ -12,11 +12,11 @@ function userProfileV1(authUserId, uId) {
   let data = getData();
 
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'could not generate new authUserId' };
+    return { error: 'authUserId is invalid' };
   };
 
   if (!(data.users.some(x => x.uId === uId))) {
-    return { error: 'could not generate new uId' };
+    return { error: 'uId does not refer to a valid user' };
   };
 
   const userObj = data.users.find(x => x.uId === uId);
