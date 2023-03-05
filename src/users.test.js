@@ -65,19 +65,19 @@ describe('userProfileV1', () => {
 
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
-    let expectedArray = [
-      {
-        uId: authUserObj.authUserId,
-        email: 'z5555555@ad.unsw.edu.au',
-        password: 'password',
-        nameFirst: 'Madhav',
-        nameLast: 'Mishra',
-        handleStr: authUserObj.handleStr,
-      },
-    ];
     // add the user into the data
     let userProfileObj = userProfileV1(authUserObj.authUserId, authUserObj.authUserId);
-    expect(userProfileObj).toStrictEqual(expect.any(Array));
+    expect(userProfileObj).toStrictEqual(
+      {
+        user: {
+          uId: authUserObj.authUserId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+          handleStr: 'madhavmishra',
+        }
+      }
+    );
   });
 
   test('multiple valid users', () => {
@@ -106,37 +106,6 @@ describe('userProfileV1', () => {
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
     const authUserObj3 = authRegisterV1(user3.email, user3.password, user3.nameFirst, user3.nameLast);
 
-    let expectedArray1 = [
-      {
-        uId: authUserObj1.authUserId,
-        email: 'charmander@ad.unsw.edu.au',
-        password: 'password1',
-        nameFirst: 'Charmander',
-        nameLast: 'PokemonName1',
-        handleStr: authUserObj1.handleStr,
-      }
-    ];
-    let expectedArray2 = [
-      {
-        uId: authUserObj2.authUserId,
-        email: 'charmeleon@gmail.com',
-        password: 'password2',
-        nameFirst: 'Charmeleon',
-        nameLast: 'PokemonName2',
-        handleStr: authUserObj2.handleStr,
-      },
-    ];
-    let expectedArray3 = [
-      {
-        uId: authUserObj3.authUserId,
-        email: 'charizard@yahoo.com',
-        password: 'password3',
-        nameFirst: 'Charizard',
-        nameLast: 'PokemonName3',
-        handleStr: authUserObj3.handleStr,
-      },
-    ];
-
     let userProfileObj1 = userProfileV1(authUserObj1.authUserId, authUserObj1.authUserId);
     let userProfileObj2 = userProfileV1(authUserObj2.authUserId, authUserObj2.authUserId);
     let userProfileObj3 = userProfileV1(authUserObj3.authUserId, authUserObj3.authUserId);
@@ -145,10 +114,9 @@ describe('userProfileV1', () => {
       user: {
         uId: authUserObj1.authUserId,
         email: 'charmander@ad.unsw.edu.au',
-        password: 'password1',
         nameFirst: 'Charmander',
         nameLast: 'PokemonName1',
-        handleStr: authUserObj1.handleStr,
+        handleStr: 'charmanderpokemonnam',
       },
     });
 
@@ -156,10 +124,9 @@ describe('userProfileV1', () => {
       user: {
         uId: authUserObj2.authUserId,
         email: 'charmeleon@gmail.com',
-        password: 'password2',
         nameFirst: 'Charmeleon',
         nameLast: 'PokemonName2',
-        handleStr: authUserObj2.handleStr,
+        handleStr: 'charmeleonpokemonnam',
       },
     });
 
@@ -167,10 +134,9 @@ describe('userProfileV1', () => {
       user: {
         uId: authUserObj3.authUserId,
         email: 'charizard@yahoo.com',
-        password: 'password3',
         nameFirst: 'Charizard',
         nameLast: 'PokemonName3',
-        handleStr: authUserObj3.handleStr,
+        handleStr: 'charizardpokemonname',
       },
     });
   });
