@@ -46,7 +46,7 @@ function generateHandle(nameFirst, nameLast, data) {
   * @param {string} email - will valid if already exists
   * @param {string} password - will be valid if matches to corresponding email
   *  
-  * @returns {{authUserId: Number}} - returns the userObj
+  * @returns {{authUserId: Number}} - returns the userObj with corresponding ID
 */
 function authLoginV1(email, password) {
   let data = getData();
