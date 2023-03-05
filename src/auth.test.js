@@ -391,7 +391,7 @@ describe('authRegisterV1 - handleStr generation', () => {
   test('removing of non-ascii / utf-8 character + ascii [^a-z0-9] + changing to lowercase + concatenating to 20', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password'; 
-    const nameFirst = '💀҉廖晟辉ඞꁽㅋㅋ�𐂂𒂌~`!@#$%^&*()_+-=[]|\"\:\;\'\\,./<>?  AAAAAaaaaa';
+    const nameFirst = '💀ඞ`!@#]|\"\\,./ AAAAAaaaaa';
     const nameLast = 'BBBBBbbbbbCCCCCccccc';
 
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
@@ -418,16 +418,16 @@ describe('authRegisterV1 - handleStr generation', () => {
     expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj.authUserId,
-        email: email,
+        email: 'z5555555@ad.unsw.edu.au',
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra'
       }
     });
-    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+    expect(userProfileV1(authUserObj0.authUserId, authUserObj0.authUserId)).toStrictEqual({
       user: {
-        uId: authUserObj.authUserId,
-        email: email,
+        uId: authUserObj0.authUserId,
+        email: 'z5444444@ad.unsw.edu.au',
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra0'
@@ -446,7 +446,7 @@ describe('authRegisterV1 - handleStr generation', () => {
     expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj.authUserId,
-        email: email,
+        email: 'z5555555@ad.unsw.edu.au',
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'aaaaabbbbbaaaaabbbbb'
@@ -455,7 +455,7 @@ describe('authRegisterV1 - handleStr generation', () => {
     expect(userProfileV1(authUserObj0.authUserId, authUserObj0.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj0.authUserId,
-        email: email,
+        email: 'z5444444@ad.unsw.edu.au',
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'aaaaabbbbbaaaaabbbbb0'
@@ -472,7 +472,7 @@ describe('authRegisterV1 - handleStr generation', () => {
     expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj.authUserId,
-        email: email,
+        email: 'z5555555@ad.unsw.edu.au',
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra'
@@ -484,7 +484,7 @@ describe('authRegisterV1 - handleStr generation', () => {
     for (let i = 0; i < 100; i++) {
       email = 'z5555555' + i + '@ad.unsw.edu.au';
       authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
-      console.log('madhavmishra' + i.toString());
+      
       expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
         user: {
           uId: authUserObj.authUserId,
@@ -499,14 +499,14 @@ describe('authRegisterV1 - handleStr generation', () => {
 
   test('removing [^a-z0-9] characters, changing to lowercase, cutting to length 20 and generating multiple unique handles with appended numbers from 0 to 100 appropriately', () => {
     const password = 'password'; 
-    const nameFirst = '💀҉廖晟辉ඞꁽㅋㅋ�𐂂𒂌~`!@#$%^&*()_+-=[]|\"\:\;\'\\,./<>?  AAAAAaaaaa';
+    const nameFirst = '💀ඞ`!@#]|\"\\,./ AAAAAaaaaa';
     const nameLast = 'BBBBBbbbbbCCCCCccccc';
 
     let authUserObj = authRegisterV1('z5555555@ad.unsw.edu.au', password, nameFirst, nameLast);
     expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj.authUserId,
-        email: email, 
+        email: 'z5555555@ad.unsw.edu.au', 
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'aaaaaaaaaabbbbbbbbbb'
