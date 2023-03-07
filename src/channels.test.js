@@ -9,6 +9,7 @@ beforeEach(() => {
     clearV1();
 });
 
+// TESTS FOR CHANNELSCREATEV1
 describe('ChannelsCreateV1', () =>{
   test('invalid authUserId', () => {
     const email = 'z5555555@ad.unsw.edu.au';
@@ -237,6 +238,7 @@ describe('channelsListV1', () =>{
         name: 'Study Room',
       }
     ];
+    // sorting in test accounts for multiple permutations in the channelsArr so the test is blackbox.
     expect(channelsListV1(authUserId).sort((a, b) => {a.channelId - b.channelId})).toStrictEqual
     (channelsArr.sort((a,b) => {a.channelId - b.channelId}));
   });
@@ -276,6 +278,7 @@ describe('channelsListV1', () =>{
         name: 'Study Room',
       }
     ];
+    // sorting in test accounts for multiple permutations in the channelsArr so the test is blackbox.
     expect(channelsListV1(authUserId).sort((a, b) => {a.channelId - b.channelId})).toStrictEqual
     (channelsArr.sort((a,b) => {a.channelId - b.channelId}));
   });
