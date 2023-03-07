@@ -9,7 +9,7 @@ function channelsCreateV1(authUserId, name, isPublic) {
     return { error: 'error' };
   }
 
-  // nvalid authUserId error check
+  // invalid authUserId error check
   if (!(data.users.some(x => x.uId === authUserId))) {
     return { error: 'error' };
   }
@@ -22,14 +22,16 @@ function channelsCreateV1(authUserId, name, isPublic) {
 
   const newChannel = { 
     channelId: newChannelId,
-    owner: authUserId,
-    name: name,
-    isPublic: isPublic
+    channelName: name,
+    ownerMembers: [authUserId],
+    allMemberIds: [authUserId],
+    isPublic: isPublic,
+    messages: [],
   }
   
   data.channels.push(newChannel);  
   setData(data);
-  
+
   return { 
     channelId: newChannelId 
   };
@@ -39,14 +41,30 @@ function channelsCreateV1(authUserId, name, isPublic) {
 // Returns given stub value 
 
 function channelsListV1(authUserId) {
-  return {
-    channels: [
-      {
-        channelId: 1,
-        name: 'My Channel',
+  const data = getData();
+  // invalid authUserId error check
+  if (!(data.users.some(x => x.uId === authUserId))) {
+    return { error: 'error' };
+  }
+  
+  const channelsArr = [];
+  for (const channel of data.channels) {
+    if (typeof channel.allMembersIds !== 'undefined') {
+      for (const memberId of channel.allMembersIds) {
+          if (memberId.includes(authUserId)) {
+            channelsArr.push(
+              {
+                channelId: channel.channelId,
+                name: channel.channelName,
+              }
+            )
+          }
       }
-    ],
-  };
+    }
+  }
+
+  console.log(channelsArr)
+  return channelsArr;
 }
 
 // Sample stub for the channelsListAllV1
@@ -63,5 +81,5 @@ function channelsListAllV1(authUserId) {
   };
 }
 
-export { channelsCreateV1};
+export { channelsCreateV1, channelsListV1 };
 
