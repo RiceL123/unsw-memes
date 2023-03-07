@@ -1,7 +1,7 @@
 import { clearV1 } from './other.js';
-import { channelsCreateV1} from './channels.js';
+import { channelsCreateV1, channelsListV1 } from './channels.js';
 import { authRegisterV1 } from './auth.js';
-import { channelJoinV1, channelDetailsV1 } from './channel.js';
+import { channelJoinV1, channelDetailsV1, channelInviteV1} from './channel.js';
 
 const ERROR = { error: expect.any(String) };
 
@@ -60,7 +60,7 @@ describe('ChannelsCreateV1', () =>{
     const name = 'charmanda';
     const isPublic = 'false';
     expect(channelsCreateV1(authUserId, name, isPublic)).toStrictEqual({
-      authUserId: expect.any(Number)
+      channelId: expect.any(Number)
     });
   });
 
@@ -75,7 +75,7 @@ describe('ChannelsCreateV1', () =>{
     const name = 'a';
     const isPublic = 'false';
     expect(channelsCreateV1(authUserId, name, isPublic)).toStrictEqual({
-      authUserId: expect.any(Number)
+      channelId: expect.any(Number)
     });
   });
 
@@ -90,7 +90,7 @@ describe('ChannelsCreateV1', () =>{
     const name = 'thisnameistwentylong';
     const isPublic = 'false';
     expect(channelsCreateV1(authUserId, name, isPublic)).toStrictEqual({
-      authUserId: expect.any(Number)
+      channelId: expect.any(Number)
     });
   });
 
@@ -107,8 +107,12 @@ describe('ChannelsCreateV1', () =>{
     const channelObject = channelsCreateV1(authUserId, name, isPublic);
 
     // testing if user successfully joins public server
-    const authUserId2 = 2;
-    expect(channelJoinV1(authUserId2, channelObject.cha)).not.toStrictEqual(ERROR);
+    const email2 = 'z5535555@ad.unsw.edu.au';
+    const password2 = 'password';
+    const nameFirst2 = 'Jeff';
+    const nameLast2 = 'theBuilder';
+    const authUserId2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);  
+    expect(channelJoinV1(authUserId2.authUserId, channelObject.channelId)).not.toStrictEqual(ERROR);
   });
 
   test('valid channel private', () => {
@@ -168,5 +172,109 @@ describe('ChannelsCreateV1', () =>{
     const channel1 = channelsCreateV1(authUserId, name, isPublic);
     const channel2 = channelsCreateV1(authUserId2, name, isPublic);
     expect(channel1).not.toStrictEqual(channel2);
+  });
+});
+
+// TESTS FOR CHANNELSLISTV1
+describe('channelsListV1', () =>{
+  test('invalid authUserId', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'Bob';
+    const nameLast = 'theBuilder';
+    const person1 = authRegisterV1(email, password, nameFirst, nameLast);
+    const authUserId = person1.authUserId;
+    expect(channelsListV1(authUserId + 1)).toStrictEqual(ERROR); 
+  });
+
+  test('valid channel control', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'Bob';
+    const nameLast = 'theBuilder';
+    const person1 = authRegisterV1(email, password, nameFirst, nameLast);
+    const authUserId = person1.authUserId;
+
+    const name = 'COMP1531 Crunchie';
+    const isPublic = 'false';
+    const channel = channelsCreateV1(authUserId, name, isPublic);
+    const channelId = channel.channelId;
+
+    let channelsArr = [
+      {
+        channelId: channelId,
+        name: 'COMP1531 Crunchie',
+      },
+    ];
+    expect(channelsListV1(authUserId)).toStrictEqual(channelsArr);
+  });
+
+  test('individual in multiple channels', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'Bob';
+    const nameLast = 'theBuilder';
+    const person1 = authRegisterV1(email, password, nameFirst, nameLast);
+    const authUserId = person1.authUserId;
+
+    const name = 'COMP1531 Crunchie';
+    const isPublic = 'false';
+    const channel1 = channelsCreateV1(authUserId, name, isPublic);
+    const channel1Id = channel1.channelId;
+
+    const name2 = 'Study Room';
+    const isPublic2 = 'true';
+    const channel2 = channelsCreateV1(authUserId, name2, isPublic2);
+    const channel2Id = channel2.channelId;
+
+    let channelsArr = [
+      {
+        channelId: channel1Id,
+        name: 'COMP1531 Crunchie',
+      },
+      {
+        channelId: channel2Id,
+        name: 'Study Room',
+      }
+    ];
+    expect(channelsListV1(authUserId)).toStrictEqual(channelsArr);
+  });
+
+  test('individual creates a channel, gets added to another', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'Bob';
+    const nameLast = 'theBuilder';
+    const person1 = authRegisterV1(email, password, nameFirst, nameLast);
+    const authUserId = person1.authUserId;
+
+    const email2 = 'z5555355@ad.unsw.edu.au';
+    const password2 = 'password';
+    const nameFirst2 = 'Tim';
+    const nameLast2 = 'theBuilder';
+    const person2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
+    const authUserId2 = person2.authUserId;
+
+    const name = 'COMP1531 Crunchie';
+    const isPublic = 'false';
+    const channelId = channelsCreateV1(authUserId, name, isPublic);
+
+    const name2 = 'Study Room';
+    const isPublic2 = 'true';
+    const channelId2 = channelsCreateV1(authUserId2, name2, isPublic2);
+
+    channelInviteV1(authUserId2, channelId2, authUserId);
+    // AuthUserId should be part of both channels now.
+    let channelsArr = [
+      {
+        channelId: channelId,
+        name: 'COMP1531 Crunchie',
+      },
+      {
+        channelId: channelId2,
+        name: 'Study Room',
+      }
+    ];
+    expect(channelsListV1(authUserId)).toStrictEqual(channelsArr);
   });
 });
