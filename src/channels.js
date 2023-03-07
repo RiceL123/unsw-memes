@@ -1,6 +1,18 @@
 // channelsCreateV1 function: creates a new channel returning a unique channelId
 import { getData, setData } from './dataStore.js';
 
+/**
+  * channelsCreateV1, given a channel name and an authUserId makes an object with 
+  * a new & unique channelId and pushes the object into the data.channels array locally 
+  * and then sets it globally
+  * 
+  * @param {number} authUserId - unique Id generated from a registered user
+  * @param {string} name - name where 1 <= length <= 20
+  * @param {boolean} isPublic  - 'true' or 'false' boolean
+  *  
+  * @returns {{channelId : Number}} - newly generated unique channelId
+ */
+
 function channelsCreateV1(authUserId, name, isPublic) {
   const data = getData(); 
 
@@ -37,9 +49,14 @@ function channelsCreateV1(authUserId, name, isPublic) {
   };
 }
 
-// Sample stub for the channelsListV1 function
-// Returns given stub value 
-
+/**
+  * channelsListV1 provides an array of all channels that the
+  * authorised user is part of with information about the channelName and channelId.
+  * 
+  * @param {number} authUserId - unique Id generated from a registered user
+  *  
+  * @returns {{ channels: [{channelId: Number, name: string} ]}} - Array of objects containing infomation about channelId and channelName
+ */
 function channelsListV1(authUserId) {
   const data = getData();
   // invalid authUserId error check
