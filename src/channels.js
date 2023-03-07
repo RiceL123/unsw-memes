@@ -41,14 +41,24 @@ function channelsCreateV1(authUserId, name, isPublic) {
 // Returns given stub value 
 
 function channelsListV1(authUserId) {
-  return {
-    channels: [
-      {
-        channelId: 1,
-        name: 'My Channel',
-      }
-    ],
-  };
+  const data = getData();
+  // invalid authUserId error check
+  if (!(data.users.some(x => x.uId === authUserId))) {
+    return { error: 'error' };
+  }
+  
+  let channelsArr = [];
+  for (const channel of data.channels) {
+    // if the user is a member of that channel, push to the channel array
+    if (channel.allMemberIds.some(x => x === authUserId)) {
+      channelsArr.push({
+        channelId: channel.channelId,
+        name: channel.channelName,
+      })
+    }
+  }
+
+  return channelsArr;
 }
 
 // Sample stub for the channelsListAllV1
