@@ -25,12 +25,30 @@ function channelsListV1(authUserId) {
 // Returns given stub object
 
 function channelsListAllV1(authUserId) {
-  return {
-    channels: [
-      {
-        channelId: 1,
-        name: 'My Channel',
-      }
-    ], 
+  if (!(data.users.some(item => item.uId === authUserId))) {
+    return { error: 'authUserId is invalid' };
   };
+  if (!(data.users.some(item => item.uId === authUserId))) {
+    return { error: 'uId does not refer to a valid user' };
+  };
+
+  let allChannels = [];
+  for (const item of data.channels) {
+    let usersChannels = {
+      channelId: item.channelId,
+      channelName: item.name,
+    };
+    allChannels.push(usersChannels);
+  }
+
+  return { allChannels };
+
+  // return {
+  //   channels: [
+  //     {
+  //       channelId: 1,
+  //       name: 'My Channel',
+  //     }
+  //   ], 
+  // };
 }
