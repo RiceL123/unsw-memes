@@ -17,7 +17,7 @@ function channelsCreateV1(authUserId, name, isPublic) {
   // creates new channel ID using a +1 mechanism
   let newChannelId = 0;
   if (data.channels.length > 0) {
-    newChannelId = Math.max.apply(null, data.channels.map(x => x.newChannelId)) + 1;
+    newChannelId = Math.max.apply(null, data.channels.map(x => x.channelId)) + 1;
   }
 
   const newChannel = { 
@@ -47,23 +47,17 @@ function channelsListV1(authUserId) {
     return { error: 'error' };
   }
   
-  const channelsArr = [];
+  let channelsArr = [];
   for (const channel of data.channels) {
-    if (typeof channel.allMembersIds !== 'undefined') {
-      for (const memberId of channel.allMembersIds) {
-          if (memberId.includes(authUserId)) {
-            channelsArr.push(
-              {
-                channelId: channel.channelId,
-                name: channel.channelName,
-              }
-            )
-          }
-      }
+    // if the user is a member of that channel, push to the channel array
+    if (channel.allMemberIds.some(x => x === authUserId)) {
+      channelsArr.push({
+        channelId: channel.channelId,
+        name: channel.channelName,
+      })
     }
   }
 
-  console.log(channelsArr)
   return channelsArr;
 }
 
