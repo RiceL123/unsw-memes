@@ -237,7 +237,8 @@ describe('channelsListV1', () =>{
         name: 'Study Room',
       }
     ];
-    expect(channelsListV1(authUserId)).toStrictEqual(channelsArr);
+    expect(channelsListV1(authUserId).sort((a, b) => {a.channelId - b.channelId})).toStrictEqual
+    (channelsArr.sort((a,b) => {a.channelId - b.channelId}));
   });
 
   test('individual creates a channel, gets added to another', () => {
@@ -275,6 +276,7 @@ describe('channelsListV1', () =>{
         name: 'Study Room',
       }
     ];
-    expect(channelsListV1(authUserId)).toStrictEqual(channelsArr);
+    expect(channelsListV1(authUserId).sort((a, b) => {a.channelId - b.channelId})).toStrictEqual
+    (channelsArr.sort((a,b) => {a.channelId - b.channelId}));
   });
 });
