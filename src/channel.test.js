@@ -22,14 +22,14 @@ beforeEach(() => {
 });
 
 describe('channelMessagesV1', () => {
-  test('invalid channelId, isPublic set to true', () => {
+  test('invalid channelId', () => {
     let start = 0;
 
     expect(channelMessagesV1(authUserObj.authUserId, channelObj.channelId + 1, start)).toStrictEqual(ERROR);
   });
 
 
-  test('invalid authUserId, isPublic set to true', () => {
+  test('invalid authUserId', () => {
     let start = 0;
 
     expect(channelMessagesV1(authUserObj.authUserId + 1, channelObj.channelId, start)).toStrictEqual(ERROR);
