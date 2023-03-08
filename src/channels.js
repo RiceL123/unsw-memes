@@ -25,9 +25,6 @@ function channelsListV1(authUserId) {
 // Returns given stub object
 
 function channelsListAllV1(authUserId) {
-  if (!(data.users.some(item => item.uId === authUserId))) {
-    return { error: 'authUserId is invalid' };
-  };
 
   if (!(data.users.some(item => item.uId === authUserId))) {
     return { error: 'authUserId does not refer to a valid user' };
