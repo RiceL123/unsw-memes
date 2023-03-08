@@ -21,13 +21,14 @@ function channelsListV1(authUserId) {
   };
 }
 
-// Sample stub for the channelsListAllV1
-// Returns given stub object
 
+/**
+ * channelsListAllV1 creates and returns an array of all created channels, 
+ * including private channels (and their associated details)
+ * @param {integer} authUserId 
+ * @returns { allChannels } - returns array of all channels when authUserId valid
+ */
 function channelsListAllV1(authUserId) {
-  if (!(data.users.some(item => item.uId === authUserId))) {
-    return { error: 'authUserId is invalid' };
-  };
 
   if (!(data.users.some(item => item.uId === authUserId))) {
     return { error: 'authUserId does not refer to a valid user' };
