@@ -15,8 +15,8 @@ describe('channelJoinV1', () => {
     beforeEach(() => {
         email = 'z5555555@ad.unsw.edu.au';
         password = 'password';
-        nameFirst = 'Madhav';
-        nameLast = 'Mishra';
+        nameFirst = 'Perry';
+        nameLast = 'the Platypus';
         authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
     });
     
@@ -37,13 +37,13 @@ describe('channelJoinV1', () => {
     test('private channel, user is not member or global owner', () => {
         const email1 = 'z5455555@ad.unsw.edu.au';
         const password1 = 'password';
-        const nameFirst1 = 'Miguel';
-        const nameLast1 = 'Guthridge';
-        // Miguel user is not a global owner
+        const nameFirst1 = 'Dr';
+        const nameLast1 = 'Doofenshmirtz';
+        // Dr user is not a global owner
         const authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
-        // Madhav user is a global owner and member of a public channel
+        // Perry user is a global owner and member of a public channel
         const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
-        // Miguel user joins Madhav's public channel
+        // Dr user joins Perry's public channel
         channelJoinV1(authUserObj1.authUserId, channelObj.channelId)
         expect(channelJoinV1(authUserObj1.authUserId, channelObj.channelId)).toStrictEqual(ERROR);
     });
@@ -51,11 +51,11 @@ describe('channelJoinV1', () => {
     test('private channel, user is not member or global owner', () => {
         const email1 = 'z5455555@ad.unsw.edu.au';
         const password1 = 'password';
-        const nameFirst1 = 'Miguel';
-        const nameLast1 = 'Guthridge';
-        // Miguel user is not a global owner
+        const nameFirst1 = 'Dr';
+        const nameLast1 = 'Doofenshmirtz';
+        // Dr user is not a global owner
         const authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
-        // Madhav user is a global owner and member of private channel
+        // Perry user is a global owner and member of private channel
         const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolprivatechannel', false);
         expect(channelJoinV1(authUserObj1.authUserId, channelObj.channelId)).toStrictEqual(ERROR);
     });
@@ -64,24 +64,24 @@ describe('channelJoinV1', () => {
     test('joining a public channel', () => {
         const email1 = 'z5455555@ad.unsw.edu.au';
         const password1 = 'password';
-        const nameFirst1 = 'Miguel';
-        const nameLast1 = 'Guthridge';
-        // Miguel user is not a global owner
+        const nameFirst1 = 'Dr';
+        const nameLast1 = 'Doofenshmirtz';
+        // Dr user is not a global owner
         const authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
-        // Madhav user is a global owner and member of private channel
+        // Perry user is a global owner and member of private channel
         const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolprivatechannel', true);
         expect(channelJoinV1(authUserObj1.authUserId, channelObj.channelId)).toStrictEqual({});
     });
 
-    test('joining a public channel', () => {
+    test('joining a private channel', () => {
         const email1 = 'z5455555@ad.unsw.edu.au';
         const password1 = 'password';
-        const nameFirst1 = 'Miguel';
-        const nameLast1 = 'Guthridge';
-        // Miguel is not a global owner but made a private channel
+        const nameFirst1 = 'Dr';
+        const nameLast1 = 'Doofenshmirtz';
+        // Dr is not a global owner but made a private channel
         const authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
         const channelObj = channelsCreateV1(authUserObj1.authUserId, 'coolprivatechannel', false);
-        // Madhav joins a private channel because he is a global owner
+        // Perry joins a private channel because he is a global owner
         expect(channelJoinV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({});
     });
 
@@ -94,18 +94,100 @@ describe('channelInviteV1', () => {
     beforeEach(() => {
         email = 'z5555555@ad.unsw.edu.au';
         password = 'password';
-        nameFirst = 'Madhav';
-        nameLast = 'Mishra';
+        nameFirst = 'Alvin';
+        nameLast = 'the Chipmunk';
         authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
         email1 = 'z5455555@ad.unsw.edu.au';
         password1 = 'password';
-        nameFirst1 = 'Madhav';
-        nameLast1 = 'Mishra';
+        nameFirst1 = 'Theodore';
+        nameLast1 = 'the Chipmunk';
         authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
     });
 
+    // Cool Public Channels
+    // no channel created so channelId should be invalid
     test('invalid channelId', () => {
         expect(channelInviteV1(authUserObj.authUserId, 1, authUserObj1.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // channel created and invited user is invalid
+    test('uId does not refer to a valid user', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
+        expect(channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId + 1)).toStrictEqual(ERROR);
+    });
+
+    // channel created and uId is invited and is invited again
+    test('uId refers to a member already in the channel', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
+        channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId);
+        expect(channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // channel is created by Alvin, Theodore invites Simon but Theodore is not a member of the channel
+    test('channelId is valid, authUser is not a member and uId is not a member', () => {
+        const email2 = 'z5355555@ad.unsw.edu.au';
+        const password2 = 'password';
+        const nameFirst2 = 'Simon';
+        const nameLast2 = 'the Chipmunk';
+        const authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
+
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
+        expect(channelInviteV1(authUserObj1.authUserId, channelObj.channelId, authUserObj2.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // Simon tries to invite Theodore, but Simon doesn't even have an account.
+    test('authUserId is invalid', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
+        expect(channelInviteV1(authUserObj1.authUserId + 1, channelObj.channelId, authUserObj1.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // Edgy Private Channels
+    // no channel created so channelId should be invalid
+    test('invalid channelId', () => {
+        expect(channelInviteV1(authUserObj.authUserId, 1, authUserObj1.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // channel created and invited user is invalid
+    test('uId does not refer to a valid user', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'edgyPrivateChannel', false);
+        expect(channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId + 1)).toStrictEqual(ERROR);
+    });
+
+    // channel created and uId is invited and is invited again
+    test('uId refers to a member already in the channel', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'edgyPrivateChannel', false);
+        channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId);
+        expect(channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // channel is created by Alvin, Theodore invites Simon but Theodore is not a member of the channel
+    test('channelId is valid, authUser is not a member and uId is not a member', () => {
+        const email2 = 'z5355555@ad.unsw.edu.au';
+        const password2 = 'password';
+        const nameFirst2 = 'Simon';
+        const nameLast2 = 'the Chipmunk';
+        const authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
+
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'edgyPrivateChannel', false);
+        expect(channelInviteV1(authUserObj1.authUserId, channelObj.channelId, authUserObj2.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // Simon tries to invite Theodore, but Simon doesn't even have an account.
+    test('authUserId is invalid', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'edgyPrivateChannel', false);
+        expect(channelInviteV1(authUserObj1.authUserId + 1, channelObj.channelId, authUserObj1.authUserId)).toStrictEqual(ERROR);
+    });
+
+    // channelInviteV1 coolPublicChannel Valid Tests
+    test('authUserId invites uId to public channel', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
+        expect(channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId)).toStrictEqual({});
+    });
+
+    // channelInviteV1 edgyPrivateChannel Valid Tests
+    test('authUserId invites uId to public channel', () => {
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', false);
+        expect(channelInviteV1(authUserObj.authUserId, channelObj.channelId, authUserObj1.authUserId)).toStrictEqual({});
     });
 });
