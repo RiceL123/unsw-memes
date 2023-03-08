@@ -42,81 +42,73 @@ describe('channelDetailsV1 ', () => {
         let channelObj = channelsCreateV1(authUserObj2.authUserId,'COMP1531 Crunchie', false);
         expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual(ERROR)
     });
-  });
 
   test('valid authUserId is part of the channel', () => {
-    let channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
+    const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
 
     expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({
-      channels: [
+      name: 'COMP1531 Crunchie',
+      isPublic: false,
+      ownerMembers: [
         {
-          channelId: channelObj.channelId,
-          isPublic: false,
-          ownerMembers: [
-            {
-              uId: authUserObj.authUserId,
-              email: 'z5555555@ad.unsw.edu.au',
-              nameFirst: 'Snoopy',
-              nameLast: 'the Dog',
-              handleStr: 'snoopythedog'
-            }
-          ],
-          allMembers: [
-            {
-              uId: authUserObj.authUserId,
-              email: 'z5555555@ad.unsw.edu.au',
-              nameFirst: 'Snoopy',
-              nameLast: 'the Dog',
-              handleStr: 'snoopythedog'
-            }
-          ],
-        },
-      ]
+          uId: authUserObj.authUserId,
+          email: email,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+          handleStr: 'snoopythedog'
+        }
+      ],
+      allMembers: [
+        {
+          uId: authUserObj.authUserId,
+          email: email,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+          handleStr: 'snoopythedog'
+        }
+      ],
     });
   });
 
-test('multiple valid authUserIds are a part of the channel', () => {
-  let email2 = 'z4444444@ad.unsw.edu.au';
-  let password2 = 'password';
-  let nameFirst2 = 'Charlie';
-  let nameLast2 = 'Brown';
-  let authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
+  test('multiple valid authUserIds are a part of the channel', () => {
+    const email2 = 'z5444444@ad.unsw.edu.au';
+    const password2 = 'password';
+    const nameFirst2 = 'Charlie';
+    const nameLast2 = 'Brown';
+    const authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
 
-  let channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
-
-  channelJoinV1(authUserObj2.authUserId, channelObj.channelId);
+    const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', true);
     
-  expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({
-    channels: [
-      {
-        channelId: channelObj.channelId,
-        isPublic: false,
-        ownerMembersIds: [
-          {
-            uId: authUserObj.authUserId,
-            email: 'z5555555@ad.unsw.edu.au',
-            nameFirst: 'Snoopy',
-            nameLast: 'the Dog',
-            handleStr: 'snoopythedog'
-          }
-        ],
-        allMembersIds: [
-          {
-            uId: authUserObj.authUserId,
-            email: 'z5555555@ad.unsw.edu.au',
-            nameFirst: 'Snoopy',
-            nameLast: 'the Dog',
-            handleStr: 'snoopythedog'
-          },
-          {
-            uId: authUserObj2.authUserId,
-            email: 'z4444444@ad.unsw.edu.au',
-            nameFirst: 'Charlie',
-            nameLast: 'Brown',
-            handleStr: 'charliebrown'
-          }
-        ], 
-      },
-    ]
+    expect(channelJoinV1(authUserObj2.authUserId, channelObj.channelId)).toStrictEqual({});
+
+    expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({
+      name: 'COMP1531 Crunchie',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: authUserObj.authUserId,
+          email: email,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+          handleStr: 'snoopythedog'
+        }
+      ],
+      allMembers: [
+        {
+          uId: authUserObj.authUserId,
+          email: email,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+          handleStr: 'snoopythedog'
+        },
+        {
+          uId: authUserObj2.authUserId,
+          email: email2,
+          nameFirst: nameFirst2,
+          nameLast: nameLast2,
+          handleStr: 'charliebrown'
+        }
+      ], 
+    });
   });
 });

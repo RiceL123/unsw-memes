@@ -1,10 +1,13 @@
 import { getData, setData } from './dataStore.js';
 
 /** 
- * channelDetailsV1
+ * channelDetailsV1 passes authUserId, channelId and creates a new 
+ * array for ownerMembers and channelMembers returning the basic details
+ * of the given channelId
  * @param {number} authUserId 
  * @param {number} channelId 
- * @returns {{name, isPublic, ownerMembers, allMembers}}
+ * @returns {{name, isPublic, ownerMembers, allMembers}} - returns object with 
+ * basic details about the channel 
  */
 function channelDetailsV1(authUserId, channelId) {
   const data = getData();
@@ -30,7 +33,7 @@ function channelDetailsV1(authUserId, channelId) {
   // loop through all members (owner members is a subset of all members)
   for (const userId of channelObj.allMembersIds) {
     // find the corresponding user in the array of members
-    const userObj = data.users.find(x => x.uId === authUserId);
+    const userObj = data.users.find(x => x.uId === userId);
 
     // add the relevant details to allMembers array
     if (userObj !== undefined) {
@@ -44,7 +47,7 @@ function channelDetailsV1(authUserId, channelId) {
     }
 
     // add the relevant details to ownerMembers array
-    if (userObj !== undefined && channelObj.ownerMembersIds.includes(userObj.authUserId)) {
+    if (userObj !== undefined && channelObj.ownerMembersIds.includes(userObj.uId)) {
       ownerMembers.push({
         uId: userObj.uId,
         email: userObj.email,
@@ -56,7 +59,7 @@ function channelDetailsV1(authUserId, channelId) {
   }
 
   return {
-    name: channelObj.name,
+    name: channelObj.channelName,
     isPublic: channelObj.isPublic,
     ownerMembers: ownerMembers,
     allMembers: allMembers,
