@@ -1,3 +1,5 @@
+import { getData, setData } from './dataStore.js';
+
 // Sample stub for the channelDetailsV1 function
 // Returns sample stub data.
     
@@ -29,9 +31,27 @@ function channelDetailsV1(authUserId, channelId) {
 // Returns a blank stub value
 
 function channelJoinV1(authUserId, channelId) {
-    return {
+    let data = getData();
+    
+    const user = data.users.find(x => x.uId === authUserId);
+    if ((user === undefined)) {
+        return { error: 'Invalid authUserId' };
+    }
+    const channel = data.channels.find(x => x.channelId === channelId);
+    if (channel === undefined) {
+        return { error: 'Invalid channelId' };
+    }
+    if (channel.allMembersIds.find(x => x === authUserId)) {
+        return { error: 'AuthUserId is already a member' };
+    }
+    if (channel.isPublic === false && user.permission != 1) {
+        return { error: 'Can not join a private channel' };
+    }
+    
+    channel.allMembersIds.push(authUserId);
+    setData(data);
 
-    };
+    return {};
 }
 
 // Sample stub for the channelInviteV1 function

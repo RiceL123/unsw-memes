@@ -7,7 +7,7 @@ const ERROR = { error: expect.any(String) };
 
 beforeEach(() => {
     clearV1();
-  });
+});
 
 describe('channelJoinV1', () => {
     //channelJoinV1 Error Tests
@@ -69,7 +69,7 @@ describe('channelJoinV1', () => {
         // Dr user is not a global owner
         const authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
         // Perry user is a global owner and member of private channel
-        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolprivatechannel', true);
+        const channelObj = channelsCreateV1(authUserObj.authUserId, 'coolPublicChannel', true);
         expect(channelJoinV1(authUserObj1.authUserId, channelObj.channelId)).toStrictEqual({});
     });
 
@@ -80,7 +80,7 @@ describe('channelJoinV1', () => {
         const nameLast1 = 'Doofenshmirtz';
         // Dr is not a global owner but made a private channel
         const authUserObj1 = authRegisterV1(email1, password1, nameFirst1, nameLast1);
-        const channelObj = channelsCreateV1(authUserObj1.authUserId, 'coolprivatechannel', false);
+        const channelObj = channelsCreateV1(authUserObj1.authUserId, 'edgyPrivateChannel', false);
         // Perry joins a private channel because he is a global owner
         expect(channelJoinV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({});
     });
