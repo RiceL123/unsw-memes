@@ -35,7 +35,14 @@ describe('channelDetailsV1 ', () => {
 
     // test when user is not part of channel
     test('valid authUserId but not a part of the channel', () => {
-        const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
+        email = 'z5333333@ad.unsw.edu.au';
+        password = 'yellowfeathers';
+        nameFirst = 'Big';
+        nameLast = 'Bird';
+        
+        authUserObj2 = authRegisterV1(email, password, nameFirst, nameLast);
+
+        const channelObj = channelsCreateV1(authUserObj2.authUserId,'COMP1531 Crunchie', false);
         expect(channelDetailsV1(authUserObj.authUserId)).toStrictEqual(ERROR)
     });
 
