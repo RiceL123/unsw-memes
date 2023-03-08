@@ -23,8 +23,8 @@ function channelsCreateV1(authUserId, name, isPublic) {
   const newChannel = { 
     channelId: newChannelId,
     channelName: name,
-    ownerMembers: [authUserId],
-    allMemberIds: [authUserId],
+    ownerMembersIds: [authUserId],
+    allMembersIds: [authUserId],
     isPublic: isPublic,
     messages: [],
   }
