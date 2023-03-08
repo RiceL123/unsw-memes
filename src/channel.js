@@ -30,7 +30,7 @@ function channelDetailsV1(authUserId, channelId) {
   // loop through all members (owner members is a subset of all members)
   for (const userId of channelObj.allMembersIds) {
     // find the corresponding user in the array of members
-    const userObj = data.users.find(x => x.uId === userId);
+    const userObj = data.users.find(x => x.uId === authUserId);
 
     // add the relevant details to allMembers array
     if (userObj !== undefined) {
