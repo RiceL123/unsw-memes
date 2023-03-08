@@ -1,6 +1,8 @@
 # Assumptions
 The following assumptions will be made in regards to the use of the functions and their implementation in **UNSW Memes**.
 
+[[_TOC_]]
+
 ### 1. Negative `start` values
 The `start` parameter in `channelMessagesV1()` refers to an '*integer*' and thus, can be negative. For cases where `start < 0`, an error will be returned from the function. Specifically this will be the same error that is thrown when the start is greater than the total number of messages.
 
