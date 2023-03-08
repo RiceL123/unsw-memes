@@ -1,7 +1,7 @@
 import { getData, setData } from './dataStore.js';
 
-/**
- * 
+/** 
+ * channelDetailsV1
  * @param {number} authUserId 
  * @param {number} channelId 
  * @returns {{name, isPublic, ownerMembers, allMembers}}

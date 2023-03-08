@@ -188,7 +188,7 @@ describe('channelDetailsV1 ', () => {
 
   test('authUserId is invalid', () => {
       const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
-      expect(channelDetailsV1(authUserObj.authUserId + 1)).toStrictEqual(ERROR)
+      expect(channelDetailsV1(authUserObj.authUserId + 1, channelObj.channelId)).toStrictEqual(ERROR)
   });
 
   test('channelId is invalid', () => {
