@@ -238,10 +238,10 @@ describe('channelDetailsV1 ', () => {
       expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({
           channels: [
               {
-                  channelId: channelObj.channelId,
-                  isPublic: false,
-                  ownerMembersIds: [authUserObj.authUserId],
-                  allMembersIds: [authUserObj.authUserId, authUserObj2.authUserId],
+                channelName: channelObj.channelName,
+                isPublic: false,
+                ownerMembersIds: [authUserObj.authUserId],
+                allMembersIds: [authUserObj.authUserId, authUserObj2.authUserId],
                   
               },
           ]

@@ -23,8 +23,8 @@ function channelsCreateV1(authUserId, name, isPublic) {
   const newChannel = { 
     channelId: newChannelId,
     channelName: name,
-    ownerMembersIds: [authUserId],
-    allMembersIds: [authUserId],
+    ownerMembers: [authUserId],
+    allMemberIds: [authUserId],
     isPublic: isPublic,
     messages: [],
   }
@@ -65,5 +65,5 @@ function channelsListAllV1(authUserId) {
   };
 }
 
-export { channelsCreateV1, channelsListV1 };
+export { channelsCreateV1, channelsListV1 , channelsListAllV1 };
 

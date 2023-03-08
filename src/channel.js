@@ -29,7 +29,7 @@ function channelDetailsV1(authUserId, channelId) {
 
   // loop through all members (owner members is a subset of all members)
   for (const userId of channelObj.allMembersIds) {
-    // find the corresponding user in the channel ownerMembers array
+    // find the corresponding user in the array of members
     const userObj = data.users.find(x => x.uId === userId);
 
     // add the relevant details to allMembers array
@@ -100,4 +100,4 @@ function channelMessagesV1(authUserId, channelId, start) {
 }
 
 
-export { channelDetailsV1 };
+export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 };
