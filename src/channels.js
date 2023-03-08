@@ -28,8 +28,9 @@ function channelsListAllV1(authUserId) {
   if (!(data.users.some(item => item.uId === authUserId))) {
     return { error: 'authUserId is invalid' };
   };
+  
   if (!(data.users.some(item => item.uId === authUserId))) {
-    return { error: 'uId does not refer to a valid user' };
+    return { error: 'authUserId does not refer to a valid user' };
   };
 
   let allChannels = [];
@@ -52,3 +53,5 @@ function channelsListAllV1(authUserId) {
   //   ], 
   // };
 }
+
+export { channelsCreateV1, channelsListV1, channelsListAllV1 };
