@@ -9,7 +9,7 @@ function channelsCreateV1(authUserId, name, isPublic) {
     return { error: 'error' };
   }
 
-  // nvalid authUserId error check
+  // invalid authUserId error check
   if (!(data.users.some(x => x.uId === authUserId))) {
     return { error: 'error' };
   }
@@ -17,19 +17,21 @@ function channelsCreateV1(authUserId, name, isPublic) {
   // creates new channel ID using a +1 mechanism
   let newChannelId = 0;
   if (data.channels.length > 0) {
-    newChannelId = Math.max.apply(null, data.channels.map(x => x.newChannelId)) + 1;
+    newChannelId = Math.max.apply(null, data.channels.map(x => x.channelId)) + 1;
   }
 
   const newChannel = { 
     channelId: newChannelId,
-    owner: authUserId,
-    name: name,
-    isPublic: isPublic
+    channelName: name,
+    ownerMembersIds: [authUserId],
+    allMembersIds: [authUserId],
+    isPublic: isPublic,
+    messages: [],
   }
   
   data.channels.push(newChannel);  
   setData(data);
-  
+
   return { 
     channelId: newChannelId 
   };
@@ -63,5 +65,5 @@ function channelsListAllV1(authUserId) {
   };
 }
 
-export { channelsCreateV1};
+export { channelsCreateV1, channelsListV1 };
 

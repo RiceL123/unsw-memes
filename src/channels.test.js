@@ -1,7 +1,7 @@
 import { clearV1 } from './other.js';
-import { channelsCreateV1} from './channels.js';
+import { channelsCreateV1, channelsListV1 } from './channels.js';
 import { authRegisterV1 } from './auth.js';
-import { channelJoinV1, channelDetailsV1 } from './channel.js';
+import { channelJoinV1, channelDetailsV1, channelInviteV1} from './channel.js';
 
 const ERROR = { error: expect.any(String) };
 
@@ -60,7 +60,7 @@ describe('channelsCreateV1', () =>{
     const name = 'charmanda';
     const isPublic = 'false';
     expect(channelsCreateV1(authUserId, name, isPublic)).toStrictEqual({
-      authUserId: expect.any(Number)
+      channelId: expect.any(Number)
     });
   });
 
@@ -75,7 +75,7 @@ describe('channelsCreateV1', () =>{
     const name = 'a';
     const isPublic = 'false';
     expect(channelsCreateV1(authUserId, name, isPublic)).toStrictEqual({
-      authUserId: expect.any(Number)
+      channelId: expect.any(Number)
     });
   });
 
@@ -90,7 +90,7 @@ describe('channelsCreateV1', () =>{
     const name = 'thisnameistwentylong';
     const isPublic = 'false';
     expect(channelsCreateV1(authUserId, name, isPublic)).toStrictEqual({
-      authUserId: expect.any(Number)
+      channelId: expect.any(Number)
     });
   });
 
@@ -107,8 +107,12 @@ describe('channelsCreateV1', () =>{
     const channelObject = channelsCreateV1(authUserId, name, isPublic);
 
     // testing if user successfully joins public server
-    const authUserId2 = 2;
-    expect(channelJoinV1(authUserId2, channelObject.cha)).not.toStrictEqual(ERROR);
+    const email2 = 'z5535555@ad.unsw.edu.au';
+    const password2 = 'password';
+    const nameFirst2 = 'Jeff';
+    const nameLast2 = 'theBuilder';
+    const authUserId2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);  
+    expect(channelJoinV1(authUserId2.authUserId, channelObject.channelId)).not.toStrictEqual(ERROR);
   });
 
   test('valid channel private', () => {
@@ -170,7 +174,6 @@ describe('channelsCreateV1', () =>{
     expect(channel1).not.toStrictEqual(channel2);
   });
 });
-
 
 describe('channelDetailsV1 ', () => {
   let email, password, nameFirst, nameLast, authUserObj;
