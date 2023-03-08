@@ -36,30 +36,30 @@ function channelDetailsV1(authUserId, channelId) {
  * @returns 
  */
 function channelJoinV1(authUserId, channelId) {
-    let data = getData();
-    
-    const user = data.users.find(x => x.uId === authUserId);
-    if (user === undefined) {
-        return { error: 'Invalid authUserId' };
-    }
+	let data = getData();
+	
+	const user = data.users.find(x => x.uId === authUserId);
+	if (user === undefined) {
+		return { error: 'Invalid authUserId' };
+	}
 
-    const channel = data.channels.find(x => x.channelId === channelId);
-    if (channel === undefined) {
-        return { error: 'Invalid channelId' };
-    }
+	const channel = data.channels.find(x => x.channelId === channelId);
+	if (channel === undefined) {
+		return { error: 'Invalid channelId' };
+	}
 
-    if (channel.allMembersIds.find(x => x === authUserId)) {
-        return { error: 'AuthUserId is already a member' };
-    }
+	if (channel.allMembersIds.find(x => x === authUserId)) {
+		return { error: 'AuthUserId is already a member' };
+	}
 
-    if (channel.isPublic === false && user.permission != 1) {
-        return { error: 'Can not join a private channel' };
-    }
-    
-    channel.allMembersIds.push(authUserId);
-    setData(data);
+	if (channel.isPublic === false && user.permission != 1) {
+		return { error: 'Can not join a private channel' };
+	}
 
-    return {};
+	channel.allMembersIds.push(authUserId);
+	setData(data);
+
+	return {};
 }
 
 // Sample stub for the channelInviteV1 function
