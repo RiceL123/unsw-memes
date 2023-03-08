@@ -27,23 +27,31 @@ function channelDetailsV1(authUserId, channelId) {
     };
 }
 
-// Sample stub for the channelJoinV1 function
-// Returns a blank stub value
-
+/**
+ * Given a channelId of a channel that the authorised user can join,
+ * adds them to that channel. If it is a private channel, only users with
+ * permission  = 1, can join that particular channel type
+ * @param {*} authUserId 
+ * @param {*} channelId 
+ * @returns 
+ */
 function channelJoinV1(authUserId, channelId) {
     let data = getData();
     
     const user = data.users.find(x => x.uId === authUserId);
-    if ((user === undefined)) {
+    if (user === undefined) {
         return { error: 'Invalid authUserId' };
     }
+
     const channel = data.channels.find(x => x.channelId === channelId);
     if (channel === undefined) {
         return { error: 'Invalid channelId' };
     }
+
     if (channel.allMembersIds.find(x => x === authUserId)) {
         return { error: 'AuthUserId is already a member' };
     }
+
     if (channel.isPublic === false && user.permission != 1) {
         return { error: 'Can not join a private channel' };
     }
