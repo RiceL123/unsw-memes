@@ -62,13 +62,47 @@ function channelJoinV1(authUserId, channelId) {
 	return {};
 }
 
-// Sample stub for the channelInviteV1 function
-// Returns a blank stub value
 
+/**
+ * Invites a user with ID uId to join a channel with ID channelId. 
+ * Once invited, the user is added to the channel immediately. 
+ * In both public and private channels, 
+ * all members are able to invite users.
+ * @param {*} authUserId 
+ * @param {*} channelId 
+ * @param {*} uId 
+ * @returns 
+ */
 function channelInviteV1(authUserId, channelId, uId) {
-    return {
+	let data = getData();
 
-    };
+	const authorisedUser = data.users.find(x => x.uId === authUserId);
+	if (authorisedUser === undefined) {
+		return { error: 'Invalid authUserId' };
+	}
+
+	const user = data.users.find(x => x.uId === uId);
+	if (user === undefined) {
+		return { error: 'Invalid uId' };
+	}
+
+	const channel = data.channels.find(x => x.channelId === channelId);
+	if (channel === undefined) {
+		return { error: 'Invalid channelId' };
+	}
+
+	if (channel.allMembersIds.find(x => x === uId)) {
+		return { error: 'uId is already a member' };
+	}
+
+	if (channel.allMembersIds.find(x => x === authUserId) === undefined) {
+		return { error: 'authorised user is not a member of the channel'}
+	}
+
+	channel.allMembersIds.push(uId);
+	setData(data);
+
+	return {};
 }
 
 // Sample stub for the channelMessagesV1 function
