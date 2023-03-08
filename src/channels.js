@@ -67,7 +67,7 @@ function channelsListV1(authUserId) {
   let channelsArr = [];
   for (const channel of data.channels) {
     // if the user is a member of that channel, push to the channel array
-    if (channel.allMemberIds.some(x => x === authUserId)) {
+    if (channel.allMembersIds.some(x => x === authUserId)) {
       channelsArr.push({
         channelId: channel.channelId,
         name: channel.channelName,
