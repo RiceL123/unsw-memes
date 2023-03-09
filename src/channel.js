@@ -13,13 +13,13 @@ function channelDetailsV1(authUserId, channelId) {
   const data = getData();
 
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'authUserId not found' };
+    return { error: 'Invalid authUserId' };
   }
 
   const channelObj = data.channels.find(x => x.channelId === channelId);
 
   if (channelObj === undefined) {
-    return { error: 'channelId not found' };
+    return { error: 'Invalid channelId' };
   }
 
   // even if the user is a global owner, they still need to be a member
