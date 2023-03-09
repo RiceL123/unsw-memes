@@ -94,7 +94,8 @@ describe('channelDetailsV1 ', () => {
           handleStr: 'snoopythedog'
         }
       ],
-      allMembers: expect.any(Array), // array needs to account for any permutation
+      // array needs to account for any permutation
+      allMembers: expect.any(Array),
     });
 
     const expectedArr = [
