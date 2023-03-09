@@ -37,6 +37,8 @@ function channelsCreateV1(authUserId, name, isPublic) {
     channelName: name,
     ownerMembersIds: [authUserId],
     allMembersIds: [authUserId],
+    ownerMembersIds: [authUserId],
+    allMembersIds: [authUserId],
     isPublic: isPublic,
     messages: [],
   }
