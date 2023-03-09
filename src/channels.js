@@ -13,23 +13,23 @@ import { getData, setData } from './dataStore.js';
  */
 
 function channelsCreateV1(authUserId, name, isPublic) {
-  const data = getData(); 
+  const data = getData();
 
-  if (name.length < 1 || name.length > 20 ) {
+  if (name.length < 1 || name.length > 20) {
     return { error: 'Invalid channel name length' };
   }
 
   if (!(data.users.some(x => x.uId === authUserId))) {
     return { error: 'Invalid authUserId' };
   }
-    
+
   // creates new channel ID using a +1 mechanism
   let newChannelId = 0;
   if (data.channels.length > 0) {
     newChannelId = Math.max.apply(null, data.channels.map(x => x.channelId)) + 1;
   }
 
-  const newChannel = { 
+  const newChannel = {
     channelId: newChannelId,
     channelName: name,
     ownerMembersIds: [authUserId],
@@ -37,12 +37,12 @@ function channelsCreateV1(authUserId, name, isPublic) {
     isPublic: isPublic,
     messages: [],
   }
-  
-  data.channels.push(newChannel);  
+
+  data.channels.push(newChannel);
   setData(data);
 
-  return { 
-    channelId: newChannelId 
+  return {
+    channelId: newChannelId
   };
 }
 
@@ -51,7 +51,7 @@ function channelsCreateV1(authUserId, name, isPublic) {
   * authorised user is part of with information about the channelName and channelId.
   * 
   * @param {number} authUserId - unique Id generated from a registered user
-  *  
+  * 
   * @returns {{ channels: [{channelId: Number, name: string} ]}} - Array of objects containing infomation about channelId and channelName
  */
 function channelsListV1(authUserId) {
@@ -60,7 +60,7 @@ function channelsListV1(authUserId) {
   if (!(data.users.some(x => x.uId === authUserId))) {
     return { error: 'Invalid authUserId' };
   }
-  
+
   let channelsArr = [];
   for (const channel of data.channels) {
     // if the user is a member of that channel, push to the channel array
@@ -74,7 +74,6 @@ function channelsListV1(authUserId) {
 
   return { channels: channelsArr };
 }
-
 
 /**
  * channelsListAllV1 creates and returns an array of all created channels, 
