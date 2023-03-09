@@ -1,4 +1,3 @@
-// channelsCreateV1 function: creates a new channel returning a unique channelId
 import { getData, setData } from './dataStore.js';
 
 /**
@@ -84,6 +83,7 @@ function channelsListV1(authUserId) {
  * @returns { allChannels } - returns array of all channels when authUserId valid
  */
 function channelsListAllV1(authUserId) {
+  const data = getData();
 
   if (!(data.users.some(item => item.uId === authUserId))) {
     return { error: 'authUserId does not refer to a valid user' };
@@ -93,12 +93,12 @@ function channelsListAllV1(authUserId) {
   for (const item of data.channels) {
     let usersChannels = {
       channelId: item.channelId,
-      channelName: item.name,
+      name: item.channelName,
     };
     allChannels.push(usersChannels);
   }
 
-  return { allChannels };
+  return { channels: allChannels };
 }
 
 export { channelsCreateV1, channelsListV1, channelsListAllV1 };

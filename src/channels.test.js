@@ -1,12 +1,12 @@
 import { clearV1 } from './other.js';
-import { channelsCreateV1, channelsListV1 } from './channels.js';
+import { channelsCreateV1, channelsListV1, channelsListAllV1 } from './channels.js';
 import { authRegisterV1 } from './auth.js';
 import { channelJoinV1, channelDetailsV1, channelInviteV1} from './channel.js';
 
 const ERROR = { error: expect.any(String) };
 
 beforeEach(() => {
-    clearV1();
+  clearV1();
 });
 
 // TESTS FOR CHANNELSCREATEV1
@@ -285,8 +285,87 @@ describe('channelsListV1', () =>{
       }
     ];
     // sorting in test accounts for multiple permutations in the channelsArr so the test is blackbox.
-    expect(channelsListV1(authUserId).channels.sort((a, b) => {a.channelId - b.channelId})).toStrictEqual(
-      channelsArr.sort((a,b) => {a.channelId - b.channelId})
+    expect(channelsListV1(authUserId).channels.sort((a, b) => {a.channelId - b.channelId})).toStrictEqual
+    (channelsArr.sort((a,b) => {a.channelId - b.channelId}));
+  });
+});
+
+// TESTS FOR channelsListAllV1
+describe('channelsListAllV1 ', () => {
+  let email, password, nameFirst, nameLast, authUserObj;
+  beforeEach(() => {
+    email = 'z5555555@ad.unsw.edu.au';
+    password = 'password';
+    nameFirst = 'Madhav';
+    nameLast = 'Mishra';
+    
+    authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+  });
+
+  test('authUserId is invalid', () => {
+    const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
+    expect(channelsListAllV1(authUserObj.authUserId + 1)).toStrictEqual(ERROR)
+  });
+
+  test('authUserId is valid and in one channel', () => {
+    const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
+
+    expect(channelsListAllV1(authUserObj.authUserId)).toStrictEqual({
+      channels: [
+        {
+          channelId: channelObj.channelId,
+          name: 'COMP1531 Crunchie',
+        }
+      ]
+    });
+  });
+
+  test('user is part of multiple channels', () => {
+    const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
+    const channelObj2 = channelsCreateV1(authUserObj.authUserId,'COMP1531 General', true);
+    const channelsAllObj = channelsListAllV1(authUserObj.authUserId);
+
+    expect(channelsAllObj).toStrictEqual({channels: expect.any(Array)});
+    const expectedArr = [
+      {
+        channelId: channelObj.channelId,
+        name: 'COMP1531 Crunchie',
+      },
+      {
+        channelId: channelObj2.channelId,
+        name: 'COMP1531 General',
+      }
+    ];
+    // sorting to account for any permuation of the allChannels array
+    expect(channelsAllObj.channels.sort((a,b) => {a.channelId - b.channelId})).toStrictEqual(
+      expectedArr.sort((a,b) => {a.channelId - b.channelId})
+    );
+  });
+
+  test('user is part of multiple channels', () => {
+    const channelObj = channelsCreateV1(authUserObj.authUserId,'COMP1531 Crunchie', false);
+    const channelObj2 = channelsCreateV1(authUserObj.authUserId,'COMP1531 General', true);
+    const channelObj3 = channelsCreateV1(authUserObj.authUserId,'study room', true);
+    const channelsAllObj = channelsListAllV1(authUserObj.authUserId);
+
+    expect(channelsAllObj).toStrictEqual({channels: expect.any(Array)});
+    const expectedArr = [
+      {
+        channelId: channelObj.channelId,
+        name: 'COMP1531 Crunchie',
+      },
+      {
+        channelId: channelObj2.channelId,
+        name: 'COMP1531 General',
+      },
+      {
+        channelId: channelObj3.channelId,
+        name: 'study room',
+      }
+    ];
+    // sorting to account for any permuation of the allChannels array
+    expect(channelsAllObj.channels.sort((a,b) => {a.channelId - b.channelId})).toStrictEqual(
+      expectedArr.sort((a,b) => {a.channelId - b.channelId})
     );
   });
 });
