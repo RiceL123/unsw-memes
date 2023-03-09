@@ -78,7 +78,9 @@ function channelsListV1(authUserId) {
 /**
  * channelsListAllV1 creates and returns an array of all created channels, 
  * including private channels (and their associated details)
+ * 
  * @param {integer} authUserId 
+ * 
  * @returns { allChannels } - returns array of all channels when authUserId valid
  */
 function channelsListAllV1(authUserId) {
