@@ -16,14 +16,12 @@ import { getData, setData } from './dataStore.js';
 function channelsCreateV1(authUserId, name, isPublic) {
   const data = getData(); 
 
-  // invalid name length error check
   if (name.length < 1 || name.length > 20 ) {
-    return { error: 'error' };
+    return { error: 'Invalid channel name length' };
   }
 
-  // invalid authUserId error check
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'error' };
+    return { error: 'Invalid authUserId' };
   }
     
   // creates new channel ID using a +1 mechanism
@@ -35,8 +33,6 @@ function channelsCreateV1(authUserId, name, isPublic) {
   const newChannel = { 
     channelId: newChannelId,
     channelName: name,
-    ownerMembersIds: [authUserId],
-    allMembersIds: [authUserId],
     ownerMembersIds: [authUserId],
     allMembersIds: [authUserId],
     isPublic: isPublic,
@@ -61,9 +57,9 @@ function channelsCreateV1(authUserId, name, isPublic) {
  */
 function channelsListV1(authUserId) {
   const data = getData();
-  // invalid authUserId error check
+
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'error' };
+    return { error: 'Invalid authUserId' };
   }
   
   let channelsArr = [];
@@ -73,11 +69,11 @@ function channelsListV1(authUserId) {
       channelsArr.push({
         channelId: channel.channelId,
         name: channel.channelName,
-      })
+      });
     }
   }
 
-  return channelsArr;
+  return { channels: channelsArr };
 }
 
 
