@@ -1,3 +1,6 @@
+import { getData, setData } from './dataStore.js';
+import validator from 'validator';
+
 // Sample stub for the channelsCreateV1 function
 // Returns given stub value 
 
@@ -29,6 +32,7 @@ function channelsListV1(authUserId) {
  * @returns { allChannels } - returns array of all channels when authUserId valid
  */
 function channelsListAllV1(authUserId) {
+  const data = getData();
 
   if (!(data.users.some(item => item.uId === authUserId))) {
     return { error: 'authUserId does not refer to a valid user' };
@@ -43,7 +47,7 @@ function channelsListAllV1(authUserId) {
     allChannels.push(usersChannels);
   }
 
-  return { allChannels };
+  return { channels: allChannels };
 }
 
 export { channelsCreateV1, channelsListV1, channelsListAllV1 };
