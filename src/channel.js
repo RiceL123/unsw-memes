@@ -76,7 +76,7 @@ function channelDetailsV1(authUserId, channelId) {
  */
 function channelJoinV1(authUserId, channelId) {
 	let data = getData();
-	
+
 	const user = data.users.find(x => x.uId === authUserId);
 	if (user === undefined) {
 		return { error: 'Invalid authUserId' };
@@ -90,8 +90,8 @@ function channelJoinV1(authUserId, channelId) {
 	if (channel.allMembersIds.find(x => x === authUserId)) {
 		return { error: 'AuthUserId is already a member' };
 	}
-
-	if (channel.isPublic === false && user.permission != 1) {
+    
+	if (channel.isPublic === false && user.permission !== 1) {
 		return { error: 'Can not join a private channel' };
 	}
 
