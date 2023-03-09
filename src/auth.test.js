@@ -1,5 +1,6 @@
 import { clearV1 } from './other.js';
 import { authLoginV1, authRegisterV1 } from './auth.js';
+import { userProfileV1 } from './users.js';
 
 const ERROR = { error: expect.any(String) };
 
@@ -19,8 +20,7 @@ describe('authLoginV1', () => {
     const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
-    
-    // add the user into the data
+
     authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1('wrong_email', password)).toStrictEqual(ERROR);
@@ -31,8 +31,7 @@ describe('authLoginV1', () => {
     const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
-    
-    // add the user into the data
+
     authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1(email, 'wrong_password')).toStrictEqual(ERROR);
@@ -44,7 +43,6 @@ describe('authLoginV1', () => {
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
     
-    // add the user into the data
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1(email, password)).toStrictEqual({
@@ -74,7 +72,6 @@ describe('authLoginV1', () => {
       nameLast: 'AverageLastName',
     }
 
-    // add the user into the data
     const authUserObj1 = authRegisterV1(user1.email, user1.password, user1.nameFirst, user1.nameLast);
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
     const authUserObj3 = authRegisterV1(user3.email, user3.password, user3.nameFirst, user3.nameLast);
@@ -292,5 +289,244 @@ describe('authRegisterV1', () => {
     expect(authUserObj1.authUserId).not.toEqual(authUserObj2.authUserId);
     expect(authUserObj1.authUserId).not.toEqual(authUserObj3.authUserId);
     expect(authUserObj2.authUserId).not.toEqual(authUserObj3.authUserId);
+  });
+});
+
+describe('authRegisterV1 - handleStr generation', () => {
+  test('concatenating of nameFirst + nameLast', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = 'madhav';
+    const nameLast = 'mishra';
+
+    const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra'
+      }
+    });
+  });
+
+  test('concatenating of nameFirst + nameLast > 20', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = '1111100000';
+    const nameLast = '111110000011111';
+
+    const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: '11111000001111100000'
+      }
+    });
+  });
+
+  test('changing of Capital Letters to lowercase', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = 'MADhav';
+    const nameLast = 'miSHRA';
+
+    const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra'
+      }
+    });
+  });
+
+  test('removing of other ascii [^a-z0-9] characters', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = '~`!@#$%^&*()_+-=[]|\"\:\;\'\\,./<>?  madhav,';
+    const nameLast = 'mishra';
+
+    const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra'
+      }
+    });
+  });
+
+  test('removing of non-ascii / utf-8 character', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = '💀҉廖晟辉ඞꁽㅋㅋ�𐂂𒂌madhav';
+    const nameLast = 'mishra';
+
+    const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra'
+      }
+    });
+  });
+
+  test('removing of non-ascii / utf-8 character + ascii [^a-z0-9] + changing to lowercase + concatenating to 20', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password'; 
+    const nameFirst = '💀ඞ`!@#]|\"\\,./ AAAAAaaaaa';
+    const nameLast = 'BBBBBbbbbbCCCCCccccc';
+
+    const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'aaaaaaaaaabbbbbbbbbb'
+      }
+    });
+  });
+
+  test('generating unique handle with appended 0', () => {
+    const password = 'password'; 
+    const nameFirst = 'madhav';
+    const nameLast = 'mishra';
+
+    const authUserObj = authRegisterV1('z5555555@ad.unsw.edu.au', password, nameFirst, nameLast);
+    const authUserObj0 = authRegisterV1('z5444444@ad.unsw.edu.au', password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra'
+      }
+    });
+    expect(userProfileV1(authUserObj0.authUserId, authUserObj0.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj0.authUserId,
+        email: 'z5444444@ad.unsw.edu.au',
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra0'
+      }
+    });
+  });
+
+  test('generating unique handles with appended 0 after cutting to 20', () => {
+    const password = 'password'; 
+    const nameFirst = 'aaaaabbbbb';
+    const nameLast = 'aaaaabbbbbaaaaa';
+
+    const authUserObj = authRegisterV1('z5555555@ad.unsw.edu.au', password, nameFirst, nameLast);
+    const authUserObj0 = authRegisterV1('z5444444@ad.unsw.edu.au', password, nameFirst, nameLast);
+
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'aaaaabbbbbaaaaabbbbb'
+      }
+    });
+    expect(userProfileV1(authUserObj0.authUserId, authUserObj0.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj0.authUserId,
+        email: 'z5444444@ad.unsw.edu.au',
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'aaaaabbbbbaaaaabbbbb0'
+      }
+    });
+  });
+
+  test('generating multiple unique handles with appended numbers from 0 to 100 appropriately', () => {
+    const password = 'password'; 
+    const nameFirst = 'madhav';
+    const nameLast = 'mishra';
+
+    let authUserObj = authRegisterV1('z5555555@ad.unsw.edu.au', password, nameFirst, nameLast);
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra'
+      }
+    });
+
+    // loop to check appending of int from 0 is correct
+    let email;
+    for (let i = 0; i < 100; i++) {
+      email = 'z5555555' + i + '@ad.unsw.edu.au';
+      authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+      
+      expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+        user: {
+          uId: authUserObj.authUserId,
+          email: email,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+          handleStr: 'madhavmishra' + i.toString()
+        }
+      });
+    }
+  });
+
+  test('removing [^a-z0-9] characters, changing to lowercase, cutting to length 20 and generating multiple unique handles with appended numbers from 0 to 100 appropriately', () => {
+    const password = 'password'; 
+    const nameFirst = '💀ඞ`!@#]|\"\\,./ AAAAAaaaaa';
+    const nameLast = 'BBBBBbbbbbCCCCCccccc';
+
+    let authUserObj = authRegisterV1('z5555555@ad.unsw.edu.au', password, nameFirst, nameLast);
+    expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+      user: {
+        uId: authUserObj.authUserId,
+        email: 'z5555555@ad.unsw.edu.au', 
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'aaaaaaaaaabbbbbbbbbb'
+      }
+    });
+
+    // loop to check appending of int from 0 is correct
+    let email;
+    for (let i = 0; i <= 100; i++) {
+      email = 'z5555555' + i + '@ad.unsw.edu.au';
+      authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
+      expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
+        user: {
+          uId: authUserObj.authUserId,
+          email: email,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+          handleStr: 'aaaaaaaaaabbbbbbbbbb' + i.toString()
+        }
+      });
+    }
   });
 });

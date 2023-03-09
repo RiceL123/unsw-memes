@@ -2,6 +2,43 @@ import { getData, setData } from './dataStore.js';
 import validator from 'validator';
 
 /**
+  * generateHandle passes in nameFirst, nameLast and data
+  * it generates a handle by concatenating nameFirst and nameLast
+  * it then removes all non-ascii characters and caps the length at 20
+  * with the expection of collisions of existing users whereby a number
+  * starting from 0 incremented by 1 will be appended
+  * 
+  * @param {string} nameFirst - to be casted to lower-case alphanumeric
+  * @param {string} nameLast - to be casted to lower-case alphanumeric
+  * @param {object} data - to check if existing users already have the handle
+  *  
+  * @returns {string} - returns casted handle that is unique
+*/
+function generateHandle(nameFirst, nameLast, data) {
+  let handle = nameFirst + nameLast;
+
+  handle = handle.toLowerCase();
+
+  handle = handle.replace(/[^\x00-\x7F]|[^a-z0-9]/gu, '');
+
+  if (handle.length > 20) {
+    handle = handle.slice(0, 20);
+  }
+
+  let numToAppend = 0;
+  let concatenatedLength = handle.length;
+
+  // if the handle already exists, create a new handle by appending numToAppend 
+  while (data.users.some(x => x.handleStr === handle)) {
+    handle = handle.slice(0, concatenatedLength);
+    handle = handle + numToAppend.toString();
+    numToAppend += 1;
+  }
+
+  return handle;
+}
+
+/**
   * authLoginV1 passes in an email and password. If they match an existing 
   * user, the user's id will be returned as value in an object with a key
   * called authUserId
@@ -9,7 +46,7 @@ import validator from 'validator';
   * @param {string} email - will valid if already exists
   * @param {string} password - will be valid if matches to corresponding email
   *  
-  * @returns {{authUserId: Number}} - returns the userObj
+  * @returns {{authUserId: Number}} - returns the userObj with corresponding ID
 */
 function authLoginV1(email, password) {
   let data = getData();
@@ -65,9 +102,10 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   }
 
   // generating a new Id by adding 1 to the current Id
-  let uId = 1;
+  let uId = 1;  
   if (data.users.length > 0) {
     uId = Math.max.apply(null, data.users.map(x => x.uId)) + 1;
+    
   }
 
   // if the newly generated uId already exists, then return error
@@ -75,12 +113,25 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: 'could not generate new authUserId' };
   }
 
+  const handle = generateHandle(nameFirst, nameLast, data);
+  if (!(handle.match(/[a-z0-9]{1,20}\d*/))) {
+    return { error: 'could not generate a handle' };
+  }
+
+  // users get permission id's of 2 if they are not the first user
+  let permission = 2;
+  if (data.users.length === 0) {
+    permission = 1;
+  }
+
   const newUser = {
     uId: uId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
-    password: password
+    password: password,
+    handleStr: handle,
+    permission: permission
   };
 
   data.users.push(newUser);
