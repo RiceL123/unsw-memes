@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore.js';
+import { getData } from './dataStore.js';
 
 /**
   * userProfileV1 makes an object for a valid user, from authUserId and uId
@@ -12,11 +12,11 @@ function userProfileV1(authUserId, uId) {
   let data = getData();
 
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'authUserId is invalid' };
+    return { error: 'Invalid authUserId' };
   };
 
   if (!(data.users.some(x => x.uId === uId))) {
-    return { error: 'uId does not refer to a valid user' };
+    return { error: 'Invalid uId' };
   };
 
   const userObj = data.users.find(x => x.uId === uId);
