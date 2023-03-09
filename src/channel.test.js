@@ -81,7 +81,8 @@ describe('channelDetailsV1 ', () => {
     
     expect(channelJoinV1(authUserObj2.authUserId, channelObj.channelId)).toStrictEqual({});
 
-    expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual({
+    const channelDetailsObj = channelDetailsV1(authUserObj.authUserId, channelObj.channelId)
+    expect(channelDetailsObj).toStrictEqual({
       name: 'COMP1531 Crunchie',
       isPublic: true,
       ownerMembers: [
@@ -93,22 +94,29 @@ describe('channelDetailsV1 ', () => {
           handleStr: 'snoopythedog'
         }
       ],
-      allMembers: [
-        {
-          uId: authUserObj.authUserId,
-          email: email,
-          nameFirst: nameFirst,
-          nameLast: nameLast,
-          handleStr: 'snoopythedog'
-        },
-        {
-          uId: authUserObj2.authUserId,
-          email: email2,
-          nameFirst: nameFirst2,
-          nameLast: nameLast2,
-          handleStr: 'charliebrown'
-        }
-      ], 
+      allMembers: expect.any(Array), // array needs to account for any permutation
     });
+
+    const expectedArr = [
+      {
+        uId: authUserObj.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'snoopythedog'
+      },
+      {
+        uId: authUserObj2.authUserId,
+        email: email2,
+        nameFirst: nameFirst2,
+        nameLast: nameLast2,
+        handleStr: 'charliebrown'
+      }
+    ];
+
+    // to account for any permutation of the allMembers array, we sort
+    expect(channelDetailsObj.allMembers.sort((a,b) => {a.uId - b.uId})).toStrictEqual(
+      expectedArr.sort((a,b) => {a.uId - b.uId})
+    );
   });
 });
