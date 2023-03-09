@@ -1,5 +1,5 @@
 import { clearV1 } from './other.js';
-import { authLoginV1, authRegisterV1 } from './auth.js';
+import { authRegisterV1 } from './auth.js';
 import { userProfileV1 } from './users.js';
 
 const ERROR = { error: expect.any(String) };
@@ -43,6 +43,7 @@ describe('userProfileV1', () => {
 
     let authUserObj;
 
+    // making multiple users with a slightly different email and adding them into an array of Ids
     let arrayOfIds = [];
     for (let i = 0; i < 10; i++) {
       email = 'z5555555' + i + '@ad.unsw.edu.au';
@@ -52,7 +53,7 @@ describe('userProfileV1', () => {
     }
 
     // generate an id that doesn't exist
-    let invalidId = Math.max.apply(null, arrayOfIds) + 1;
+    const invalidId = Math.max.apply(null, arrayOfIds) + 1;
 
     expect(userProfileV1(invalidId, invalidId)).toStrictEqual(ERROR);
   });
@@ -66,7 +67,7 @@ describe('userProfileV1', () => {
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
     // add the user into the data
-    let userProfileObj = userProfileV1(authUserObj.authUserId, authUserObj.authUserId);
+    const userProfileObj = userProfileV1(authUserObj.authUserId, authUserObj.authUserId);
     expect(userProfileObj).toStrictEqual(
       {
         user: {
@@ -106,9 +107,9 @@ describe('userProfileV1', () => {
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
     const authUserObj3 = authRegisterV1(user3.email, user3.password, user3.nameFirst, user3.nameLast);
 
-    let userProfileObj1 = userProfileV1(authUserObj1.authUserId, authUserObj1.authUserId);
-    let userProfileObj2 = userProfileV1(authUserObj2.authUserId, authUserObj2.authUserId);
-    let userProfileObj3 = userProfileV1(authUserObj3.authUserId, authUserObj3.authUserId);
+    const userProfileObj1 = userProfileV1(authUserObj1.authUserId, authUserObj1.authUserId);
+    const userProfileObj2 = userProfileV1(authUserObj2.authUserId, authUserObj2.authUserId);
+    const userProfileObj3 = userProfileV1(authUserObj3.authUserId, authUserObj3.authUserId);
 
     expect(userProfileObj1).toStrictEqual({
       user: {
