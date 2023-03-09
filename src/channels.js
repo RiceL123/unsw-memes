@@ -15,14 +15,12 @@ import { getData, setData } from './dataStore.js';
 function channelsCreateV1(authUserId, name, isPublic) {
   const data = getData(); 
 
-  // invalid name length error check
   if (name.length < 1 || name.length > 20 ) {
-    return { error: 'error' };
+    return { error: 'Invalid channel name length' };
   }
 
-  // invalid authUserId error check
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'error' };
+    return { error: 'Invalid authUserId' };
   }
     
   // creates new channel ID using a +1 mechanism
@@ -58,23 +56,23 @@ function channelsCreateV1(authUserId, name, isPublic) {
  */
 function channelsListV1(authUserId) {
   const data = getData();
-  // invalid authUserId error check
+
   if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'error' };
+    return { error: 'Invalid authUserId' };
   }
   
   let channelsArr = [];
   for (const channel of data.channels) {
     // if the user is a member of that channel, push to the channel array
-    if (channel.allMemberIds.some(x => x === authUserId)) {
+    if (channel.allMembersIds.some(x => x === authUserId)) {
       channelsArr.push({
         channelId: channel.channelId,
         name: channel.channelName,
-      })
+      });
     }
   }
 
-  return channelsArr;
+  return { channels: channelsArr };
 }
 
 
@@ -95,7 +93,7 @@ function channelsListAllV1(authUserId) {
   for (const item of data.channels) {
     let usersChannels = {
       channelId: item.channelId,
-      channelName: item.name,
+      name: item.channelName,
     };
     allChannels.push(usersChannels);
   }
