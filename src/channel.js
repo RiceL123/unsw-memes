@@ -1,15 +1,15 @@
 import { getData, setData } from './dataStore.js';
 
-/** 
- * channelDetailsV1 passes authUserId, channelId and creates a new 
+/**
+ * channelDetailsV1 passes authUserId, channelId and creates a new
  * array for ownerMembers and channelMembers returning the basic details
  * of the given channelId
- * 
- * @param {number} authUserId 
- * @param {number} channelId 
- * 
- * @returns {{name, isPublic, ownerMembers, allMembers}} - returns object with 
- * basic details about the channel 
+ *
+ * @param {number} authUserId
+ * @param {number} channelId
+ *
+ * @returns {{name, isPublic, ownerMembers, allMembers}} - returns object with
+ * basic details about the channel
  */
 function channelDetailsV1(authUserId, channelId) {
   const data = getData();
@@ -29,8 +29,8 @@ function channelDetailsV1(authUserId, channelId) {
     return { error: 'authUserId is not a member of the channel' };
   }
 
-  let allMembers = [];
-  let ownerMembers = [];
+  const allMembers = [];
+  const ownerMembers = [];
 
   // loop through all members (owner members is a subset of all members)
   for (const userId of channelObj.allMembersIds) {
@@ -65,21 +65,21 @@ function channelDetailsV1(authUserId, channelId) {
     isPublic: channelObj.isPublic,
     ownerMembers: ownerMembers,
     allMembers: allMembers,
-  }
+  };
 }
 
 /**
  * Given a channelId of a channel that the authorised user can join,
  * adds them to that channel. If it is a private channel, only users with
  * permission  = 1, can join that particular channel type
- * 
- * @param {number} authUserId 
- * @param {number} channelId 
- * 
+ *
+ * @param {number} authUserId
+ * @param {number} channelId
+ *
  * @returns {{}} - empty object
  */
 function channelJoinV1(authUserId, channelId) {
-  let data = getData();
+  const data = getData();
 
   const user = data.users.find(x => x.uId === authUserId);
   if (user === undefined) {
@@ -105,21 +105,20 @@ function channelJoinV1(authUserId, channelId) {
   return {};
 }
 
-
 /**
- * Invites a user with ID uId to join a channel with ID channelId. 
- * Once invited, the user is added to the channel immediately. 
- * In both public and private channels, 
+ * Invites a user with ID uId to join a channel with ID channelId.
+ * Once invited, the user is added to the channel immediately.
+ * In both public and private channels,
  * all members are able to invite users.
- * 
- * @param {number} authUserId 
- * @param {number} channelId 
- * @param {number} uId 
- * 
+ *
+ * @param {number} authUserId
+ * @param {number} channelId
+ * @param {number} uId
+ *
  * @returns {{}} - empty object
  */
 function channelInviteV1(authUserId, channelId, uId) {
-  let data = getData();
+  const data = getData();
 
   const authorisedUser = data.users.find(x => x.uId === authUserId);
   if (authorisedUser === undefined) {
@@ -141,7 +140,7 @@ function channelInviteV1(authUserId, channelId, uId) {
   }
 
   if (channel.allMembersIds.find(x => x === authUserId) === undefined) {
-    return { error: 'authorised user is not a member of the channel' }
+    return { error: 'authorised user is not a member of the channel' };
   }
 
   channel.allMembersIds.push(uId);
@@ -150,24 +149,23 @@ function channelInviteV1(authUserId, channelId, uId) {
   return {};
 }
 
-
 /**
- * channelMessagesV1 takes an authorised user as well as a channelId to access the messages 
- * stored within that channel and given the start index, it uses pagination to return the messages 
- * stored in an array of objects, pagination can return up to 50 messages at a time. If there are 
- * no messages, the end index returned is -1 but if there are more messages stored, the end index 
- * is "start + 50". 
- * 
+ * channelMessagesV1 takes an authorised user as well as a channelId to access the messages
+ * stored within that channel and given the start index, it uses pagination to return the messages
+ * stored in an array of objects, pagination can return up to 50 messages at a time. If there are
+ * no messages, the end index returned is -1 but if there are more messages stored, the end index
+ * is "start + 50".
+ *
  * @param {number} authUserId - unique Id generated when registering a user
  * @param {number} channelId - unique Id generated when creating a new channel
  * @param {number} start - the index at which we start searching for messages via pagination
- * 
- * @returns { messages: [{ messageId, uId, message, timeSent }], start, end } - returns an object 
- * that has an array of objects called messages, the start index value as well as a new index for 
+ *
+ * @returns { messages: [{ messageId, uId, message, timeSent }], start, end } - returns an object
+ * that has an array of objects called messages, the start index value as well as a new index for
  * end which either states that there are no more messages or there are more messages waiting.
  */
 function channelMessagesV1(authUserId, channelId, start) {
-  let data = getData();
+  const data = getData();
 
   const pagination = 50;
 
@@ -203,6 +201,4 @@ function channelMessagesV1(authUserId, channelId, start) {
   }
 }
 
-
 export { channelDetailsV1, channelJoinV1, channelInviteV1, channelMessagesV1 };
-

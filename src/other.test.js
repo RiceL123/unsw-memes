@@ -8,7 +8,7 @@ describe('clearV1', () => {
 
   test('registering a user, clearing, then registering the same user should be valid', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
 
@@ -27,6 +27,6 @@ describe('clearV1', () => {
     // now that the data has been cleared, you can register the same user again
     expect(authRegisterV1(email, password, nameFirst, nameLast)).toStrictEqual({
       authUserId: expect.any(Number)
-    });    
+    });
   });
 });

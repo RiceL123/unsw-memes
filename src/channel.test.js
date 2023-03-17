@@ -3,7 +3,6 @@ import { authRegisterV1 } from './auth.js';
 import { channelsCreateV1 } from './channels.js';
 import { channelDetailsV1, channelJoinV1, channelMessagesV1, channelInviteV1 } from './channel.js';
 
-
 const ERROR = { error: expect.any(String) };
 
 beforeEach(() => {
@@ -38,9 +37,9 @@ describe('channelDetailsV1 ', () => {
     nameFirst = 'Big';
     nameLast = 'Bird';
 
-    let authUserObj2 = authRegisterV1(email, password, nameFirst, nameLast);
+    const authUserObj2 = authRegisterV1(email, password, nameFirst, nameLast);
 
-    let channelObj = channelsCreateV1(authUserObj2.authUserId, 'COMP1531 Crunchie', false);
+    const channelObj = channelsCreateV1(authUserObj2.authUserId, 'COMP1531 Crunchie', false);
     expect(channelDetailsV1(authUserObj.authUserId, channelObj.channelId)).toStrictEqual(ERROR);
   });
 
@@ -117,8 +116,8 @@ describe('channelDetailsV1 ', () => {
     ];
 
     // to account for any permutation of the allMembers array, we sort
-    expect(channelDetailsObj.allMembers.sort((a, b) => { a.uId - b.uId })).toStrictEqual(
-      expectedArr.sort((a, b) => { a.uId - b.uId })
+    expect(channelDetailsObj.allMembers.sort((a, b) => a.uId - b.uId)).toStrictEqual(
+      expectedArr.sort((a, b) => a.uId - b.uId)
     );
   });
 });
@@ -133,32 +132,32 @@ describe('channelMessagesV1', () => {
     nameLast = 'Mishra';
     authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
-    channelName = 'Coding'
+    channelName = 'Coding';
     channelObj = channelsCreateV1(authUserObj.authUserId, channelName, true);
   });
 
   test('invalid channelId', () => {
-    let start = 0;
+    const start = 0;
 
     expect(channelMessagesV1(authUserObj.authUserId, channelObj.channelId + 1, start)).toStrictEqual(ERROR);
   });
 
   test('invalid authUserId', () => {
-    let start = 0;
+    const start = 0;
 
     expect(channelMessagesV1(authUserObj.authUserId + 1, channelObj.channelId, start)).toStrictEqual(ERROR);
   });
 
   test('start is greater than total messages in channel', () => {
-    let start = 50;
+    const start = 50;
 
-    let messageObj = channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start);
+    const messageObj = channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start);
 
     expect(messageObj).toStrictEqual(ERROR);
   });
 
   test('start is less than 0', () => {
-    let start = -1;
+    const start = -1;
 
     expect(channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start)).toStrictEqual(ERROR);
   });
@@ -169,18 +168,17 @@ describe('channelMessagesV1', () => {
     const nameFirst2 = 'Charmander';
     const nameLast2 = 'Pokemon';
 
-    let authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
+    const authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
 
-    let start = 0;
+    const start = 0;
 
     expect(channelMessagesV1(authUserObj2.authUserId, channelObj.channelId, start)).toStrictEqual(ERROR);
   });
 
   test('valid channelMessagesV1', () => {
-
     const start = 0;
 
-    let messagesArray = channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start);
+    const messagesArray = channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start);
     expect(messagesArray).toStrictEqual({
       messages: [],
       start: start,
@@ -202,29 +200,29 @@ describe('channelMessagesV1', () => {
     const authUserObj2 = authRegisterV1(email2, password2, nameFirst2, nameLast2);
     const authUserObj3 = authRegisterV1(email3, password3, nameFirst3, nameLast3);
 
-    const channelName2 = 'Maths'
-    const channelName3 = 'Commerce'
+    const channelName2 = 'Maths';
+    const channelName3 = 'Commerce';
 
     const channelObj2 = channelsCreateV1(authUserObj2.authUserId, channelName2, true);
     const channelObj3 = channelsCreateV1(authUserObj3.authUserId, channelName3, true);
 
-    let start = 0;
+    const start = 0;
 
-    let messagesArray = channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start);
+    const messagesArray = channelMessagesV1(authUserObj.authUserId, channelObj.channelId, start);
     expect(messagesArray).toStrictEqual({
       messages: [],
       start: start,
       end: -1,
     });
 
-    let messagesArray2 = channelMessagesV1(authUserObj2.authUserId, channelObj2.channelId, start);
+    const messagesArray2 = channelMessagesV1(authUserObj2.authUserId, channelObj2.channelId, start);
     expect(messagesArray2).toStrictEqual({
       messages: [],
       start: start,
       end: -1,
     });
 
-    let messagesArray3 = channelMessagesV1(authUserObj3.authUserId, channelObj3.channelId, start);
+    const messagesArray3 = channelMessagesV1(authUserObj3.authUserId, channelObj3.channelId, start);
     expect(messagesArray3).toStrictEqual({
       messages: [],
       start: start,
@@ -234,7 +232,7 @@ describe('channelMessagesV1', () => {
 });
 
 describe('channelJoinV1', () => {
-  //channelJoinV1 Error Tests
+  // channelJoinV1 Error Tests
   let email, password, nameFirst, nameLast, authUserObj;
   beforeEach(() => {
     email = 'z5555555@ad.unsw.edu.au';
@@ -328,8 +326,8 @@ describe('channelJoinV1', () => {
         handleStr: 'drdoofenshmirtz'
       }
     ];
-    expect(channelDetailsReturn.allMembers.sort((a, b) => { a.uId - b.uId })).toStrictEqual(
-      expectedArray.sort((a, b) => { a.uId - b.uId })
+    expect(channelDetailsReturn.allMembers.sort((a, b) => a.uId - b.uId)).toStrictEqual(
+      expectedArray.sort((a, b) => a.uId - b.uId)
     );
   });
 
@@ -376,8 +374,8 @@ describe('channelJoinV1', () => {
         handleStr: 'perrytheplatypus'
       }
     ];
-    expect(channelDetailsReturn.allMembers.sort((a, b) => { a.uId - b.uId })).toStrictEqual(
-      expectedArray.sort((a, b) => { a.uId - b.uId })
+    expect(channelDetailsReturn.allMembers.sort((a, b) => a.uId - b.uId)).toStrictEqual(
+      expectedArray.sort((a, b) => a.uId - b.uId)
     );
   });
 });
@@ -512,8 +510,8 @@ describe('channelInviteV1', () => {
       }
     ];
     // sorting the array to account for different permutations of expected array
-    expect(channelDetailsReturn.allMembers.sort((a, b) => { a.uId - b.uId })).toStrictEqual(
-      expectedArray.sort((a, b) => { a.uId - b.uId })
+    expect(channelDetailsReturn.allMembers.sort((a, b) => a.uId - b.uId)).toStrictEqual(
+      expectedArray.sort((a, b) => a.uId - b.uId)
     );
   });
 
@@ -555,8 +553,8 @@ describe('channelInviteV1', () => {
       }
     ];
     // sorting the array to account for different permutations of expected array
-    expect(channelDetailsReturn.allMembers.sort((a, b) => { a.uId - b.uId })).toStrictEqual(
-      expectedArray.sort((a, b) => { a.uId - b.uId })
+    expect(channelDetailsReturn.allMembers.sort((a, b) => a.uId - b.uId)).toStrictEqual(
+      expectedArray.sort((a, b) => a.uId - b.uId)
     );
   });
 });
