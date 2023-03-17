@@ -44,7 +44,7 @@ describe('userProfileV1', () => {
     let authUserObj;
 
     // making multiple users with a slightly different email and adding them into an array of Ids
-    let arrayOfIds = [];
+    const arrayOfIds = [];
     for (let i = 0; i < 10; i++) {
       email = 'z5555555' + i + '@ad.unsw.edu.au';
       authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
@@ -101,7 +101,7 @@ describe('userProfileV1', () => {
       password: 'password3',
       nameFirst: 'Charizard',
       nameLast: 'PokemonName3',
-    }
+    };
 
     const authUserObj1 = authRegisterV1(user1.email, user1.password, user1.nameFirst, user1.nameLast);
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);

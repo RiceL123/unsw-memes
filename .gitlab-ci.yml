@@ -16,3 +16,13 @@ tests:
     - kill -SIGINT %1
     - sleep 2
     - cat $SERVER_LOG
+
+lint_check:
+  stage: checks
+  script:
+    - npm run lint
+
+type_check:
+  stage: checks
+  script:
+    - npm run tsc

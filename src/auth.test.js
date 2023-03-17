@@ -5,14 +5,14 @@ import { userProfileV1 } from './users.js';
 const ERROR = { error: expect.any(String) };
 
 beforeEach(() => {
-    clearV1();
+  clearV1();
 });
 
 describe('authLoginV1', () => {
   test('valid email & password in empty data', () => {
     const email = 'z5555555@ad.unsw.edu.au';
     const password = 'password';
-    expect(authLoginV1(email, password)).toStrictEqual(ERROR)
+    expect(authLoginV1(email, password)).toStrictEqual(ERROR);
   });
 
   test('invalid email', () => {
@@ -42,7 +42,7 @@ describe('authLoginV1', () => {
     const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
-    
+
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
 
     expect(authLoginV1(email, password)).toStrictEqual({
@@ -70,7 +70,7 @@ describe('authLoginV1', () => {
       password: 'password3',
       nameFirst: 'AverageName',
       nameLast: 'AverageLastName',
-    }
+    };
 
     const authUserObj1 = authRegisterV1(user1.email, user1.password, user1.nameFirst, user1.nameLast);
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
@@ -123,7 +123,7 @@ describe('authRegisterV1', () => {
     };
 
     const user2 = {
-      email: user1.email, 
+      email: user1.email,
       password: 'password2',
       nameFirst: 'CoolName',
       nameLast: 'CoolLastName',
@@ -133,12 +133,11 @@ describe('authRegisterV1', () => {
       authUserId: expect.any(Number)
     });
     expect(authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast)).toStrictEqual(ERROR);
-
   });
 
   test('invalid password - password.length < 6', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = '5char'; 
+    const password = '5char';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
 
@@ -147,7 +146,7 @@ describe('authRegisterV1', () => {
 
   test('invalid nameFirst - nameFirst.length < 1', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = '';
     const nameLast = 'Mishra';
 
@@ -156,7 +155,7 @@ describe('authRegisterV1', () => {
 
   test('invalid nameFirst - nameFirst.length > 50', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = '111111111100000000001111111111000000000011111111110';
     const nameLast = 'Mishra';
 
@@ -165,7 +164,7 @@ describe('authRegisterV1', () => {
 
   test('invalid nameLast - nameLast.length < 1', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = '';
 
@@ -174,7 +173,7 @@ describe('authRegisterV1', () => {
 
   test('invalid nameLast - nameLast.length > 50', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = '111111111100000000001111111111000000000011111111110';
 
@@ -183,7 +182,7 @@ describe('authRegisterV1', () => {
 
   test('valid user - control test', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
 
@@ -194,7 +193,7 @@ describe('authRegisterV1', () => {
 
   test('valid user - nameFirst.length = 1', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'M';
     const nameLast = 'Mishra';
 
@@ -205,7 +204,7 @@ describe('authRegisterV1', () => {
 
   test('valid user - nameFirst.length = 50', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = '11111111110000000000111111111100000000001111111111';
     const nameLast = 'Mishra';
 
@@ -216,7 +215,7 @@ describe('authRegisterV1', () => {
 
   test('valid user - nameLast.length = 1', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = '1';
 
@@ -227,7 +226,7 @@ describe('authRegisterV1', () => {
 
   test('valid user - nameLast.length = 50', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'Madhav';
     const nameLast = '11111111110000000000111111111100000000001111111111';
 
@@ -238,7 +237,7 @@ describe('authRegisterV1', () => {
 
   test('valid user - password.length = 6', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = '123456'; 
+    const password = '123456';
     const nameFirst = 'Madhav';
     const nameLast = 'Mishra';
 
@@ -267,7 +266,7 @@ describe('authRegisterV1', () => {
       password: 'password3',
       nameFirst: 'AverageName',
       nameLast: 'AverageLastName',
-    }
+    };
 
     const authUserObj1 = authRegisterV1(user1.email, user1.password, user1.nameFirst, user1.nameLast);
     const authUserObj2 = authRegisterV1(user2.email, user2.password, user2.nameFirst, user2.nameLast);
@@ -295,7 +294,7 @@ describe('authRegisterV1', () => {
 describe('authRegisterV1 - handleStr generation', () => {
   test('concatenating of nameFirst + nameLast', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'madhav';
     const nameLast = 'mishra';
 
@@ -314,7 +313,7 @@ describe('authRegisterV1 - handleStr generation', () => {
 
   test('concatenating of nameFirst + nameLast > 20', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = '1111100000';
     const nameLast = '111110000011111';
 
@@ -333,7 +332,7 @@ describe('authRegisterV1 - handleStr generation', () => {
 
   test('changing of Capital Letters to lowercase', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'MADhav';
     const nameLast = 'miSHRA';
 
@@ -352,8 +351,8 @@ describe('authRegisterV1 - handleStr generation', () => {
 
   test('removing of other ascii [^a-z0-9] characters', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
-    const nameFirst = '~`!@#$%^&*()_+-=[]|\"\:\;\'\\,./<>?  madhav,';
+    const password = 'password';
+    const nameFirst = '~`!@#$%^&*()_+-=[]|":;\',./<>?  madhav,';
     const nameLast = 'mishra';
 
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
@@ -371,7 +370,7 @@ describe('authRegisterV1 - handleStr generation', () => {
 
   test('removing of non-ascii / utf-8 character', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = '💀҉廖晟辉ඞꁽㅋㅋ�𐂂𒂌madhav';
     const nameLast = 'mishra';
 
@@ -390,8 +389,8 @@ describe('authRegisterV1 - handleStr generation', () => {
 
   test('removing of non-ascii / utf-8 character + ascii [^a-z0-9] + changing to lowercase + concatenating to 20', () => {
     const email = 'z5555555@ad.unsw.edu.au';
-    const password = 'password'; 
-    const nameFirst = '💀ඞ`!@#]|\"\\,./ AAAAAaaaaa';
+    const password = 'password';
+    const nameFirst = '💀ඞ`!@#]|"\\,./ AAAAAaaaaa';
     const nameLast = 'BBBBBbbbbbCCCCCccccc';
 
     const authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
@@ -408,7 +407,7 @@ describe('authRegisterV1 - handleStr generation', () => {
   });
 
   test('generating unique handle with appended 0', () => {
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'madhav';
     const nameLast = 'mishra';
 
@@ -436,7 +435,7 @@ describe('authRegisterV1 - handleStr generation', () => {
   });
 
   test('generating unique handles with appended 0 after cutting to 20', () => {
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'aaaaabbbbb';
     const nameLast = 'aaaaabbbbbaaaaa';
 
@@ -464,7 +463,7 @@ describe('authRegisterV1 - handleStr generation', () => {
   });
 
   test('generating multiple unique handles with appended numbers from 0 to 100 appropriately', () => {
-    const password = 'password'; 
+    const password = 'password';
     const nameFirst = 'madhav';
     const nameLast = 'mishra';
 
@@ -484,7 +483,7 @@ describe('authRegisterV1 - handleStr generation', () => {
     for (let i = 0; i < 100; i++) {
       email = 'z5555555' + i + '@ad.unsw.edu.au';
       authUserObj = authRegisterV1(email, password, nameFirst, nameLast);
-      
+
       expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
         user: {
           uId: authUserObj.authUserId,
@@ -498,15 +497,15 @@ describe('authRegisterV1 - handleStr generation', () => {
   });
 
   test('removing [^a-z0-9] characters, changing to lowercase, cutting to length 20 and generating multiple unique handles with appended numbers from 0 to 100 appropriately', () => {
-    const password = 'password'; 
-    const nameFirst = '💀ඞ`!@#]|\"\\,./ AAAAAaaaaa';
+    const password = 'password';
+    const nameFirst = '💀ඞ`!@#]|"\\,./ AAAAAaaaaa';
     const nameLast = 'BBBBBbbbbbCCCCCccccc';
 
     let authUserObj = authRegisterV1('z5555555@ad.unsw.edu.au', password, nameFirst, nameLast);
     expect(userProfileV1(authUserObj.authUserId, authUserObj.authUserId)).toStrictEqual({
       user: {
         uId: authUserObj.authUserId,
-        email: 'z5555555@ad.unsw.edu.au', 
+        email: 'z5555555@ad.unsw.edu.au',
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'aaaaaaaaaabbbbbbbbbb'
