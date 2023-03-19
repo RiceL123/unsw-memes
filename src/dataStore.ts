@@ -21,7 +21,7 @@ interface Channel {
   channelName: string;
   ownerMembersIds: number[];
   allMembersIds: number[];
-  isPublic: number
+  isPublic: boolean;
   messages: Message[];
 }
 
