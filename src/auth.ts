@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore.js';
+import { User, Data, getData, setData } from './dataStore';
 import validator from 'validator';
 
 /**
@@ -14,7 +14,7 @@ import validator from 'validator';
   *
   * @returns {string} - returns casted handle that is unique
 */
-function generateHandle(nameFirst, nameLast, data) {
+function generateHandle(nameFirst: string, nameLast: string, data: Data) {
   let handle = nameFirst + nameLast;
 
   handle = handle.toLowerCase();
@@ -49,7 +49,7 @@ function generateHandle(nameFirst, nameLast, data) {
   *
   * @returns {{authUserId: Number}} - returns the userObj with corresponding ID
 */
-function authLoginV1(email, password) {
+function authLoginV2(email: string, password: string) {
   const data = getData();
 
   const userObj = data.users.find(x => x.email === email);
@@ -79,7 +79,7 @@ function authLoginV1(email, password) {
   *
   * @returns {{authUserId: Number}} - description of condition for return
 */
-function authRegisterV1(email, password, nameFirst, nameLast) {
+function authRegisterV2(email: string, password: string, nameFirst: string, nameLast: string) {
   const data = getData();
 
   if (validator.isEmail(email) === false) {
@@ -118,20 +118,29 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
     return { error: 'could not generate a handle' };
   }
 
+  // trivial method to generating unique strings by adding 1
+  let newToken = 1;
+  if (data.users.length > 0) {
+    newToken = Math.max.apply(null, data.users.map(x => x.tokens).flat().map(y => parseInt(y))) + 1;
+  }
+
+  const newTokenString = String(newToken);
+
   // users get permission id's of 2 if they are not the first user
   let permission = 2;
   if (data.users.length === 0) {
     permission = 1;
   }
 
-  const newUser = {
+  const newUser: User = {
     uId: uId,
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
     password: password,
     handleStr: handle,
-    permission: permission
+    permission: permission,
+    tokens: [newTokenString]
   };
 
   data.users.push(newUser);
@@ -139,8 +148,9 @@ function authRegisterV1(email, password, nameFirst, nameLast) {
   setData(data);
 
   return {
-    authUserId: uId
+    authUserId: uId,
+    token: newTokenString,
   };
 }
 
-export { authLoginV1, authRegisterV1 };
+export { authLoginV2, authRegisterV2 };
