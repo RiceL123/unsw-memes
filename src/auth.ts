@@ -169,4 +169,27 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
   };
 }
 
-export { authLoginV2, authRegisterV2 };
+/** authLogout logs out a user with a given token and returns and empty object
+ * if successful. If the token is invalid, an error will be returned
+ *
+ * @param {string} token
+ *
+ * @returns {{}}
+ */
+function authLogoutV1(token: string) {
+  const data: Data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  userObj.tokens = userObj.tokens.filter(x => x !== token);
+
+  setData(data);
+
+  return {};
+}
+
+export { authLoginV2, authRegisterV2, authLogoutV1 };
