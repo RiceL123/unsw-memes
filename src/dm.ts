@@ -5,7 +5,7 @@ function generateDmName(uIds: number[], data: Data) {
     .users
     .filter(x => uIds.includes(x.uId))
     .map(x => x.handleStr)
-    .sort()
+    .sort((a, b) => a.localeCompare(b))
     .join(', ');
 }
 
@@ -59,4 +59,40 @@ function dmCreateV1(token: string, uIds: number[]) {
   return { dmId: newDmId };
 }
 
-export { dmCreateV1 };
+function dmDetailsV1(token: string, dmId: number) {
+  const data: Data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const dmObj = data.dms.find(x => x.dmId === dmId);
+  if (!dmObj) {
+    return { error: 'invalid dmId' };
+  }
+
+  if (!dmObj.memberIds.includes(userObj.uId)) {
+    return { error: 'invalid uId - not a member of dm' };
+  }
+
+  const members = [];
+  for (const memberId of dmObj.memberIds) {
+    const userObj = data.users.find(x => x.uId === memberId);
+
+    members.push({
+      uId: userObj.uId,
+      email: userObj.email,
+      nameFirst: userObj.nameFirst,
+      nameLast: userObj.nameLast,
+      handleStr: userObj.handleStr,
+    });
+  }
+
+  return {
+    name: dmObj.dmName,
+    members: members
+  };
+}
+
+export { dmCreateV1, dmDetailsV1 };

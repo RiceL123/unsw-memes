@@ -11,6 +11,18 @@ interface AuthRegisterReturn {
   authUserId: number;
 }
 
+interface DmCreateReturn {
+  dmId: number;
+}
+
+interface User {
+  uId: number;
+  email: string;
+  nameFirst: string;
+  nameLast: string;
+  handleStr: string;
+}
+
 beforeEach(() => {
   request(
     'DELETE',
@@ -226,6 +238,282 @@ describe('/dm/create/v1', () => {
   });
 });
 
-describe('/dm/create/v1 dm name generation', () => {
-  expect(1).toStrictEqual(1);
+describe('/dm/details/v1', () => {
+  let userObj: AuthRegisterReturn;
+  let dmObj: DmCreateReturn;
+  beforeEach(() => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+        }
+      }
+    );
+    userObj = JSON.parse(res.getBody() as string);
+
+    const dmCreate = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: []
+        }
+      }
+    );
+    dmObj = JSON.parse(dmCreate.getBody() as string);
+  });
+
+  test('invalid token', () => {
+    const dmDetails = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj.token + 'invalid',
+          dmId: dmObj.dmId
+        }
+      }
+    );
+    const dmDetailsObj = JSON.parse(dmDetails.getBody() as string);
+    expect(dmDetailsObj).toStrictEqual(ERROR);
+  });
+
+  test('invalid dmId', () => {
+    const dmDetails = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj.dmId + 1
+        }
+      }
+    );
+    const dmDetailsObj = JSON.parse(dmDetails.getBody() as string);
+    expect(dmDetailsObj).toStrictEqual(ERROR);
+  });
+
+  test('invalid - user not a member of dm', () => {
+    // register another person however, they are not apart of the dm
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5444444@ad.unsw.edu.au',
+          password: 'password1',
+          nameFirst: 'Clive',
+          nameLast: 'Palmer',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res.getBody() as string);
+
+    const dmDetails = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj2.token,
+          dmId: dmObj.dmId
+        }
+      }
+    );
+    const dmDetailsObj = JSON.parse(dmDetails.getBody() as string);
+    expect(dmDetailsObj).toStrictEqual(ERROR);
+  });
+
+  test('valid dm details', () => {
+    const dmDetails = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj.dmId
+        }
+      }
+    );
+    const dmDetailsObj = JSON.parse(dmDetails.getBody() as string);
+    expect(dmDetailsObj).toStrictEqual({
+      name: 'madhavmishra',
+      members: [
+        {
+          uId: userObj.authUserId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+          handleStr: 'madhavmishra',
+        }
+      ]
+    });
+  });
+
+  test('multiple dm details', () => {
+    const register2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5444444@ad.unsw.edu.au',
+          password: 'password1',
+          nameFirst: 'Clive',
+          nameLast: 'Palmer',
+        }
+      }
+    );
+    const register3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5333333@ad.unsw.edu.au',
+          password: 'password2',
+          nameFirst: 'Pauline',
+          nameLast: 'Hanson',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(register2.getBody() as string);
+    const userObj3 = JSON.parse(register3.getBody() as string);
+
+    const dmCreate2 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId]
+        }
+      }
+    );
+
+    const dmCreate3 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId, userObj3.authUserId]
+        }
+      }
+    );
+
+    const dmCreateObj2 = JSON.parse(dmCreate2.getBody() as string);
+    const dmCreateObj3 = JSON.parse(dmCreate3.getBody() as string);
+
+    const dmDetails1 = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj.dmId,
+        }
+      }
+    );
+
+    const dmDetailsObj = JSON.parse(dmDetails1.getBody() as string);
+    expect(dmDetailsObj).toStrictEqual({
+      name: 'madhavmishra',
+      members: [
+        {
+          uId: userObj.authUserId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+          handleStr: 'madhavmishra',
+        }
+      ]
+    });
+
+    const dmDetails2 = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmCreateObj2.dmId,
+        }
+      }
+    );
+
+    const dmDetailsObj2 = JSON.parse(dmDetails2.getBody() as string);
+    expect(dmDetailsObj2).toStrictEqual({
+      name: 'clivepalmer, madhavmishra',
+      members: expect.any(Array)
+    });
+
+    const expectedArray2 = [
+      {
+        uId: userObj.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'madhavmishra',
+      },
+      {
+        uId: userObj2.authUserId,
+        email: 'z5444444@ad.unsw.edu.au',
+        nameFirst: 'Clive',
+        nameLast: 'Palmer',
+        handleStr: 'clivepalmer',
+      }
+    ];
+
+    expect(dmDetailsObj2.members.sort((a: User, b: User) => a.uId - b.uId)).toStrictEqual(
+      expectedArray2.sort((a: User, b: User) => a.uId - b.uId)
+    );
+
+    const dmDetails3 = request(
+      'GET',
+      SERVER_URL + '/dm/details/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmCreateObj3.dmId,
+        }
+      }
+    );
+
+    const dmDetailsObj3 = JSON.parse(dmDetails3.getBody() as string);
+    expect(dmDetailsObj3).toStrictEqual({
+      name: 'clivepalmer, madhavmishra, paulinehanson',
+      members: expect.any(Array)
+    });
+
+    const expectedArray3 = [
+      {
+        uId: userObj.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'madhavmishra',
+      },
+      {
+        uId: userObj2.authUserId,
+        email: 'z5444444@ad.unsw.edu.au',
+        nameFirst: 'Clive',
+        nameLast: 'Palmer',
+        handleStr: 'clivepalmer',
+      },
+      {
+        uId: userObj3.authUserId,
+        email: 'z5333333@ad.unsw.edu.au',
+        nameFirst: 'Pauline',
+        nameLast: 'Hanson',
+        handleStr: 'paulinehanson',
+      }
+    ];
+
+    expect(dmDetailsObj3.members.sort((a: User, b: User) => a.uId - b.uId)).toStrictEqual(
+      expectedArray3.sort((a: User, b: User) => a.uId - b.uId)
+    );
+  });
 });
