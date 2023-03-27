@@ -23,15 +23,13 @@ function userProfileV2(token: string, uId: string) {
     return { error: 'Invalid token' };
   }
 
-  const userObj = data.users.find(x => x.uId === id);
-
   return {
     user: {
-      uId: userObj.uId,
-      nameFirst: userObj.nameFirst,
-      nameLast: userObj.nameLast,
-      email: userObj.email,
-      handleStr: userObj.handleStr,
+      uId: userFind.uId,
+      nameFirst: userFind.nameFirst,
+      nameLast: userFind.nameLast,
+      email: userFind.email,
+      handleStr: userFind.handleStr,
     }
   };
 }
