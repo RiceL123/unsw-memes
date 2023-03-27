@@ -4,7 +4,12 @@ import { port, url } from './config.json';
 const SERVER_URL = `${url}:${port}`;
 
 const ERROR = { error: expect.any(String) };
-const VALID_AUTH_REGISTER = { token: expect.any(String), authUserId: expect.any(Number) };
+const VALID_AUTH_RETURN = { token: expect.any(String), authUserId: expect.any(Number) };
+
+interface AuthRegisterReturn {
+  token: string;
+  authUserId: number;
+}
 
 beforeEach(() => {
   request(
@@ -195,7 +200,7 @@ describe('/auth/register/v2', () => {
     );
 
     const data = JSON.parse(res.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
   });
 
   test('valid user - nameFirst.length = 1', () => {
@@ -213,7 +218,7 @@ describe('/auth/register/v2', () => {
     );
 
     const data = JSON.parse(res.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
   });
 
   test('valid user - nameFirst.length = 50', () => {
@@ -231,7 +236,7 @@ describe('/auth/register/v2', () => {
     );
 
     const data = JSON.parse(res.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
   });
 
   test('valid user - nameLast.length = 1', () => {
@@ -249,7 +254,7 @@ describe('/auth/register/v2', () => {
     );
 
     const data = JSON.parse(res.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
   });
 
   test('valid user - nameLast.length = 50', () => {
@@ -267,7 +272,7 @@ describe('/auth/register/v2', () => {
     );
 
     const data = JSON.parse(res.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
   });
 
   test('valid user - password.length = 6', () => {
@@ -285,7 +290,7 @@ describe('/auth/register/v2', () => {
     );
 
     const data = JSON.parse(res.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
   });
 
   test('multiple valid users', () => {
@@ -332,9 +337,9 @@ describe('/auth/register/v2', () => {
     const data2 = JSON.parse(res2.getBody() as string);
     const data3 = JSON.parse(res3.getBody() as string);
 
-    expect(data1).toStrictEqual(VALID_AUTH_REGISTER);
-    expect(data2).toStrictEqual(VALID_AUTH_REGISTER);
-    expect(data3).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data1).toStrictEqual(VALID_AUTH_RETURN);
+    expect(data2).toStrictEqual(VALID_AUTH_RETURN);
+    expect(data3).toStrictEqual(VALID_AUTH_RETURN);
 
     // check uniqueness of user's authUserId's
     expect(data1.authUserId).not.toStrictEqual(data2.authUserId);
@@ -369,7 +374,7 @@ describe('/auth/register/v2 - handle generation', () => {
     );
 
     const data = JSON.parse(register.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
 
     const profile = request(
       'GET',
@@ -406,7 +411,7 @@ describe('/auth/register/v2 - handle generation', () => {
     );
 
     const data = JSON.parse(register.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
 
     const profile = request(
       'GET',
@@ -443,7 +448,7 @@ describe('/auth/register/v2 - handle generation', () => {
     );
 
     const data = JSON.parse(register.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
 
     const profile = request(
       'GET',
@@ -480,7 +485,7 @@ describe('/auth/register/v2 - handle generation', () => {
     );
 
     const data = JSON.parse(register.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
 
     const profile = request(
       'GET',
@@ -517,7 +522,385 @@ describe('/auth/register/v2 - handle generation', () => {
     );
 
     const data = JSON.parse(register.getBody() as string);
-    expect(data).toStrictEqual(VALID_AUTH_REGISTER);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
+
+    const profile = request(
+      'GET',
+      SERVER_URL + '/user/profile/v2',
+      {
+        qs: {
+          token: data.token,
+          uId: data.authUserId
+        }
+      }
+    );
+    const userObj = JSON.parse(profile.getBody() as string);
+    expect(userObj.user).toHaveProperty('handleStr');
+    expect(userObj.user.handleStr).toStrictEqual('maaaaaaadhavpadmakum');
+  });
+});
+
+describe('/auth/login/v2', () => {
+  const email = '5555555@ad.unsw.edu.au';
+  const password = 'password';
+  let registered: AuthRegisterReturn;
+
+  beforeEach(() => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+        }
+      }
+    );
+    registered = JSON.parse(res.getBody() as string);
+  });
+
+  test('invalid email', () => {
+    const login = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: 'invalid' + email,
+          password: password
+        }
+      }
+    );
+
+    const data = JSON.parse(login.getBody() as string);
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  test('invalid password', () => {
+    const login = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email,
+          password: 'invalid' + password
+        }
+      }
+    );
+
+    const data = JSON.parse(login.getBody() as string);
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  test('valid login', () => {
+    const login = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email,
+          password: password
+        }
+      }
+    );
+
+    const loggedIn = JSON.parse(login.getBody() as string);
+
+    expect(registered).toStrictEqual(VALID_AUTH_RETURN);
+    expect(loggedIn).toStrictEqual(VALID_AUTH_RETURN);
+
+    // expect the authUserIds to be the same
+    expect(registered.authUserId).toStrictEqual(loggedIn.authUserId);
+
+    // expect the token to be different
+    expect(registered.token).not.toStrictEqual(loggedIn.token);
+  });
+
+  test('valid login - multiple', () => {
+    const email2 = 'z5444444@ad.unsw.edu.au';
+    const password2 = 'password,1';
+    const email3 = 'z5333333@ad.unsw.edu.au';
+    const password3 = 'COMP2041';
+
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email2,
+          password: password2,
+          nameFirst: 'Winne',
+          nameLast: 'ThePooh',
+        }
+      }
+    );
+
+    const res3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email3,
+          password: password3,
+          nameFirst: 'Andrew',
+          nameLast: 'Taylor',
+        }
+      }
+    );
+
+    const login1 = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email,
+          password: password
+        }
+      }
+    );
+    const login2 = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email2,
+          password: password2
+        }
+      }
+    );
+
+    const login3 = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email3,
+          password: password3
+        }
+      }
+    );
+
+    // first user login check
+    const loggedIn1 = JSON.parse(login1.getBody() as string);
+
+    expect(registered).toStrictEqual(VALID_AUTH_RETURN);
+    expect(loggedIn1).toStrictEqual(VALID_AUTH_RETURN);
+
+    // expect the authUserIds to be the same
+    expect(registered.authUserId).toStrictEqual(loggedIn1.authUserId);
+
+    // expect the token to be different
+    expect(registered.token).not.toStrictEqual(loggedIn1.token);
+
+    // second user login check
+    const registered2 = JSON.parse(res2.getBody() as string);
+    const loggedIn2 = JSON.parse(login2.getBody() as string);
+
+    expect(registered2).toStrictEqual(VALID_AUTH_RETURN);
+    expect(loggedIn2).toStrictEqual(VALID_AUTH_RETURN);
+
+    // expect the authUserIds to be the same
+    expect(registered2.authUserId).toStrictEqual(loggedIn2.authUserId);
+
+    // expect the token to be different
+    expect(registered2.token).not.toStrictEqual(loggedIn2.token);
+
+    // third user login check
+    const registered3 = JSON.parse(res3.getBody() as string);
+    const loggedIn3 = JSON.parse(login3.getBody() as string);
+
+    expect(registered3).toStrictEqual(VALID_AUTH_RETURN);
+    expect(loggedIn3).toStrictEqual(VALID_AUTH_RETURN);
+
+    // expect the authUserIds to be the same
+    expect(registered3.authUserId).toStrictEqual(loggedIn3.authUserId);
+
+    // expect the token to be different
+    expect(registered3.token).not.toStrictEqual(loggedIn3.token);
+
+    // check login authUserIds returned are unique
+    expect(loggedIn1.authUserId).not.toStrictEqual(loggedIn2.authUserId);
+    expect(loggedIn1.authUserId).not.toStrictEqual(loggedIn3.authUserId);
+    expect(loggedIn2.authUserId).not.toStrictEqual(loggedIn3.authUserId);
+
+    // checking uniqueness of user's token's
+    expect(loggedIn1.token).not.toStrictEqual(loggedIn2.token);
+    expect(loggedIn1.token).not.toStrictEqual(loggedIn3.token);
+    expect(loggedIn2.token).not.toStrictEqual(loggedIn3.token);
+  });
+});
+
+describe('/auth/register/v2 - handle generation', () => {
+  test('concatenating of nameFirst + nameLast', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'madhav';
+    const nameLast = 'mishra';
+
+    const register = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data = JSON.parse(register.getBody() as string);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
+
+    const profile = request(
+      'GET',
+      SERVER_URL + '/user/profile/v2',
+      {
+        qs: {
+          token: data.token,
+          uId: data.authUserId
+        }
+      }
+    );
+    const userObj = JSON.parse(profile.getBody() as string);
+    expect(userObj.user).toHaveProperty('handleStr');
+    expect(userObj.user.handleStr).toStrictEqual((nameFirst + nameLast));
+  });
+
+  test('concatenating of (nameFirst + nameLast).length > 20', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'maaaaaaadhav';
+    const nameLast = 'padmakumar';
+
+    const register = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data = JSON.parse(register.getBody() as string);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
+
+    const profile = request(
+      'GET',
+      SERVER_URL + '/user/profile/v2',
+      {
+        qs: {
+          token: data.token,
+          uId: data.authUserId
+        }
+      }
+    );
+    const userObj = JSON.parse(profile.getBody() as string);
+    expect(userObj.user).toHaveProperty('handleStr');
+    expect(userObj.user.handleStr).toStrictEqual((nameFirst + nameLast).slice(0, 20));
+  });
+
+  test('Changing uppercase to lowerCase', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = 'mAdHav';
+    const nameLast = 'MiShRa';
+
+    const register = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data = JSON.parse(register.getBody() as string);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
+
+    const profile = request(
+      'GET',
+      SERVER_URL + '/user/profile/v2',
+      {
+        qs: {
+          token: data.token,
+          uId: data.authUserId
+        }
+      }
+    );
+    const userObj = JSON.parse(profile.getBody() as string);
+    expect(userObj.user).toHaveProperty('handleStr');
+    expect(userObj.user.handleStr).toStrictEqual((nameFirst + nameLast).toLowerCase());
+  });
+
+  test('removal of non-ascii characters', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = '!m#a$d%hav';
+    const nameLast = 'm^i&s&hra';
+
+    const register = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data = JSON.parse(register.getBody() as string);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
+
+    const profile = request(
+      'GET',
+      SERVER_URL + '/user/profile/v2',
+      {
+        qs: {
+          token: data.token,
+          uId: data.authUserId
+        }
+      }
+    );
+    const userObj = JSON.parse(profile.getBody() as string);
+    expect(userObj.user).toHaveProperty('handleStr');
+    expect(userObj.user.handleStr).toStrictEqual('madhavmishra');
+  });
+
+  test('removal of non-ascii characters + length > 20 + to lower case', () => {
+    const email = 'z5555555@ad.unsw.edu.au';
+    const password = 'password';
+    const nameFirst = '!m#aaaAaaa$d%Ha\\v';
+    const nameLast = 'P,a.D/m+A k-u)M(a&R';
+
+    const register = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data = JSON.parse(register.getBody() as string);
+    expect(data).toStrictEqual(VALID_AUTH_RETURN);
 
     const profile = request(
       'GET',
