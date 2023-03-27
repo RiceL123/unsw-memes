@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
-import { authRegisterV2, authLoginV2 } from './auth';
+import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { userProfileV2 } from './user';
 
 // Set up web app
@@ -37,6 +37,11 @@ app.post('/auth/register/v2', (req: Request, res: Response, next) => {
 app.post('/auth/login/v2', (req: Request, res: Response, next) => {
   const { email, password } = req.body;
   return res.json(authLoginV2(email, password));
+});
+
+app.post('/auth/logout/v1', (req: Request, res: Response, next) => {
+  const { token } = req.body;
+  return res.json(authLogoutV1(token));
 });
 
 app.get('/user/profile/v2', (req: Request, res: Response, next) => {
