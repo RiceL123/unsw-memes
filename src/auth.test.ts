@@ -1208,3 +1208,242 @@ describe('/auth/logout/v1', () => {
     expect(data3).toStrictEqual({});
   });
 });
+
+describe('/auth/logout/v1', () => {
+  const email = '5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
+
+  test('invalid token in empty data', () => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: ''
+        }
+      }
+    );
+
+    const data = JSON.parse(res.getBody() as string);
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  let userObj: AuthRegisterReturn;
+  beforeEach(() => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+    userObj = JSON.parse(res.getBody() as string);
+  });
+
+  test('invalid token in data', () => {
+    const logout = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj.token + 'invalid'
+        }
+      }
+    );
+
+    const data = JSON.parse(logout.getBody() as string);
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  test('invalid token, user already logged out', () => {
+    const logout1 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj.token
+        }
+      }
+    );
+    const data1 = JSON.parse(logout1.getBody() as string);
+    expect(data1).toStrictEqual({});
+
+    // logging out with the same token is invalid
+    const logout2 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj.token
+        }
+      }
+    );
+    const data2 = JSON.parse(logout2.getBody() as string);
+    expect(data2).toStrictEqual(ERROR);
+  });
+
+  test('valid logout', () => {
+    const logout1 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj.token
+        }
+      }
+    );
+    const data1 = JSON.parse(logout1.getBody() as string);
+    expect(data1).toStrictEqual({});
+  });
+
+  test('multiple valid logouts from 1 user', () => {
+    // logging in the same account registered 2 more instances
+    const login2 = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+        }
+      }
+    );
+    const login3 = request(
+      'POST',
+      SERVER_URL + '/auth/login/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+        }
+      }
+    );
+
+    const userObj2 = JSON.parse(login2.getBody() as string);
+    const userObj3 = JSON.parse(login3.getBody() as string);
+
+    // logging out all instances
+    const logout1 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj.token
+        }
+      }
+    );
+    const logout2 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj2.token
+        }
+      }
+    );
+    const logout3 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj3.token
+        }
+      }
+    );
+
+    // expect 3 valid logouts with the same person
+    const data1 = JSON.parse(logout1.getBody() as string);
+    expect(data1).toStrictEqual({});
+
+    const data2 = JSON.parse(logout2.getBody() as string);
+    expect(data2).toStrictEqual({});
+
+    const data3 = JSON.parse(logout3.getBody() as string);
+    expect(data3).toStrictEqual({});
+  });
+
+  test('multiple valid logouts various users', () => {
+    // register 2 more users
+    const email2 = '6666666@ad.unsw.edu.au';
+    const password2 = 'password';
+    const nameFirst2 = 'John';
+    const nameLast2 = 'Doe';
+    const register2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email2,
+          password: password2,
+          nameFirst: nameFirst2,
+          nameLast: nameLast2,
+        }
+      }
+    );
+    const userObj2 = JSON.parse(register2.getBody() as string);
+
+    const email3 = '7777777@ad.unsw.edu.au';
+    const password3 = 'password';
+    const nameFirst3 = 'Jane';
+    const nameLast3 = 'Doe';
+    const register3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email3,
+          password: password3,
+          nameFirst: nameFirst3,
+          nameLast: nameLast3,
+        }
+      }
+    );
+    const userObj3 = JSON.parse(register3.getBody() as string);
+
+    // log out all users
+    const logout1 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj.token
+        }
+      }
+    );
+    const logout2 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj2.token
+        }
+      }
+    );
+    const logout3 = request(
+      'POST',
+      SERVER_URL + '/auth/logout/v1',
+      {
+        json: {
+          token: userObj3.token
+        }
+      }
+    );
+
+    // expect 3 valid logouts from 3 different users
+    const data1 = JSON.parse(logout1.getBody() as string);
+    expect(data1).toStrictEqual({});
+
+    const data2 = JSON.parse(logout2.getBody() as string);
+    expect(data2).toStrictEqual({});
+
+    const data3 = JSON.parse(logout3.getBody() as string);
+    expect(data3).toStrictEqual({});
+  });
+});
