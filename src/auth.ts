@@ -18,18 +18,18 @@ function generateUniqueToken(data: Data): string {
 }
 
 /**
-  * generateHandle passes in nameFirst, nameLast and data
-  * it generates a handle by concatenating nameFirst and nameLast
-  * it then removes all non-ascii characters and caps the length at 20
-  * with the expection of collisions of existing users whereby a number
-  * starting from 0 incremented by 1 will be appended
-  *
-  * @param {string} nameFirst - to be casted to lower-case alphanumeric
-  * @param {string} nameLast - to be casted to lower-case alphanumeric
-  * @param {object} data - to check if existing users already have the handle
-  *
-  * @returns {string} - returns casted handle that is unique
-*/
+ * generateHandle passes in nameFirst, nameLast and data
+ * it generates a handle by concatenating nameFirst and nameLast
+ * it then removes all non-ascii characters and caps the length at 20
+ * with the expection of collisions of existing users whereby a number
+ * starting from 0 incremented by 1 will be appended
+ *
+ * @param {string} nameFirst - to be casted to lower-case alphanumeric
+ * @param {string} nameLast - to be casted to lower-case alphanumeric
+ * @param {object} data - to check if existing users already have the handle
+ *
+ * @returns {string} - returns casted handle that is unique
+ */
 function generateHandle(nameFirst: string, nameLast: string, data: Data) {
   let handle = nameFirst + nameLast;
 
@@ -66,7 +66,7 @@ function generateHandle(nameFirst: string, nameLast: string, data: Data) {
   * @returns {{authUserId: Number}} - returns the userObj with corresponding ID
 */
 function authLoginV2(email: string, password: string) {
-  const data = getData();
+  const data: Data = getData();
 
   const userObj = data.users.find(x => x.email === email);
 
@@ -78,8 +78,14 @@ function authLoginV2(email: string, password: string) {
     return { error: 'password does not match email' };
   }
 
+  const newToken = generateUniqueToken(data);
+  userObj.tokens.push(newToken);
+
+  setData(data);
+
   return {
-    authUserId: userObj.uId
+    authUserId: userObj.uId,
+    token: newToken
   };
 }
 
