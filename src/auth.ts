@@ -1,6 +1,22 @@
 import { User, Data, getData, setData } from './dataStore';
 import validator from 'validator';
 
+/** generate UniqiueToken uses a trivial method of adding 1 to the
+ * current max string integer
+ *
+ * @param {Data} data
+ *
+ * @returns {string} - newly generated string token
+ */
+function generateUniqueToken(data: Data): string {
+  let newToken = 1;
+  if (data.users.length > 0) {
+    newToken = Math.max.apply(null, data.users.map(x => x.tokens).flat().map(y => parseInt(y))) + 1;
+  }
+
+  return String(newToken);
+}
+
 /**
   * generateHandle passes in nameFirst, nameLast and data
   * it generates a handle by concatenating nameFirst and nameLast
@@ -118,13 +134,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     return { error: 'could not generate a handle' };
   }
 
-  // trivial method to generating unique strings by adding 1
-  let newToken = 1;
-  if (data.users.length > 0) {
-    newToken = Math.max.apply(null, data.users.map(x => x.tokens).flat().map(y => parseInt(y))) + 1;
-  }
-
-  const newTokenString = String(newToken);
+  const newToken = generateUniqueToken(data);
 
   // users get permission id's of 2 if they are not the first user
   let permission = 2;
@@ -140,7 +150,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     password: password,
     handleStr: handle,
     permission: permission,
-    tokens: [newTokenString]
+    tokens: [newToken]
   };
 
   data.users.push(newUser);
@@ -149,7 +159,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
 
   return {
     authUserId: uId,
-    token: newTokenString,
+    token: newToken,
   };
 }
 
