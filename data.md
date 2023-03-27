@@ -31,7 +31,9 @@ interface Channel {
 
 interface Dm {
   dmId: number;
-  userIds: number[],
+  dmName: string;
+  creatorId: number;
+  memberIds: number[],
   messages: Message[];
 }
 

@@ -5,6 +5,7 @@ import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2 } from './auth';
+import { userProfileV2 } from './user';
 
 // Set up web app
 const app = express();
@@ -31,6 +32,12 @@ app.delete('/clear/v1', (req: Request, res: Response, next) => {
 app.post('/auth/register/v2', (req: Request, res: Response, next) => {
   const { email, password, nameFirst, nameLast } = req.body;
   return res.json(authRegisterV2(email, password, nameFirst, nameLast));
+});
+
+app.get('/user/profile/v2', (req: Request, res: Response, next) => {
+  const userToken = req.query.token as string;
+  const id = req.query.uId as string;
+  return res.json(userProfileV2(userToken, id));
 });
 
 // start server
