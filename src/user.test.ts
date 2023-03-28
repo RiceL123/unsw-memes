@@ -949,3 +949,416 @@ describe('/user/profile/setEmail/v1', () => {
     );
   });
 });
+
+describe('/user/profile/sethandle/v1', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
+  const newHandle = 'batman';
+
+  let userToken: string;
+  let userId: number;
+  beforeEach(() => {
+    const userRequest1 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data1 = JSON.parse(userRequest1.getBody() as string);
+    userToken = data1.token;
+    userId = data1.authUserId;
+  });
+
+  test('invalid token', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken + 1,
+          handleStr: newHandle,
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('invalid handleStr - handleStr.length < 3, length = 0', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: '',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('invalid handleStr - handleStr.length < 3, length = 1', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: 'a',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('invalid handleStr - handleStr.length < 3, length = 2', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: 'ab',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('invalid handleStr - handleStr.length > 20', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: 'abcdefghijklmnopqrstuvwxyz',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('invalid handleStr - contains non alphanumeric', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: '!m#aaaAaaa$d%Ha\\v',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('invalid handleStr - handleStr already in use', () => {
+    const userRequest2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password2',
+          nameFirst: 'John',
+          nameLast: 'Smith',
+        }
+      }
+    );
+
+    const data2 = JSON.parse(userRequest2.getBody() as string);
+
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: data2.token,
+          handleStr: 'madhavmishra',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual(ERROR);
+  });
+
+  test('valid handleStr - control', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: newHandle,
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'batman'
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+  });
+
+  test('valid handleStr - alphanumeric', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: '123iamvengeance123',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: '123iamvengeance123'
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+  });
+
+  test('valid handleStr - handleStr.length = 3', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: 'abc',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'abc'
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+  });
+
+  test('valid handleStr - handleStr.length = 20', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: 'abcdefghijklmnopqrst',
+        },
+      }
+    );
+    const setHandleData = JSON.parse(setRes.getBody() as string);
+    expect(setHandleData).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'abcdefghijklmnopqrst'
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+  });
+
+  test('valid handleStr - multiple', () => {
+    const userRequest2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password2',
+          nameFirst: 'John',
+          nameLast: 'Smith',
+        }
+      }
+    );
+
+    const userRequest3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z3333333@ad.unsw.edu.au',
+          password: 'password3',
+          nameFirst: 'James',
+          nameLast: 'Smith',
+        }
+      }
+    );
+
+    const data2 = JSON.parse(userRequest2.getBody() as string);
+    const data3 = JSON.parse(userRequest3.getBody() as string);
+
+    const setRes1 = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: userToken,
+          handleStr: newHandle,
+        },
+      }
+    );
+
+    const setRes2 = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: data2.token,
+          handleStr: 'flash',
+        },
+      }
+    );
+
+    const setRes3 = request(
+      'PUT',
+      SERVER_URL + '/user/profile/sethandle/v1',
+      {
+        json: {
+          token: data3.token,
+          handleStr: 'superman420',
+        },
+      }
+    );
+    const setHandleData1 = JSON.parse(setRes1.getBody() as string);
+    const setHandleData2 = JSON.parse(setRes2.getBody() as string);
+    const setHandleData3 = JSON.parse(setRes3.getBody() as string);
+
+    expect(setHandleData1).toStrictEqual({});
+    expect(setHandleData2).toStrictEqual({});
+    expect(setHandleData3).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'batman'
+      },
+      {
+        uId: data2.authUserId,
+        email: 'z4444444@ad.unsw.edu.au',
+        nameFirst: 'John',
+        nameLast: 'Smith',
+        handleStr: 'flash',
+      },
+      {
+        uId: data3.authUserId,
+        email: 'z3333333@ad.unsw.edu.au',
+        nameFirst: 'James',
+        nameLast: 'Smith',
+        handleStr: 'superman420',
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+
+    expect(viewData.users.sort((a: userObj, b: userObj) => a.uId - b.uId)).toStrictEqual(
+      expectedArray.sort((a, b) => a.uId - b.uId)
+    );
+  });
+});

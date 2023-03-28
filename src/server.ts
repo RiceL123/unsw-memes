@@ -6,7 +6,7 @@ import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { usersAllV1 } from './users';
-import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1 } from './user';
+import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
 import { dmCreateV1, dmDetailsV1 } from './dm';
 
 // Set up web app
@@ -65,6 +65,11 @@ app.put('/user/profile/setname/v1', (req: Request, res: Response, next) => {
 app.put('/user/profile/setemail/v1', (req: Request, res: Response, next) => {
   const { token, email } = req.body;
   return res.json(userProfileSetEmailV1(token, email));
+});
+
+app.put('/user/profile/sethandle/v1', (req: Request, res: Response, next) => {
+  const { token, handleStr } = req.body;
+  return res.json(userProfileSetHandleV1(token, handleStr));
 });
 
 app.post('/dm/create/v1', (req: Request, res: Response, next) => {
