@@ -1,4 +1,3 @@
-
 import request from 'sync-request';
 
 import { port, url } from './config.json';
@@ -1048,5 +1047,495 @@ describe('/dm/leave/v1', () => {
         }
       ]
     });
+  });
+});
+
+describe('/dm/list/v1', () => {
+  let userObj: AuthRegisterReturn;
+
+  beforeEach(() => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+        }
+      }
+    );
+    userObj = JSON.parse(res.getBody() as string);
+  });
+
+  // testing for invalid token
+  test('invalid token', () => {
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj.token + 'invalid',
+        }
+      }
+    );
+    const data = JSON.parse(dmList.getBody() as string);
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  test('user is member of no dms', () => {
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj.token
+        }
+      }
+    );
+
+    const data = JSON.parse(dmList.getBody() as string);
+    expect(data).toStrictEqual(
+      {
+        dms: []
+      }
+    );
+  });
+
+  test('user is only member of a dm as owner', () => {
+    const dmCreate = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: []
+        }
+      }
+    );
+    const dmDataObj = JSON.parse(dmCreate.getBody() as string);
+
+    // empty uId array indicates owner is only member of dm
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj.token
+        }
+      }
+    );
+
+    const data = JSON.parse(dmList.getBody() as string);
+    expect(data).toStrictEqual(
+      {
+        dms: [
+          {
+            dmId: dmDataObj.dmId,
+            name: 'madhavmishra'
+          }
+        ]
+      }
+    );
+  });
+
+  test('user is member of multiple dms as the owner', () => {
+    const dmCreate1 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: []
+        }
+      }
+    );
+
+    const dmCreate2 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: []
+        }
+      }
+    );
+    const dmData1 = JSON.parse(dmCreate1.getBody() as string);
+    const dmData2 = JSON.parse(dmCreate2.getBody() as string);
+
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj.token
+        }
+      }
+    );
+    const dmListObj = JSON.parse(dmList.getBody() as string);
+    expect(dmListObj).toStrictEqual(
+      {
+        dms: [
+          {
+            dmId: dmData1.dmId,
+            name: 'madhavmishra'
+          },
+          {
+            dmId: dmData2.dmId,
+            name: 'madhavmishra'
+          }
+        ]
+      }
+    );
+  });
+
+  test('user is member of multiple dms as the recipient', () => {
+    // creating second user
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+
+    const userObj2 = JSON.parse(res2.getBody() as string);
+
+    const dmCreate1 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId]
+        }
+      }
+    );
+    const dmData1 = JSON.parse(dmCreate1.getBody() as string);
+
+    const dmCreate2 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId]
+        }
+      }
+    );
+    const dmData2 = JSON.parse(dmCreate2.getBody() as string);
+
+    const dmCreate3 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId]
+        }
+      }
+    );
+    const dmData3 = JSON.parse(dmCreate3.getBody() as string);
+
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj2.token
+        }
+      }
+    );
+    const dmListObj = JSON.parse(dmList.getBody() as string);
+
+    expect(dmListObj).toStrictEqual(
+      {
+        dms: [
+          {
+            dmId: dmData1.dmId,
+            name: 'madhavmishra, miguelguthridge'
+          },
+          {
+            dmId: dmData2.dmId,
+            name: 'madhavmishra, miguelguthridge'
+          },
+          {
+            dmId: dmData3.dmId,
+            name: 'madhavmishra, miguelguthridge'
+          }
+        ]
+      }
+    );
+  });
+
+  test('user is recipient of multiple dms which have multiple recipients', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res2.getBody() as string);
+
+    const res3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z3333333@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Timmy',
+          nameLast: 'Huang',
+        }
+      }
+    );
+    const userObj3 = JSON.parse(res3.getBody() as string);
+
+    const res4 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z2222222@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Sandeep',
+          nameLast: 'Das',
+        }
+      }
+    );
+    const userObj4 = JSON.parse(res4.getBody() as string);
+
+    // CREATING DMS
+    const dmCreate1 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId, userObj3.authUserId]
+        }
+      }
+    );
+    const dmData1 = JSON.parse(dmCreate1.getBody() as string);
+
+    const dmCreate2 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj3.authUserId, userObj4.authUserId]
+        }
+      }
+    );
+    const dmData2 = JSON.parse(dmCreate2.getBody() as string);
+
+    const dmCreate3 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId, userObj3.authUserId, userObj4.authUserId]
+        }
+      }
+    );
+    const dmData3 = JSON.parse(dmCreate3.getBody() as string);
+
+    const dmCreate4 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId, userObj4.authUserId]
+        }
+      }
+    );
+    const dmData4 = JSON.parse(dmCreate4.getBody() as string);
+    expect(dmData4).toStrictEqual({ dmId: expect.any(Number) });
+
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj3.token
+        }
+      }
+    );
+
+    const dmListObj = JSON.parse(dmList.getBody() as string);
+
+    expect(dmListObj).toStrictEqual(
+      {
+        dms: [
+          {
+            dmId: dmData1.dmId,
+            name: 'madhavmishra, miguelguthridge, timmyhuang'
+          },
+          {
+            dmId: dmData2.dmId,
+            name: 'madhavmishra, sandeepdas, timmyhuang'
+          },
+          {
+            dmId: dmData3.dmId,
+            name: 'madhavmishra, miguelguthridge, sandeepdas, timmyhuang'
+          }
+        ]
+      }
+    );
+  });
+
+  test('user is member of multiple dms as the owner and recipient', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res2.getBody() as string);
+
+    const res3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z3333333@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Timmy',
+          nameLast: 'Huang',
+        }
+      }
+    );
+    const userObj3 = JSON.parse(res3.getBody() as string);
+
+    const res4 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z2222222@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Sandeep',
+          nameLast: 'Das',
+        }
+      }
+    );
+    const userObj4 = JSON.parse(res4.getBody() as string);
+
+    const dmCreate1 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId, userObj3.authUserId]
+        }
+      }
+    );
+    const dmData1 = JSON.parse(dmCreate1.getBody() as string);
+
+    const dmCreate2 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj3.authUserId, userObj4.authUserId]
+        }
+      }
+    );
+    const dmData2 = JSON.parse(dmCreate2.getBody() as string);
+
+    const dmCreate3 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj2.token,
+          uIds: [userObj3.authUserId, userObj4.authUserId]
+        }
+      }
+    );
+    const dmData3 = JSON.parse(dmCreate3.getBody() as string);
+
+    const dmCreate4 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj3.token,
+          uIds: [userObj.authUserId, userObj2.authUserId, userObj4.authUserId]
+        }
+      }
+    );
+    const dmData4 = JSON.parse(dmCreate4.getBody() as string);
+
+    const dmCreate5 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj2.token,
+          uIds: [userObj.authUserId]
+        }
+      }
+    );
+    const dmData5 = JSON.parse(dmCreate5.getBody() as string);
+
+    const dmList = request(
+      'GET',
+      SERVER_URL + '/dm/list/v1',
+      {
+        qs: {
+          token: userObj2.token
+        }
+      }
+    );
+    const dmListObj = JSON.parse(dmList.getBody() as string);
+
+    expect(dmData2).toStrictEqual({ dmId: expect.any(Number) });
+    expect(dmListObj).toStrictEqual(
+      {
+        dms: [
+          {
+            dmId: dmData1.dmId,
+            name: 'madhavmishra, miguelguthridge, timmyhuang'
+          },
+          {
+            dmId: dmData3.dmId,
+            name: 'miguelguthridge, sandeepdas, timmyhuang'
+          },
+          {
+            dmId: dmData4.dmId,
+            name: 'madhavmishra, miguelguthridge, sandeepdas, timmyhuang'
+          },
+          {
+            dmId: dmData5.dmId,
+            name: 'madhavmishra, miguelguthridge'
+          }
+        ]
+      }
+    );
   });
 });

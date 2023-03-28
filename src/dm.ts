@@ -193,4 +193,32 @@ function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
   return {};
 }
 
-export { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1 };
+/**
+ *
+ * @param token
+ * @returns
+ */
+function dmListV1(token: string) {
+  const data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const dmsArray = [];
+
+  for (const dm of data.dms) {
+    if (dm.memberIds.some((x: number) => x === userObj.uId)) {
+      dmsArray.push({
+        dmId: dm.dmId,
+        name: dm.dmName,
+      });
+    }
+  }
+
+  setData(data);
+  return { dms: dmsArray };
+}
+
+export { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1 };

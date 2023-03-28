@@ -5,7 +5,7 @@ import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
-import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1 } from './dm';
+import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
 
@@ -75,6 +75,11 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response, next) => {
 app.post('/dm/create/v1', (req: Request, res: Response, next) => {
   const { token, uIds } = req.body;
   return res.json(dmCreateV1(token, uIds));
+});
+
+app.get('/dm/list/v1', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  return res.json(dmListV1(token));
 });
 
 app.delete('/dm/remove/v1', (req: Request, res: Response, next) => {
