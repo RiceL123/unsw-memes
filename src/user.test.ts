@@ -696,3 +696,256 @@ describe('/user/profile/setname/v1', () => {
     );
   });
 });
+
+describe('/user/profile/setEmail/v1', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
+  const newEmail = 'z9999999@ad.unsw.edu.au';
+
+  let userToken: string;
+  let userId: number;
+  beforeEach(() => {
+    const userRequest1 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: email,
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data1 = JSON.parse(userRequest1.getBody() as string);
+    userToken = data1.token;
+    userId = data1.authUserId;
+  });
+
+  test('invalid token', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: userToken + 1,
+          email: newEmail,
+        },
+      }
+    );
+    const setEmailData = JSON.parse(setRes.getBody() as string);
+    expect(setEmailData).toStrictEqual(ERROR);
+  });
+
+  test('invalid email - no @', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: userToken,
+          email: 'invalidEmail',
+        },
+      }
+    );
+    const setEmailData = JSON.parse(setRes.getBody() as string);
+    expect(setEmailData).toStrictEqual(ERROR);
+  });
+
+  test('invalid email - two @', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: userToken,
+          email: 'invalid@Email@',
+        },
+      }
+    );
+    const setEmailData = JSON.parse(setRes.getBody() as string);
+    expect(setEmailData).toStrictEqual(ERROR);
+  });
+
+  test('invalid email already used by another user', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z1111111@ad.unsw.edu.au',
+          password: password,
+          nameFirst: nameFirst,
+          nameLast: nameLast,
+        }
+      }
+    );
+
+    const data2 = JSON.parse(res2.getBody() as string);
+
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: data2.token,
+          email: email,
+        },
+      }
+    );
+    const setEmailData = JSON.parse(setRes.getBody() as string);
+    expect(setEmailData).toStrictEqual(ERROR);
+  });
+
+  test('valid email - control', () => {
+    const setRes = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: userToken,
+          email: newEmail,
+        },
+      }
+    );
+    const setEmailData = JSON.parse(setRes.getBody() as string);
+    expect(setEmailData).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z9999999@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'madhavmishra'
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+  });
+
+  test('valid email - multiple', () => {
+    const userRequest2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password2',
+          nameFirst: 'John',
+          nameLast: 'Smith',
+        }
+      }
+    );
+
+    const userRequest3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z3333333@ad.unsw.edu.au',
+          password: 'password3',
+          nameFirst: 'James',
+          nameLast: 'Smith',
+        }
+      }
+    );
+
+    const data2 = JSON.parse(userRequest2.getBody() as string);
+    const data3 = JSON.parse(userRequest3.getBody() as string);
+
+    const setRes1 = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: userToken,
+          email: newEmail,
+        },
+      }
+    );
+
+    const setRes2 = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: data2.token,
+          email: 'z8888888@ad.unsw.edu.au',
+        },
+      }
+    );
+
+    const setRes3 = request(
+      'PUT',
+      SERVER_URL + '/user/profile/setemail/v1',
+      {
+        json: {
+          token: data3.token,
+          email: 'z7777777@ad.unsw.edu.au',
+        },
+      }
+    );
+    const setEmailData1 = JSON.parse(setRes1.getBody() as string);
+    const setEmailData2 = JSON.parse(setRes2.getBody() as string);
+    const setEmailData3 = JSON.parse(setRes3.getBody() as string);
+    expect(setEmailData1).toStrictEqual({});
+    expect(setEmailData2).toStrictEqual({});
+    expect(setEmailData3).toStrictEqual({});
+
+    const viewRes = request(
+      'GET',
+      SERVER_URL + '/users/all/v1',
+      {
+        qs: {
+          token: userToken,
+        },
+      }
+    );
+
+    const expectedArray: userObj[] = [
+      {
+        uId: userId,
+        email: 'z9999999@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'madhavmishra'
+      },
+      {
+        uId: data2.authUserId,
+        email: 'z8888888@ad.unsw.edu.au',
+        nameFirst: 'John',
+        nameLast: 'Smith',
+        handleStr: 'johnsmith'
+      },
+      {
+        uId: data3.authUserId,
+        email: 'z7777777@ad.unsw.edu.au',
+        nameFirst: 'James',
+        nameLast: 'Smith',
+        handleStr: 'jamessmith'
+      },
+    ];
+
+    const viewData = JSON.parse(viewRes.getBody() as string);
+    expect(viewData.users).toStrictEqual(expectedArray);
+
+    expect(viewData.users.sort((a: userObj, b: userObj) => a.uId - b.uId)).toStrictEqual(
+      expectedArray.sort((a, b) => a.uId - b.uId)
+    );
+  });
+});

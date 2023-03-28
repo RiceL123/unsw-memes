@@ -1,4 +1,5 @@
 import { getData, setData } from './dataStore';
+import validator from 'validator';
 
 /**
   * userProfileV2 makes an object for a valid user, from authUserId and uId
@@ -68,4 +69,35 @@ function userProfileSetNameV1(token: string, nameFirst: string, nameLast: string
   return {};
 }
 
-export { userProfileV2, userProfileSetNameV1 };
+/**
+  * userProfileSetEmailV1 gets the token for a user and also strings for a new email.
+  * Then it changes the user's current email to the new email.
+  * @param {string} token - the user calling function
+  * @param {string} email - new email
+  * @returns {} - returns an empty object
+*/
+function userProfileSetEmailV1(token: string, email: string) {
+  const data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    return { error: 'Invalid token' };
+  }
+
+  if (validator.isEmail(email) === false) {
+    return { error: 'invalid email' };
+  }
+
+  if (data.users.some(existingUsers => existingUsers.email === email)) {
+    return { error: 'email already exists' };
+  }
+
+  const user = data.users.find(x => x.uId === userObj.uId);
+  user.email = email;
+
+  setData(data);
+  return {};
+}
+
+export { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1 };
