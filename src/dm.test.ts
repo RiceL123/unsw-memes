@@ -1539,3 +1539,276 @@ describe('/dm/list/v1', () => {
     );
   });
 });
+
+describe('dmMessagesV1', () => {
+  let userToken: string;
+  let dmId: number;
+  beforeEach(() => {
+    const userRes = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+        }
+      }
+    );
+
+    const userData = JSON.parse(userRes.getBody() as string);
+    userToken = userData.token;
+
+    const dmRes = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userToken,
+          uIds: []
+        }
+      }
+    );
+    const dmData = JSON.parse(dmRes.getBody() as string);
+    dmId = dmData.dmId;
+  });
+
+  test('invalid dmId', () => {
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userToken,
+          dmId: dmId + 1,
+          start: 0,
+        }
+      }
+    );
+
+    const messageData = JSON.parse(messageRes.getBody() as string);
+
+    expect(messageData).toStrictEqual(ERROR);
+  });
+
+  test('invalid token', () => {
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userToken + 1,
+          dmId: dmId,
+          start: 0,
+        }
+      }
+    );
+
+    const messageData = JSON.parse(messageRes.getBody() as string);
+
+    expect(messageData).toStrictEqual(ERROR);
+  });
+
+  test('start is greater than total messages in dm', () => {
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userToken,
+          dmId: dmId,
+          start: 50,
+        }
+      }
+    );
+
+    const messageData = JSON.parse(messageRes.getBody() as string);
+
+    expect(messageData).toStrictEqual(ERROR);
+  });
+
+  test('start is less than 0', () => {
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userToken,
+          dmId: dmId,
+          start: -1,
+        }
+      }
+    );
+    const messageData = JSON.parse(messageRes.getBody() as string);
+
+    expect(messageData).toStrictEqual(ERROR);
+  });
+
+  test('valid dmId but authorised user is not a member', () => {
+    const userRes2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z1111111@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Charmander',
+          nameLast: 'Pokemon',
+        }
+      }
+    );
+
+    const userData2 = JSON.parse(userRes2.getBody() as string);
+
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userData2.token,
+          dmId: dmId,
+          start: 0,
+        }
+      }
+    );
+
+    const messageData = JSON.parse(messageRes.getBody() as string);
+
+    expect(messageData).toStrictEqual(ERROR);
+  });
+
+  test('valid empty dmMessagesV1', () => {
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userToken,
+          dmId: dmId,
+          start: 0,
+        }
+      }
+    );
+
+    const messageData = JSON.parse(messageRes.getBody() as string);
+
+    expect(messageData).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('multiple valid empty dmMessagesV1', () => {
+    const userRes2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z1111111@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Charmander',
+          nameLast: 'Pokemon',
+        }
+      }
+    );
+
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z2222222@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Charizard',
+          nameLast: 'Pokemon',
+        }
+      }
+    );
+
+    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+
+    const dmRes2 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userData2.token,
+          uIds: []
+        }
+      }
+    );
+
+    const dmRes3 = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userData3.token,
+          uIds: []
+        }
+      }
+    );
+
+    const dmData2 = JSON.parse(dmRes2.getBody() as string);
+    const dmData3 = JSON.parse(dmRes3.getBody() as string);
+
+    const messageRes = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userToken,
+          dmId: dmId,
+          start: 0,
+        }
+      }
+    );
+
+    const messageRes2 = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userData2.token,
+          dmId: dmData2.dmId,
+          start: 0,
+        }
+      }
+    );
+
+    const messageRes3 = request(
+      'GET',
+      SERVER_URL + '/dm/messages/v1',
+      {
+        qs: {
+          token: userData3.token,
+          dmId: dmData3.dmId,
+          start: 0,
+        }
+      }
+    );
+    const messageData = JSON.parse(messageRes.getBody() as string);
+    expect(messageData).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+
+    const messageData2 = JSON.parse(messageRes2.getBody() as string);
+    expect(messageData2).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+
+    const messageData3 = JSON.parse(messageRes3.getBody() as string);
+    expect(messageData3).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+  });
+});

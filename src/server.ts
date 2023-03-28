@@ -5,7 +5,7 @@ import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
-import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1 } from './dm';
+import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
 
@@ -99,6 +99,13 @@ app.delete('/dm/leave/v1', (req: Request, res: Response, next) => {
   const token = req.query.token as string;
   const dmId = parseInt(req.query.dmId as string);
   return res.json(dmLeaveV1(token, dmId));
+});
+
+app.get('/dm/messages/v1', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  const dmId = parseInt(req.query.dmId as string);
+  const start = parseInt(req.query.start as string);
+  return res.json(dmMessagesV1(token, dmId, start));
 });
 
 // start server
