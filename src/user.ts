@@ -100,4 +100,36 @@ function userProfileSetEmailV1(token: string, email: string) {
   return {};
 }
 
-export { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1 };
+function isAlphanumeric(str: string) {
+  return /^[a-zA-Z0-9]+$/.test(str);
+}
+
+function userProfileSetHandleV1(token: string, handleStr: string) {
+  const data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    return { error: 'Invalid token' };
+  }
+
+  if (handleStr.length < 3 || handleStr.length > 20) {
+    return { error: 'handleStr.length not between 3 and 20 inclusive' };
+  }
+
+  if (isAlphanumeric(handleStr) === false) {
+    return { error: 'handleStr contains characters that are not alphanumeric  ' };
+  }
+
+  if (data.users.some(existingUsers => existingUsers.handleStr === handleStr)) {
+    return { error: 'handleStr already exists' };
+  }
+
+  const user = data.users.find(x => x.uId === userObj.uId);
+  user.handleStr = handleStr;
+
+  setData(data);
+  return {};
+}
+
+export { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 };
