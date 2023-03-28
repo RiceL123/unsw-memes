@@ -1,3 +1,4 @@
+
 import request from 'sync-request';
 
 import { port, url } from './config.json';
@@ -235,6 +236,240 @@ describe('/dm/create/v1', () => {
     expect(data1.dmId).not.toStrictEqual(data2.dmId);
     expect(data1.dmId).not.toStrictEqual(data3.dmId);
     expect(data2.dmId).not.toStrictEqual(data3.dmId);
+  });
+});
+
+describe('/dm/remove/v1', () => {
+  let userObj: AuthRegisterReturn;
+  let dmObj: DmCreateReturn;
+
+  beforeEach(() => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+        }
+      }
+    );
+    userObj = JSON.parse(res.getBody() as string);
+
+    const dmCreate = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: []
+        }
+      }
+    );
+    dmObj = JSON.parse(dmCreate.getBody() as string);
+  });
+
+  test('invalid token', () => {
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        json: {
+          token: userObj.token + 'invalid',
+          dmId: dmObj.dmId
+        }
+      }
+    );
+    const data = JSON.parse(dmRemove.getBody() as string);
+    expect(data).toStrictEqual(ERROR);
+  });
+
+  test('dmId does not refer to valid DM', () => {
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj.dmId + 1
+        }
+      }
+    );
+    const dmRemoveObj = JSON.parse(dmRemove.getBody() as string);
+    expect(dmRemoveObj).toStrictEqual(ERROR);
+  });
+
+  test('dmId valid, authId not creator of DM', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res2.getBody() as string);
+    expect(userObj2).toStrictEqual({ token: expect.any(String), authUserId: expect.any(Number) });
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        qs: {
+          token: userObj2.token,
+          dmId: dmObj.dmId
+        }
+      }
+    );
+
+    const dmRemoveObj = JSON.parse(dmRemove.getBody() as string);
+    expect(dmRemoveObj).toStrictEqual(ERROR);
+  });
+
+  test('dmId valid, authId no longer in DM', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res2.getBody() as string);
+
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        qs: {
+          token: userObj2.token,
+          dmId: dmObj.dmId
+        }
+      }
+    );
+    const dmRemoveObj = JSON.parse(dmRemove.getBody() as string);
+    expect(dmRemoveObj).toStrictEqual(ERROR);
+  });
+
+  test('dmId valid, DM with just owner is deleted', () => {
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj.dmId
+        }
+      }
+    );
+    const dmRemoveObj = JSON.parse(dmRemove.getBody() as string);
+    expect(dmRemoveObj).toStrictEqual({});
+  });
+
+  test('dmId valid, DM with one other member is deleted', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res2.getBody() as string);
+
+    const dmCreate = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId]
+        }
+      }
+    );
+    const dmObj2 = JSON.parse(dmCreate.getBody() as string);
+
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj2.dmId
+        }
+      }
+    );
+
+    const dmRemoveObj = JSON.parse(dmRemove.getBody() as string);
+    expect(dmRemoveObj).toStrictEqual({});
+  });
+
+  test('dmId valid, DM with multiple members is deleted', () => {
+    const res2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z4444444@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Miguel',
+          nameLast: 'Guthridge',
+        }
+      }
+    );
+    const userObj2 = JSON.parse(res2.getBody() as string);
+
+    const res3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z3333333@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Timmy',
+          nameLast: 'Huang',
+        }
+      }
+    );
+    const userObj3 = JSON.parse(res3.getBody() as string);
+
+    const dmCreate = request(
+      'POST',
+      SERVER_URL + '/dm/create/v1',
+      {
+        json: {
+          token: userObj.token,
+          uIds: [userObj2.authUserId, userObj3.authUserId]
+        }
+      }
+    );
+    const dmObj2 = JSON.parse(dmCreate.getBody() as string);
+
+    const dmRemove = request(
+      'DELETE',
+      SERVER_URL + '/dm/remove/v1',
+      {
+        qs: {
+          token: userObj.token,
+          dmId: dmObj2.dmId
+        }
+      }
+    );
+    const dmRemoveObj = JSON.parse(dmRemove.getBody() as string);
+    expect(dmRemoveObj).toStrictEqual({});
   });
 });
 

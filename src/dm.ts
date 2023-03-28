@@ -88,6 +88,36 @@ function dmCreateV1(token: string, uIds: number[]): Error | DmCreateReturn {
   return { dmId: newDmId };
 }
 
+function dmRemoveV1(token: string, dmId: number) {
+  const data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const dmObj = data.dms.find(x => x.dmId === dmId);
+  if (!dmObj) {
+    return { error: 'invalid dmId' };
+  }
+
+  if (!dmObj.memberIds.includes(userObj.uId)) {
+    return { error: 'invalid uId - no longer in DM' };
+  }
+
+  // dmId is valid and the authorised user is not the original DM creator error
+  if (dmObj.creatorId !== userObj.uId) {
+    return { error: 'user is not DM creator' };
+  }
+
+  // IMPLEMENTATION
+  data.dms = data.dms.filter(x => x.dmId !== dmObj.dmId);
+
+  setData(data);
+
+  return {};
+}
+
 /** Given a dmId that the user is apart of, returns information about the channel's
  * name and the members of that channel
  *
@@ -163,4 +193,4 @@ function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
   return {};
 }
 
-export { dmCreateV1, dmDetailsV1, dmLeaveV1 };
+export { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1 };
