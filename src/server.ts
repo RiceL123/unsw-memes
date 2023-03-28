@@ -5,6 +5,8 @@ import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
+import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2 } from './channel';
+import { channelsCreateV2 } from './channels';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
@@ -31,9 +33,42 @@ app.delete('/clear/v1', (req: Request, res: Response, next) => {
   return res.json(clearV1());
 });
 
+app.post('/auth/login/v2', (req: Request, res: Response, next) => {
+  const { email, password } = req.body;
+  return res.json(authLoginV2(email, password));
+});
+
 app.post('/auth/register/v2', (req: Request, res: Response, next) => {
   const { email, password, nameFirst, nameLast } = req.body;
   return res.json(authRegisterV2(email, password, nameFirst, nameLast));
+});
+
+app.post('/channels/create/v2', (req: Request, res: Response, next) => {
+  const { token, name, isPublic } = req.body;
+  return res.json(channelsCreateV2(token, name, isPublic));
+});
+
+app.get('/channel/details/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  const channelId = req.query.channelId as string;
+  return res.json(channelDetailsV2(token, channelId));
+});
+
+app.post('/channel/join/v2', (req: Request, res: Response, next) => {
+  const { token, channelId } = req.body;
+  return res.json(channelJoinV2(token, channelId));
+});
+
+app.post('/channel/invite/v2', (req: Request, res: Response, next) => {
+  const { token, channelId, uId } = req.body;
+  return res.json(channelInviteV2(token, channelId, uId));
+});
+
+app.get('/channel/messages/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  const channelId = req.query.channelId as string;
+  const start = req.query.start as string;
+  return res.json(channelMessagesV2(token, channelId, start));
 });
 
 app.post('/auth/login/v2', (req: Request, res: Response, next) => {
