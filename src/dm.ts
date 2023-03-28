@@ -1,5 +1,32 @@
 import { Dm, Data, getData, setData } from './dataStore';
 
+interface Error {
+  error: string;
+}
+
+interface DmCreateReturn {
+  dmId: number;
+}
+
+interface DmDetailsReturn {
+  name: string;
+  members: {
+    uId: number;
+    email: string;
+    nameFirst: string;
+    nameLast: string;
+    handleStr: string;
+  }[];
+}
+
+/** given the data of the dataStore and an array of uIds
+ * generates a string with handlestrings comma separated in
+ * alphabetical order
+ *
+ * @param {number[]} uIds
+ * @param {Data} data
+ * @returns
+ */
 function generateDmName(uIds: number[], data: Data) {
   return data
     .users
@@ -9,13 +36,15 @@ function generateDmName(uIds: number[], data: Data) {
     .join(', ');
 }
 
-/**
+/** Given an array of uids and the user than calls the function, makes a
+ * new dm with the creator and the members in the uIds array
  *
- * @param token
- * @param uIds
- * @returns
+ * @param {string} token
+ * @param {number[]} uIds
+ *
+ * @returns {{ dmId: number }}
  */
-function dmCreateV1(token: string, uIds: number[]) {
+function dmCreateV1(token: string, uIds: number[]): Error | DmCreateReturn {
   const data: Data = getData();
 
   const creatorObj = data.users.find(x => x.tokens.includes(token));
@@ -59,7 +88,15 @@ function dmCreateV1(token: string, uIds: number[]) {
   return { dmId: newDmId };
 }
 
-function dmDetailsV1(token: string, dmId: number) {
+/** Given a dmId that the user is apart of, returns information about the channel's
+ * name and the members of that channel
+ *
+ * @param {string} token
+ * @param {number} dmId
+ *
+ * @returns {{ name: string, members: User[] }}
+ */
+function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
   const data: Data = getData();
 
   const userObj = data.users.find(x => x.tokens.includes(token));
@@ -95,4 +132,35 @@ function dmDetailsV1(token: string, dmId: number) {
   };
 }
 
-export { dmCreateV1, dmDetailsV1 };
+/** dmLeaveV1 removes the corresponding user to the token argument from
+ * the dm
+ *
+ * @param {string} token
+ * @param {number} dmId
+ *
+ * @returns {{}}
+ */
+function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
+  const data: Data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const dmObj = data.dms.find(x => x.dmId === dmId);
+  if (!dmObj) {
+    return { error: 'invalid dmId' };
+  }
+
+  if (!dmObj.memberIds.includes(userObj.uId)) {
+    return { error: 'invalid uId - not a member' };
+  }
+
+  dmObj.memberIds = dmObj.memberIds.filter(x => x !== userObj.uId);
+
+  setData(data);
+  return {};
+}
+
+export { dmCreateV1, dmDetailsV1, dmLeaveV1 };
