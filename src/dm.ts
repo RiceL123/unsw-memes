@@ -88,6 +88,13 @@ function dmCreateV1(token: string, uIds: number[]): Error | DmCreateReturn {
   return { dmId: newDmId };
 }
 
+/** Given a token of user and dmId, removes an existing DM, so all members are
+ * no longer in the DM. This can only be done by the original creator of the DM
+ *
+ * @param {string} token
+ * @param {number} dmId
+ * @returns
+ */
 function dmRemoveV1(token: string, dmId: number) {
   const data = getData();
 
@@ -193,10 +200,12 @@ function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
   return {};
 }
 
-/**
+/** Given the token of a user, returns the list of DMs that the user is
+ * a member of.
  *
- * @param token
- * @returns
+ * @param {string} token
+ *
+ * @returns {{dms}}
  */
 function dmListV1(token: string) {
   const data = getData();
@@ -221,4 +230,59 @@ function dmListV1(token: string) {
   return { dms: dmsArray };
 }
 
-export { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1 };
+/**
+ * dmMessagesV1 takes an authorised user as well as a channelId to access the messages
+ * stored within that channel and given the start index, it uses pagination to return the messages
+ * stored in an array of objects, pagination can return up to 50 messages at a time. If there are
+ * no messages, the end index returned is -1 but if there are more messages stored, the end index
+ * is "start + 50". Assuming that the messages array in dms is already sorted.
+ *
+ * @param {string} token - unique Id generated when registering a user
+ * @param {number} dmId - unique Id generated when creating a new dm
+ * @param {number} start - the index at which we start searching for messages via pagination
+ *
+ * @returns { messages: [{ messageId, uId, message, timeSent }], start, end } - returns an object
+ * that has an array of objects called messages, the start index value as well as a new index for
+ * end which either states that there are no more messages or there are more messages waiting.
+ */
+
+function dmMessagesV1(token: string, dmId: number, start: number) {
+  const data = getData();
+
+  const pagination = 50;
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    return { error: 'Invalid token' };
+  }
+
+  if (!(data.dms.some(x => x.dmId === dmId))) {
+    return { error: 'Invalid dmId' };
+  }
+
+  const dmFind = (data.dms.find(x => x.dmId === dmId));
+  if (!(dmFind.memberIds.includes(userObj.uId))) {
+    return { error: 'Invalid authUserId: dmId is valid, but authorised user is not a member of the dm' };
+  }
+
+  if (start < 0 || start > dmFind.messages.length) {
+    return { error: 'Invalid start value' };
+  }
+
+  if (start + pagination >= dmFind.messages.length) {
+    return {
+      messages: dmFind.messages.slice(start, dmFind.messages.length),
+      start: start,
+      end: -1,
+    };
+  } else {
+    return {
+      messages: dmFind.messages.slice(start, start + pagination),
+      start: start,
+      end: start + pagination,
+    };
+  }
+}
+
+export { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 };
