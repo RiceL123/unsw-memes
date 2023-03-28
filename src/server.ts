@@ -6,7 +6,7 @@ import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { usersAllV1 } from './users';
-import { userProfileV2 } from './user';
+import { userProfileV2, userProfileSetNameV1 } from './user';
 import { dmCreateV1, dmDetailsV1 } from './dm';
 
 // Set up web app
@@ -55,6 +55,11 @@ app.get('/user/profile/v2', (req: Request, res: Response, next) => {
 app.get('/users/all/v1', (req: Request, res: Response, next) => {
   const userToken = req.query.token as string;
   return res.json(usersAllV1(userToken));
+});
+
+app.put('/user/profile/setname/v1', (req: Request, res: Response, next) => {
+  const { token, nameFirst, nameLast } = req.body;
+  return res.json(userProfileSetNameV1(token, nameFirst, nameLast));
 });
 
 app.post('/dm/create/v1', (req: Request, res: Response, next) => {
