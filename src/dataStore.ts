@@ -1,3 +1,5 @@
+import fs from 'fs';
+
 interface User {
   uId: number;
   nameFirst: string;
@@ -39,15 +41,12 @@ interface Data {
   dms: Dm[];
 }
 
-let data: Data = {
-  users: [],
-  channels: [],
-  dms: [],
-};
+// this is where the database will maintain the persistence
+const dataBasePath = 'src/database.json';
 
-// Use get() to access the data
 function getData(): Data {
-  return data;
+  const fileData = fs.readFileSync(dataBasePath, 'utf8');
+  return JSON.parse(fileData);
 }
 
 // Use set(newData) to pass in the entire data object, with modifications made
@@ -55,7 +54,7 @@ function getData(): Data {
 // - Javascript uses pass-by-reference for objects... read more here: https://stackoverflow.com/questions/13104494/does-javascript-pass-by-reference
 // Hint: this function might be useful to edit in iteration 2
 function setData(newData: Data): void {
-  data = newData;
+  fs.writeFileSync(dataBasePath, JSON.stringify(newData), { flag: 'w' });
 }
 
 export { User, Channel, Dm, Message, Data, getData, setData };
