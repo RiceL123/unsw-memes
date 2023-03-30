@@ -1,20 +1,15 @@
 import { User, Data, getData, setData } from './dataStore';
 import validator from 'validator';
+import { v4 as uuidv4 } from 'uuid';
 
-/** generate UniqiueToken uses a trivial method of adding 1 to the
- * current max string integer
+/** generate UniqiueToken uses uuid's v4 implementation to generate a new user token
  *
  * @param {Data} data
  *
  * @returns {string} - newly generated string token
  */
-function generateUniqueToken(data: Data): string {
-  let newToken = 1;
-  if (data.users.length > 0) {
-    newToken = Math.max.apply(null, data.users.map(x => x.tokens).flat().map(y => parseInt(y))) + 1;
-  }
-
-  return String(newToken);
+function generateUniqueToken(): string {
+  return uuidv4();
 }
 
 /**
@@ -78,7 +73,7 @@ function authLoginV2(email: string, password: string) {
     return { error: 'password does not match email' };
   }
 
-  const newToken = generateUniqueToken(data);
+  const newToken = generateUniqueToken();
   userObj.tokens.push(newToken);
 
   setData(data);
@@ -140,7 +135,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     return { error: 'could not generate a handle' };
   }
 
-  const newToken = generateUniqueToken(data);
+  const newToken = generateUniqueToken();
 
   // users get permission id's of 2 if they are not the first user
   let permission = 2;

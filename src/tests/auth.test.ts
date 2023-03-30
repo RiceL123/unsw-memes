@@ -1,5 +1,5 @@
 import request from 'sync-request';
-import { port, url } from './config.json';
+import { port, url } from '../config.json';
 const SERVER_URL = `${url}:${port}`;
 
 const ERROR = { error: expect.any(String) };
