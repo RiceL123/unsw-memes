@@ -8,6 +8,7 @@ import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
+import { messageSendDmV1 } from './message';
 import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV2, channelsListV2, channelsListAllV2 } from './channels';
 
@@ -165,6 +166,11 @@ app.get('/dm/messages/v1', (req: Request, res: Response, next) => {
   const dmId = parseInt(req.query.dmId as string);
   const start = parseInt(req.query.start as string);
   return res.json(dmMessagesV1(token, dmId, start));
+});
+
+app.post('/message/senddm/v1', (req: Request, res: Response, next) => {
+  const { token, dmId, message } = req.body;
+  return res.json(messageSendDmV1(token, dmId, message));
 });
 
 // start server
