@@ -86,8 +86,8 @@ let data = {
   dms: [
     {
       dmId: 1,
-      dmName: 'haydensjacobs, madhavmishra'
-      creatorId: 1
+      dmName: 'haydensjacobs, madhavmishra',
+      creatorId: 1,
       memberIds: [1, 2],
       messages: [
         {

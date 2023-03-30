@@ -8,9 +8,9 @@ import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
-import { messageSendDmV1 } from './message';
 import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV2, channelsListV2, channelsListAllV2 } from './channels';
+import { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 } from './message';
 
 // Set up web app
 const app = express();
@@ -40,8 +40,23 @@ app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
   res.json(channelsListAllV2(token));
 });
 
+app.get('/channels/list/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  res.json(channelsListV2(token));
+});
+
+app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  res.json(channelsListAllV2(token));
+});
+
 app.delete('/clear/v1', (req: Request, res: Response, next) => {
   return res.json(clearV1());
+});
+
+app.post('/auth/login/v2', (req: Request, res: Response, next) => {
+  const { email, password } = req.body;
+  return res.json(authLoginV2(email, password));
 });
 
 app.post('/auth/login/v2', (req: Request, res: Response, next) => {
@@ -166,6 +181,22 @@ app.get('/dm/messages/v1', (req: Request, res: Response, next) => {
   const dmId = parseInt(req.query.dmId as string);
   const start = parseInt(req.query.start as string);
   return res.json(dmMessagesV1(token, dmId, start));
+});
+
+app.post('/message/send/v1', (req: Request, res: Response, next) => {
+  const { token, channelId, message } = req.body;
+  return res.json(messageSendV1(token, channelId, message));
+});
+
+app.put('/message/edit/v1', (req: Request, res: Response, next) => {
+  const { token, messageId, message } = req.body;
+  return res.json(messageEditV1(token, messageId, message));
+});
+
+app.delete('/message/remove/v1', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  const messageId = parseInt(req.query.messageId as string);
+  return res.json(messageRemoveV1(token, messageId));
 });
 
 app.post('/message/senddm/v1', (req: Request, res: Response, next) => {
