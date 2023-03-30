@@ -8,7 +8,7 @@ import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
-import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1 } from './channel';
+import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV2, channelsListV2, channelsListAllV2 } from './channels';
 
 // Set up web app
@@ -89,6 +89,11 @@ app.post('/channel/leave/v1', (req: Request, res: Response, next) => {
 app.post('/channel/addowner/v1', (req: Request, res: Response, next) => {
   const { token, channelId, uId } = req.body;
   return res.json(channelAddOwnerV1(token, channelId, uId));
+});
+
+app.post('/channel/removeowner/v1', (req: Request, res: Response, next) => {
+  const { token, channelId, uId } = req.body;
+  return res.json(channelRemoveOwnerV1(token, channelId, uId));
 });
 
 app.post('/auth/login/v2', (req: Request, res: Response, next) => {
