@@ -1,5 +1,8 @@
+
 # UNSW Memes data
-For UNSW Memes, the backend will be accessible with the data object. There are 5 interfaces which dictate how the `users`, `channels`, `dms`, `messages` and `data` are stored as shown below.
+For UNSW Memes, within the backend, data can be read and updated with the two functions `getData()` and `setData()`. The data is **persistent** as it is stored in a file called `database.json` and has constraints as according to the 5 interfaces  `User`, `Channel`, `Dm`, `Message` and `Data`.
+
+The 5 interfaces are shown below.
 
 ```typescript
 interface User {
@@ -42,87 +45,113 @@ interface Data {
   channels: Channel[];
   dms: Dm[];
 }
+```
 
-let data: Data = {
-  users: [],
-  channels: [],
-  dms: [],
-}
+The `database.json` file will initially be unpopulated as shown below.
+```json
+{"users":[],"channels":[],"dms":[]}
 ```
 
 An example of a populated data store is shown below.
 
-```typescript
-let data = {
-  users: [
+```JSON
+{
+  "users": [
     {
-      uId: 1,
-      nameFirst: 'Hayden',
-      nameLast: 'Jacobs',
-      email: 'example@gmail.com',
-      password: 'password',
-      handleStr: 'haydenjacobs',
-      permission: 1,
-      tokens: ['Xas82jalp', 'H8sl0Oop'],
+      "uId": 1,
+      "nameFirst": "Madhav",
+      "nameLast": "Mishra",
+      "email": "z5555555@ad.unsw.edu.au",
+      "password": "password1",
+      "handleStr": "madhavmishra",
+      "permission": 1,
+      "tokens": [ 
+        "d5c5e1ca-e2e0-482e-b53f-e68b56c3bf51"
+      ]
+    },
+    {
+      "uId": 2,
+      "nameFirst": "John",
+      "nameLast": "Smith",
+      "email": "john@gmail.com",
+      "password": "securepassword,1",
+      "handleStr": "johnsmith",
+      "permission": 2,
+      "tokens": [
+        "a18ab61a-3e70-494c-b146-00a877e58816",
+        "2d30fc17-fa21-47ac-9fb6-9abb25b571bd"
+      ]
     }
   ],
-  channels: [
+  "channels": [
     {
-      channelId: 1,
-      channelName: 'COMP1531 Crunchie',
-      ownerMembersIds: [1],
-      allMembersIds: [1],
-      isPublic: false,
-      messages: [
-        {
-          messageId: 1,
-          uId: 1,
-          message: 'Hello 1531',
-          timeSent: 1400,
-        }
+      "channelId": 0,
+      "channelName": "study GRINDSET",
+      "ownerMembersIds": [
+        1
       ],
-    }
-  ],
-  dms: [
-    {
-      dmId: 1,
-      dmName: 'haydensjacobs, madhavmishra',
-      creatorId: 1,
-      memberIds: [1, 2],
-      messages: [
+      "allMembersIds": [
+        1,
+        2
+      ],
+      "isPublic": true,
+      "messages": [
         {
-          messageId: 1,
-          uId: 1,
-          message: 'Hello Madhav',
-          timeSent: 1700,
+          "messageId": 2,
+          "uId": 2,
+          "message": "L bozo🤣🤣🤣",
+          "timeSent": 1680172805
+        },
+        {
+          "messageId": 1,
+          "uId": 1,
+          "message": "💀💀💀 I forgot to study",
+          "timeSent": 1680172750
         }
       ]
     }
   ],
+  "dms": [
+    {
+      "dmId": 1,
+      "dmName": "johnsmith, madhavmishra",
+      "creatorId": 2,
+      "memberIds": [
+        1,
+        2
+      ],
+      "messages": [
+        {
+          "messageId": 3,
+          "uId": 2,
+          "message": "I am respectfully sliding into your dms 😉😉😉",
+          "timeSent": 1680172848
+        }
+      ]
+    }
+  ]
 }
 ```
 
 [Optional] short description: 
 
 ## Using the data
-The data will be stored in memory in this variable called data and it can only be accessed and updated through the use of the `getData()` and `setData()` functions found in `src/dataStore.ts`. 
-
-This means that in each file found in `src` that has a function which either reads data or writes data (or both), the file will need to include the following line of code
-
-```typescript
-import { getData, setData } from './dataStore';
-```
-
-Additionally, to make sure data set globally is correct, the interfaces from `src/dataStore.ts` must be adhered to indicating the need for them to be imported. For example,
-
-```typescript
-import { User, Channel, Dm, Message, Data } from './dataStore';
-```
-
-Alternatively, the functions and the interfaces can be imported together with
+To use the `getData` and `setData` functions, an import statement is required from the `dataStore.ts` file. Additionally, when updating the data, interfaces can be used to ensure objects added are of the corresponding type. As example of how to import the functions and interfaces is shown below.
 ```typescript
 import { User, Channel, Dm, Message, Data, getData, setData } from './dataStore';
 ```
+
+The aforementioned two functions `getData` and `setData` are used as follows
+
+#### getData()
+The `getData()` function reads the data from the database file at `dataBasePath` (which in our case is `./src/database.json`) and returns the parsed JSON data.
+
+#### SetData(newData: Data)
+
+The `setData(newData: Data)` function writes the passed-in `newData` to the database file at `dataBasePath`. This function overwrites the entire data object.
+
+## How clients will manipulate the data
+Clients will manipulate the data through the various POST, PUT, GET and DELETE routes as specified in the `server.ts` file which uses the [express.js](https://expressjs.com/) framework to wrap around to the TypeScript functions which use `getData` and `setData`.
 
 ## How the data is organised
 The data has 3 keys being `users`, `channels` and `dms` which have arrays of objects as according to their corresponding interface as shown above.
