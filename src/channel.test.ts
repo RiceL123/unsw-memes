@@ -1545,3 +1545,540 @@ describe('/channel/leave/v1', () => {
     });
   });
 });
+
+describe('channelAddOwnerV1 Public Channel Tests', () => {
+  let userId: number;
+  let userId2: number;
+  let userToken: string;
+  let userToken2: string;
+  let chanId: number;
+  beforeEach(() => {
+    const userRes = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+        }
+      }
+    );
+
+    const userRes2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5455555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData = JSON.parse(userRes.getBody() as string);
+    userId = userData.authUserId;
+    userToken = userData.token;
+    const userData2 = JSON.parse(userRes2.getBody() as string);
+    userId2 = userData2.authUserId;
+    userToken2 = userData2.token;
+
+    const channelRes = request(
+      'POST',
+      SERVER_URL + '/channels/create/v2',
+      {
+        json: {
+          token: userToken,
+          name: 'coolPublicChannel',
+          isPublic: true,
+        }
+      }
+    );
+    const channelData = JSON.parse(channelRes.getBody() as string);
+    chanId = channelData.channelId;
+
+    const inviteRes = request(
+      'POST',
+      SERVER_URL + '/channel/invite/v2',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId2,
+        }
+      }
+    );
+    const inviteData = JSON.parse(inviteRes.getBody() as string);
+    expect(inviteData).toStrictEqual({});
+  });
+
+  // channelId does not refer to a valid channel
+  test('channelId is invalid', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId + 1,
+          uId: userId2,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // uId does not refer to a valid user
+  test('uId is invalid', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId2 + 1,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // uId does not refer to a member of the channel
+  test('channelId is invalid', () => {
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5355555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userId3 = userData3.authUserId;
+
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId3,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // uId refers to a user who is already an owner
+  test('uId is already an owner', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // AuthUser does not have permissions to add owners
+  test('Authorised user does not have owner permissions in this channel', () => {
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5355555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userId3 = userData3.authUserId;
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken2,
+          channelId: chanId,
+          uId: userId3,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // Token is invalid
+  test('AuthUser / token is invalid', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken + 1,
+          channelId: chanId,
+          uId: userId,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+});
+
+describe('channelAddOwnerV1 Private Channel Tests', () => {
+  let userId: number;
+  let userId2: number;
+  let userToken: string;
+  let userToken2: string;
+  let chanId: number;
+  beforeEach(() => {
+    const userRes = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+        }
+      }
+    );
+
+    const userRes2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5455555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData = JSON.parse(userRes.getBody() as string);
+    userId = userData.authUserId;
+    userToken = userData.token;
+    const userData2 = JSON.parse(userRes2.getBody() as string);
+    userId2 = userData2.authUserId;
+    userToken2 = userData2.token;
+
+    const channelRes = request(
+      'POST',
+      SERVER_URL + '/channels/create/v2',
+      {
+        json: {
+          token: userToken,
+          name: 'edgyPrivateChannel',
+          isPublic: false,
+        }
+      }
+    );
+    const channelData = JSON.parse(channelRes.getBody() as string);
+    chanId = channelData.channelId;
+
+    const inviteRes = request(
+      'POST',
+      SERVER_URL + '/channel/invite/v2',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId2,
+        }
+      }
+    );
+    const inviteData = JSON.parse(inviteRes.getBody() as string);
+    expect(inviteData).toStrictEqual({});
+  });
+
+  // channelId does not refer to a valid channel
+  test('channelId is invalid', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId + 1,
+          uId: userId2,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // uId does not refer to a valid user
+  test('uId is invalid', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId2 + 1,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // uId does not refer to a member of the channel
+  test('uId is not a member of channel', () => {
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5355555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userId3 = userData3.authUserId;
+
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId3,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // uId refers to a user who is already an owner
+  test('uId is already an owner', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // AuthUser does not have permissions to add owners
+  test('Authorised user does not have owner permissions in this channel', () => {
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5355555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userId3 = userData3.authUserId;
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken2,
+          channelId: chanId,
+          uId: userId3,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  // Token is invalid
+  test('AuthUser / token is invalid', () => {
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken + 1,
+          channelId: chanId,
+          uId: userId,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual(ERROR);
+  });
+
+  test('valid addOwner test', () => {
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5355555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userId3 = userData3.authUserId;
+    const userToken3 = userData3.token;
+
+    const inviteRes = request(
+      'POST',
+      SERVER_URL + '/channel/invite/v2',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId3,
+        }
+      }
+    );
+    const inviteData = JSON.parse(inviteRes.getBody() as string);
+    expect(inviteData).toStrictEqual({});
+
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId3,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual({});
+
+    const addOwnerRes2 = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken3,
+          channelId: chanId,
+          uId: userId2,
+        }
+      }
+    );
+    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    expect(addOwnerData2).toStrictEqual({});
+
+    const channeldetailRes = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userToken,
+          channelId: chanId,
+        }
+      }
+    );
+
+    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    expect(detailData).toStrictEqual({
+      name: 'edgyPrivateChannel',
+      isPublic: false,
+      ownerMembers: [
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+      ],
+      allMembers: [
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+      ]
+    });
+  });
+});

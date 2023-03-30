@@ -245,4 +245,47 @@ function channelLeaveV1(token: string, channelId: number) {
   return {};
 }
 
-export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2, channelLeaveV1 };
+/** Adds uId to ownerMembersIds array
+ *
+ * @param {string} token
+ * @param {number}channelId
+ * @param {number} uId
+ * @returns {{}}
+ */
+function channelAddOwnerV1(token: string, channelId: number, uId: number) {
+  const data: Data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const channelObj = data.channels.find(x => x.channelId === channelId);
+  if (channelObj === undefined) {
+    return { error: 'invalid channelId' };
+  }
+
+  if (data.users.find(x => x.uId === undefined)) {
+    return { error: 'invalid uId' };
+  }
+
+  if (!channelObj.allMembersIds.includes(uId)) {
+    return { error: 'invaild uId - user not apart of channel' };
+  }
+
+  if (!channelObj.ownerMembersIds.includes(userObj.uId)) {
+    return { error: 'invaild uId - user is not an owner of the channel' };
+  }
+
+  if (channelObj.ownerMembersIds.includes(uId)) {
+    return { error: 'uId is already an owner of the channel' };
+  }
+
+  // adding the uId to the channel's ownerMembersIds array
+  channelObj.ownerMembersIds.push(uId);
+
+  setData(data);
+  return {};
+}
+
+export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1 };
