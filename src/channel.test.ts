@@ -5,6 +5,15 @@ const SERVER_URL = `${url}:${port}`;
 
 const ERROR = { error: expect.any(String) };
 
+interface UserRegisterReturn {
+  token: string;
+  authUserId: number;
+}
+
+interface ChannelCreateReturn {
+  channelId: number;
+}
+
 interface channelObjUser {
   uId: number;
   email: string;
@@ -1292,5 +1301,247 @@ describe('channelInviteV2', () => {
     expect(detailData.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
       expectedArray.sort((a, b) => a.uId - b.uId)
     );
+  });
+});
+
+describe('/channel/leave/v1', () => {
+  let userObj: UserRegisterReturn;
+  let channelObj: ChannelCreateReturn;
+  beforeEach(() => {
+    const registerUser = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password1',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra'
+        }
+      }
+    );
+    userObj = JSON.parse(registerUser.getBody() as string);
+
+    const channelCreate = request(
+      'POST',
+      SERVER_URL + '/channels/create/v2',
+      {
+        json: {
+          token: userObj.token,
+          name: 'chanel',
+          isPublic: true
+        }
+      }
+    );
+    channelObj = JSON.parse(channelCreate.getBody() as string);
+  });
+
+  test('invalid token', () => {
+    const channelLeave = request(
+      'POST',
+      SERVER_URL + '/channel/leave/v1',
+      {
+        json: {
+          token: userObj.token + 'invalid',
+          channelId: channelObj.channelId
+        }
+      }
+    );
+
+    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
+    expect(channelLeaveObj).toStrictEqual(ERROR);
+  });
+
+  test('invalid channelId', () => {
+    const channelLeave = request(
+      'POST',
+      SERVER_URL + '/channel/leave/v1',
+      {
+        json: {
+          token: userObj.token,
+          channelId: channelObj.channelId + 1
+        }
+      }
+    );
+
+    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
+    expect(channelLeaveObj).toStrictEqual(ERROR);
+  });
+
+  test('invalid - user is not a member of channel', () => {
+    const registerUser2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5555555@ad.unsw.edu.au',
+          password: 'password1',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra'
+        }
+      }
+    );
+    const userObj2 = JSON.parse(registerUser2.getBody() as string);
+
+    const channelLeave = request(
+      'POST',
+      SERVER_URL + '/channel/leave/v1',
+      {
+        json: {
+          token: userObj2.token,
+          channelId: channelObj.channelId
+        }
+      }
+    );
+
+    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
+    expect(channelLeaveObj).toStrictEqual(ERROR);
+  });
+
+  test('channel member leaves', () => {
+    const res = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5444444@ad.unsw.edu.au',
+          password: 'password1',
+          nameFirst: 'Jephthah',
+          nameLast: 'Benjamin'
+        }
+      }
+    );
+
+    const userObj2 = JSON.parse(res.getBody() as string);
+
+    const channelJoin = request(
+      'POST',
+      SERVER_URL + '/channel/join/v2',
+      {
+        json: {
+          token: userObj2.token,
+          channelId: channelObj.channelId,
+        }
+      }
+    );
+    const channelJoinObj = JSON.parse(channelJoin.getBody() as string);
+    expect(channelJoinObj).toStrictEqual({});
+
+    const channelLeave = request(
+      'POST',
+      SERVER_URL + '/channel/leave/v1',
+      {
+        json: {
+          token: userObj2.token,
+          channelId: channelObj.channelId
+        }
+      }
+    );
+
+    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
+    expect(channelLeaveObj).toStrictEqual({});
+
+    const channelDetails = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userObj.token,
+          channelId: channelObj.channelId
+        }
+      }
+    );
+    const channelDetailsObj = JSON.parse(channelDetails.getBody() as string);
+    expect(channelDetailsObj).toStrictEqual({
+      name: 'chanel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: userObj.authUserId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+          handleStr: 'madhavmishra'
+        }
+      ],
+      allMembers: [
+        {
+          uId: userObj.authUserId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+          handleStr: 'madhavmishra'
+        }
+      ]
+    });
+  });
+
+  test('channel owner leaves', () => {
+    const registerUser2 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5444444@ad.unsw.edu.au',
+          password: 'password1',
+          nameFirst: 'Jephthah',
+          nameLast: 'Benjamin'
+        }
+      }
+    );
+    const userObj2: UserRegisterReturn = JSON.parse(registerUser2.getBody() as string);
+
+    const channelJoin = request(
+      'POST',
+      SERVER_URL + '/channel/join/v2',
+      {
+        json: {
+          token: userObj2.token,
+          channelId: channelObj.channelId,
+        }
+      }
+    );
+    const channelJoinObj = JSON.parse(channelJoin.getBody() as string);
+    expect(channelJoinObj).toStrictEqual({});
+
+    const channelLeave = request(
+      'POST',
+      SERVER_URL + '/channel/leave/v1',
+      {
+        json: {
+          token: userObj.token,
+          channelId: channelObj.channelId
+        }
+      }
+    );
+
+    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
+    expect(channelLeaveObj).toStrictEqual({});
+
+    const channelDetails = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userObj2.token,
+          channelId: channelObj.channelId
+        }
+      }
+    );
+    const channelDetailsObj = JSON.parse(channelDetails.getBody() as string);
+    expect(channelDetailsObj).toStrictEqual({
+      name: 'chanel',
+      isPublic: true,
+      ownerMembers: [],
+      allMembers: [
+        {
+          uId: userObj2.authUserId,
+          email: 'z5444444@ad.unsw.edu.au',
+          nameFirst: 'Jephthah',
+          nameLast: 'Benjamin',
+          handleStr: 'jephthahbenjamin'
+        }
+      ]
+    });
   });
 });

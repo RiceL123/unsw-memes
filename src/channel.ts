@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import { Data, getData, setData } from './dataStore';
 
 /**
  * channelDetailsV2 passes authUserId, channelId and creates a new
@@ -20,6 +20,9 @@ function channelDetailsV2(token: string, channelId: string) {
   if (userObj === undefined) {
     return { error: 'Invalid token' };
   }
+  // if (!(data.users.some(x => x.tokens === token))) {
+  // return { error: 'Invalid authUserId' };
+  // }
 
   const channelObj = data.channels.find(x => x.channelId === id);
 
@@ -84,6 +87,10 @@ function channelJoinV2(token: string, channelId: number) {
   if (userObj === undefined) {
     return { error: 'Invalid token' };
   }
+  // const user = data.users.find(x => x.uId === authUserId);
+  // if (user === undefined) {
+  //   return { error: 'Invalid authUserId' };
+  // }
 
   const channel = data.channels.find(x => x.channelId === channelId);
   if (channel === undefined) {
@@ -206,4 +213,36 @@ function channelMessagesV2(token: string, channelId: string, start: string) {
   }
 }
 
-export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2 };
+/** Reomves a the corresponding member from the channel, if they were an owner,
+ * remove them as well
+ *
+ * @param {string} token
+ * @param {number} channelId
+ * @returns {{}}
+ */
+function channelLeaveV1(token: string, channelId: number) {
+  const data: Data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const channelObj = data.channels.find(x => x.channelId === channelId);
+  if (!channelObj) {
+    return { error: 'invalid channelId' };
+  }
+
+  if (!channelObj.allMembersIds.includes(userObj.uId)) {
+    return { error: 'invalid uId - user not apart of channel' };
+  }
+
+  // remove the user from the channel - if the user was an owner, they are removed from there aswell
+  channelObj.allMembersIds = channelObj.allMembersIds.filter(x => x !== userObj.uId);
+  channelObj.ownerMembersIds = channelObj.ownerMembersIds.filter(x => x !== userObj.uId);
+
+  setData(data);
+  return {};
+}
+
+export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2, channelLeaveV1 };

@@ -785,10 +785,10 @@ describe('/dm/leave/v1', () => {
 
   test('invalid token', () => {
     const dmLeave = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj.token + 'invalid',
           dmId: dmObj.dmId
         }
@@ -800,10 +800,10 @@ describe('/dm/leave/v1', () => {
 
   test('invalid dmId', () => {
     const dmLeave = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj.token,
           dmId: dmObj.dmId + 1
         }
@@ -830,10 +830,10 @@ describe('/dm/leave/v1', () => {
     const userObj2 = JSON.parse(register2.getBody() as string);
 
     const dmLeave = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj2.token,
           dmId: dmObj.dmId
         }
@@ -845,10 +845,10 @@ describe('/dm/leave/v1', () => {
 
   test('valid dm leave', () => {
     const dmLeave = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj.token,
           dmId: dmObj.dmId
         }
@@ -927,10 +927,10 @@ describe('/dm/leave/v1', () => {
     const dmCreateObj3 = JSON.parse(dmCreate3.getBody() as string);
 
     const dmLeave1 = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj.token,
           dmId: dmObj.dmId
         }
@@ -956,10 +956,10 @@ describe('/dm/leave/v1', () => {
     expect(dmDetailsObj).toStrictEqual(ERROR);
 
     const dmLeave2 = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj.token,
           dmId: dmCreateObj2.dmId
         }
@@ -996,10 +996,10 @@ describe('/dm/leave/v1', () => {
 
     // two separate leaves from 1 dm
     const dmLeave31 = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj2.token,
           dmId: dmCreateObj3.dmId
         }
@@ -1007,10 +1007,10 @@ describe('/dm/leave/v1', () => {
     );
 
     const dmLeave32 = request(
-      'DELETE',
+      'POST',
       SERVER_URL + '/dm/leave/v1',
       {
-        qs: {
+        json: {
           token: userObj3.token,
           dmId: dmCreateObj3.dmId
         }

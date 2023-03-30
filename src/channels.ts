@@ -19,32 +19,23 @@ function channelsCreateV2(token: string, name: string, isPublic: boolean) {
     return { error: 'Invalid channel name length' };
   }
 
+  // obtains userId respective to token
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (userObj === undefined) {
+    return { error: 'Invalid token' };
+  }
+
   // creates new channel ID using a +1 mechanism
   let newChannelId = 0;
   if (data.channels.length > 0) {
     newChannelId = Math.max.apply(null, data.channels.map(x => x.channelId)) + 1;
   }
 
-  // getting uId from token
-  let flag = false;
-  let userId = 0;
-  for (const user of data.users) {
-    userId = user.uId;
-    if ((user.tokens.includes(token))) {
-      flag = true;
-      break;
-    }
-  }
-
-  if (flag === false) {
-    return { error: 'Invalid token' };
-  }
-
   const newChannel: Channel = {
     channelId: newChannelId,
     channelName: name,
-    ownerMembersIds: [userId],
-    allMembersIds: [userId],
+    ownerMembersIds: [userObj.uId],
+    allMembersIds: [userObj.uId],
     isPublic: isPublic,
     messages: [],
   };
@@ -58,21 +49,24 @@ function channelsCreateV2(token: string, name: string, isPublic: boolean) {
   * channelsListV1 provides an array of all channels that the
   * authorised user is part of with information about the channelName and channelId.
   *
-  * @param {number} authUserId - unique Id generated from a registered user
+  * @param {string} token  - unique token generated from a registered user
   *
   * @returns {{ channels: [{channelId: Number, name: string} ]}} - Array of objects containing infomation about channelId and channelName
  */
-function channelsListV1(authUserId: number) {
+function channelsListV2(token : string) {
   const data = getData();
 
-  if (!(data.users.some(x => x.uId === authUserId))) {
-    return { error: 'Invalid authUserId' };
+  // obtains userId respective to token
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    return { error: 'Invalid token' };
   }
 
   const channelsArr = [];
   for (const channel of data.channels) {
     // if the user is a member of that channel, push to the channel array
-    if (channel.allMembersIds.some((x: any) => x === authUserId)) {
+    if (channel.allMembersIds.some((x: any) => x === userObj.uId)) {
       channelsArr.push({
         channelId: channel.channelId,
         name: channel.channelName,
@@ -91,11 +85,11 @@ function channelsListV1(authUserId: number) {
  *
  * @returns { allChannels } - returns array of all channels when authUserId valid
  */
-function channelsListAllV1(authUserId: number) {
+function channelsListAllV2(token: string) {
   const data = getData();
 
-  if (!(data.users.some(item => item.uId === authUserId))) {
-    return { error: 'authUserId does not refer to a valid user' };
+  if (!data.users.some(x => x.tokens.includes(token))) {
+    return { error: 'invalid token' };
   }
 
   const allChannels = [];
@@ -110,4 +104,4 @@ function channelsListAllV1(authUserId: number) {
   return { channels: allChannels };
 }
 
-export { channelsCreateV2, channelsListV1, channelsListAllV1 };
+export { channelsCreateV2, channelsListV2, channelsListAllV2 };

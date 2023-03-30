@@ -5,11 +5,11 @@ import config from './config.json';
 import cors from 'cors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
-import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2 } from './channel';
-import { channelsCreateV2 } from './channels';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV1 } from './users';
 import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
+import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1 } from './channel';
+import { channelsCreateV2, channelsListV2, channelsListAllV2 } from './channels';
 
 // Set up web app
 const app = express();
@@ -27,6 +27,16 @@ const HOST: string = process.env.IP || 'localhost';
 app.get('/echo', (req: Request, res: Response, next) => {
   const data = req.query.echo as string;
   return res.json(echo(data));
+});
+
+app.get('/channels/list/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  res.json(channelsListV2(token));
+});
+
+app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  res.json(channelsListAllV2(token));
 });
 
 app.delete('/clear/v1', (req: Request, res: Response, next) => {
@@ -69,6 +79,11 @@ app.get('/channel/messages/v2', (req: Request, res: Response, next) => {
   const channelId = req.query.channelId as string;
   const start = req.query.start as string;
   return res.json(channelMessagesV2(token, channelId, start));
+});
+
+app.post('/channel/leave/v1', (req: Request, res: Response, next) => {
+  const { token, channelId } = req.body;
+  return res.json(channelLeaveV1(token, channelId));
 });
 
 app.post('/auth/login/v2', (req: Request, res: Response, next) => {
@@ -130,9 +145,8 @@ app.get('/dm/details/v1', (req: Request, res: Response, next) => {
   return res.json(dmDetailsV1(token, dmId));
 });
 
-app.delete('/dm/leave/v1', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
-  const dmId = parseInt(req.query.dmId as string);
+app.post('/dm/leave/v1', (req: Request, res: Response, next) => {
+  const { token, dmId } = req.body;
   return res.json(dmLeaveV1(token, dmId));
 });
 
