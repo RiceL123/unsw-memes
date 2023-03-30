@@ -1,5 +1,4 @@
 import { Channel, getData, setData } from './dataStore';
-
 /**
   * channelsCreateV2, given a channel name and an token makes an object with
   * a new & unique channelId and pushes the object into the data.channels array locally
