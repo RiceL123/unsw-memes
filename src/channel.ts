@@ -288,4 +288,46 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1 };
+/**
+  * channelRemoveOwnerV1 takes in a token, channelId and an uId, and if the uId is an owner
+  * a channel, it will remove their owner permission
+  * @param {string} token
+  * @param {number} channelId
+  * @param {number} uId
+  * @returns {}
+*/
+function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
+  const data: Data = getData();
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    return { error: 'invalid token' };
+  }
+
+  const channelObj = data.channels.find(x => x.channelId === channelId);
+  if (!channelObj) {
+    return { error: 'invalid channelId' };
+  }
+
+  if (data.users.find(x => x.uId === uId) === undefined) {
+    return { error: 'invalid uId' };
+  }
+
+  if (!channelObj.ownerMembersIds.includes(uId)) {
+    return { error: 'invalid uId - user is not an owner' };
+  }
+
+  if (channelObj.ownerMembersIds.length === 1) {
+    return { error: 'invalid uId - user is the only owner of the channel' };
+  }
+
+  if (!(channelObj.ownerMembersIds.includes(userObj.uId))) {
+    return { error: 'Invalid authUserId - channelId is valid, but authorised user is not a member of the channel' };
+  }
+
+  channelObj.ownerMembersIds = channelObj.ownerMembersIds.filter(x => x !== uId);
+  setData(data);
+  return {};
+}
+
+export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
