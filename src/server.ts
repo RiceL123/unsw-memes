@@ -30,35 +30,31 @@ app.get('/echo', (req: Request, res: Response, next) => {
   return res.json(echo(data));
 });
 
-app.get('/channels/list/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
-  res.json(channelsListV2(token));
-});
-
-app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
-  res.json(channelsListAllV2(token));
-});
-
-app.get('/channels/list/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
-  res.json(channelsListV2(token));
-});
-
-app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
-  res.json(channelsListAllV2(token));
-});
-
 app.delete('/clear/v1', (req: Request, res: Response, next) => {
   return res.json(clearV1());
 });
 
-app.post('/auth/login/v2', (req: Request, res: Response, next) => {
-  const { email, password } = req.body;
-  return res.json(authLoginV2(email, password));
+/// ////////////////////////////////////////////////////////////
+/// //////////////////  channels routes    /////////////////////
+/// ////////////////////////////////////////////////////////////
+app.post('/channels/create/v2', (req: Request, res: Response, next) => {
+  const { token, name, isPublic } = req.body;
+  return res.json(channelsCreateV2(token, name, isPublic));
 });
 
+app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  res.json(channelsListAllV2(token));
+});
+
+app.get('/channels/list/v2', (req: Request, res: Response, next) => {
+  const token = req.query.token as string;
+  res.json(channelsListV2(token));
+});
+
+/// ////////////////////////////////////////////////////////////
+/// //////////////////    auth routes      /////////////////////
+/// ////////////////////////////////////////////////////////////
 app.post('/auth/login/v2', (req: Request, res: Response, next) => {
   const { email, password } = req.body;
   return res.json(authLoginV2(email, password));
@@ -69,11 +65,14 @@ app.post('/auth/register/v2', (req: Request, res: Response, next) => {
   return res.json(authRegisterV2(email, password, nameFirst, nameLast));
 });
 
-app.post('/channels/create/v2', (req: Request, res: Response, next) => {
-  const { token, name, isPublic } = req.body;
-  return res.json(channelsCreateV2(token, name, isPublic));
+app.post('/auth/logout/v1', (req: Request, res: Response, next) => {
+  const { token } = req.body;
+  return res.json(authLogoutV1(token));
 });
 
+/// ////////////////////////////////////////////////////////////
+/// //////////////////   channel routes    /////////////////////
+/// ////////////////////////////////////////////////////////////
 app.get('/channel/details/v2', (req: Request, res: Response, next) => {
   const token = req.query.token as string;
   const channelId = req.query.channelId as string;
@@ -112,25 +111,21 @@ app.post('/channel/removeowner/v1', (req: Request, res: Response, next) => {
   return res.json(channelRemoveOwnerV1(token, channelId, uId));
 });
 
-app.post('/auth/login/v2', (req: Request, res: Response, next) => {
-  const { email, password } = req.body;
-  return res.json(authLoginV2(email, password));
+/// ////////////////////////////////////////////////////////////
+/// //////////////////    users routes      ////////////////////
+/// ////////////////////////////////////////////////////////////
+app.get('/users/all/v1', (req: Request, res: Response, next) => {
+  const userToken = req.query.token as string;
+  return res.json(usersAllV1(userToken));
 });
 
-app.post('/auth/logout/v1', (req: Request, res: Response, next) => {
-  const { token } = req.body;
-  return res.json(authLogoutV1(token));
-});
-
+/// ////////////////////////////////////////////////////////////
+/// //////////////////    user routes      /////////////////////
+/// ////////////////////////////////////////////////////////////
 app.get('/user/profile/v2', (req: Request, res: Response, next) => {
   const userToken = req.query.token as string;
   const id = req.query.uId as string;
   return res.json(userProfileV2(userToken, id));
-});
-
-app.get('/users/all/v1', (req: Request, res: Response, next) => {
-  const userToken = req.query.token as string;
-  return res.json(usersAllV1(userToken));
 });
 
 app.put('/user/profile/setname/v1', (req: Request, res: Response, next) => {
@@ -148,6 +143,9 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response, next) => {
   return res.json(userProfileSetHandleV1(token, handleStr));
 });
 
+/// ////////////////////////////////////////////////////////////
+/// //////////////////       dm routes      ////////////////////
+/// ////////////////////////////////////////////////////////////
 app.post('/dm/create/v1', (req: Request, res: Response, next) => {
   const { token, uIds } = req.body;
   return res.json(dmCreateV1(token, uIds));
@@ -183,6 +181,9 @@ app.get('/dm/messages/v1', (req: Request, res: Response, next) => {
   return res.json(dmMessagesV1(token, dmId, start));
 });
 
+/// ////////////////////////////////////////////////////////////
+/// //////////////////   message routes     ////////////////////
+/// ////////////////////////////////////////////////////////////
 app.post('/message/send/v1', (req: Request, res: Response, next) => {
   const { token, channelId, message } = req.body;
   return res.json(messageSendV1(token, channelId, message));
