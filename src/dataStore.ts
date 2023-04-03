@@ -44,6 +44,7 @@ interface Data {
 // this is where the database will maintain the persistence
 const dataBasePath = 'src/database.json';
 
+// Use getData() to access the data
 function getData(): Data {
   const fileData = fs.readFileSync(dataBasePath, 'utf8');
   return JSON.parse(fileData);
