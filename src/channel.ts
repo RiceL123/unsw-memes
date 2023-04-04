@@ -273,7 +273,7 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number) {
     return { error: 'invaild uId - user not apart of channel' };
   }
 
-  if (!channelObj.ownerMembersIds.includes(userObj.uId)) {
+  if (!channelObj.ownerMembersIds.includes(userObj.uId) && userObj.permission !== 1) {
     return { error: 'invaild uId - user is not an owner of the channel' };
   }
 
