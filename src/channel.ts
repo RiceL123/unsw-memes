@@ -321,7 +321,7 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
     return { error: 'invalid uId - user is the only owner of the channel' };
   }
 
-  if (!(channelObj.ownerMembersIds.includes(userObj.uId))) {
+  if (!(channelObj.ownerMembersIds.includes(userObj.uId)) && userObj.permission !== 1) {
     return { error: 'Invalid authUserId - channelId is valid, but authorised user is not a member of the channel' };
   }
 

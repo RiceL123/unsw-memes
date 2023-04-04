@@ -3086,4 +3086,386 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
   });
+
+  // Simon makes a channel, and invites Theodore and Alvin
+  // Simon makes Theodore channelOwner,
+  // Alvin who is globalOwner changes Theodore so he is no longer an owner
+  // on Alvin's channel he makes Theodore an Owner, then removes himself as Owner
+  test('valid globalOwner removeOwner test', () => {
+    const userRes3 = request(
+      'POST',
+      SERVER_URL + '/auth/register/v2',
+      {
+        json: {
+          email: 'z5355555@ad.unsw.edu.au',
+          password: 'password',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+
+        }
+      }
+    );
+
+    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userId3 = userData3.authUserId;
+    const userToken3 = userData3.token;
+
+    const channelCreate2 = request(
+      'POST',
+      SERVER_URL + '/channels/create/v2',
+      {
+        json: {
+          token: userToken3,
+          name: 'CoolerChannel',
+          isPublic: true
+        }
+      }
+    );
+    const channelObj2 = JSON.parse(channelCreate2.getBody() as string);
+    const chanId2 = channelObj2.channelId;
+
+    const inviteRes = request(
+      'POST',
+      SERVER_URL + '/channel/invite/v2',
+      {
+        json: {
+          token: userToken3,
+          channelId: chanId2,
+          uId: userId,
+        }
+      }
+    );
+    const inviteData = JSON.parse(inviteRes.getBody() as string);
+    expect(inviteData).toStrictEqual({});
+
+    const inviteRes2 = request(
+      'POST',
+      SERVER_URL + '/channel/invite/v2',
+      {
+        json: {
+          token: userToken3,
+          channelId: chanId2,
+          uId: userId2,
+        }
+      }
+    );
+    const inviteData2 = JSON.parse(inviteRes2.getBody() as string);
+    expect(inviteData2).toStrictEqual({});
+
+    const addOwnerRes = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken3,
+          channelId: chanId2,
+          uId: userId2,
+        }
+      }
+    );
+    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    expect(addOwnerData).toStrictEqual({});
+
+    const channeldetailRes = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userToken,
+          channelId: chanId2,
+        }
+      }
+    );
+
+    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    expect(detailData).toStrictEqual({
+      name: 'CoolerChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ],
+      allMembers: [
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ]
+    });
+
+    const removeOwnerRes2 = request(
+      'POST',
+      SERVER_URL + '/channel/removeowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId2,
+          uId: userId2,
+        }
+      }
+    );
+    const removeData2 = JSON.parse(removeOwnerRes2.getBody() as string);
+    expect(removeData2).toStrictEqual({});
+
+    const channeldetailRes2 = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userToken,
+          channelId: chanId2,
+        }
+      }
+    );
+
+    const detailData2 = JSON.parse(channeldetailRes2.getBody() as string);
+    expect(detailData2).toStrictEqual({
+      name: 'CoolerChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+      ],
+      allMembers: [
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ]
+    });
+
+    const addOwnerRes2 = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId2,
+          uId: userId,
+        }
+      }
+    );
+    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    expect(addOwnerData2).toStrictEqual({});
+
+    const channeldetailRes3 = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userToken,
+          channelId: chanId2,
+        }
+      }
+    );
+
+    const detailData3 = JSON.parse(channeldetailRes3.getBody() as string);
+    expect(detailData3).toStrictEqual({
+      name: 'CoolerChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+      ],
+      allMembers: [
+        {
+          uId: userId3,
+          email: 'z5355555@ad.unsw.edu.au',
+          nameFirst: 'Simon',
+          nameLast: 'the Chipmunk',
+          handleStr: 'simonthechipmunk',
+        },
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ]
+    });
+
+    // second case:
+    const channeldetailRes4 = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userToken,
+          channelId: chanId,
+        }
+      }
+    );
+
+    const detailData4 = JSON.parse(channeldetailRes4.getBody() as string);
+    expect(detailData4).toStrictEqual({
+      name: 'CoolChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+      ],
+      allMembers: [
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ]
+    });
+
+    const addOwnerRes3 = request(
+      'POST',
+      SERVER_URL + '/channel/addowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId2,
+        }
+      }
+    );
+    const addOwnerData3 = JSON.parse(addOwnerRes3.getBody() as string);
+    expect(addOwnerData3).toStrictEqual({});
+
+    const removeOwnerRes3 = request(
+      'POST',
+      SERVER_URL + '/channel/removeowner/v1',
+      {
+        json: {
+          token: userToken,
+          channelId: chanId,
+          uId: userId,
+        }
+      }
+    );
+    const removeData3 = JSON.parse(removeOwnerRes3.getBody() as string);
+    expect(removeData3).toStrictEqual({});
+
+    const channeldetailRes5 = request(
+      'GET',
+      SERVER_URL + '/channel/details/v2',
+      {
+        qs: {
+          token: userToken,
+          channelId: chanId,
+        }
+      }
+    );
+
+    const detailData5 = JSON.parse(channeldetailRes5.getBody() as string);
+    expect(detailData5).toStrictEqual({
+      name: 'CoolChannel',
+      isPublic: true,
+      ownerMembers: [
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ],
+      allMembers: [
+        {
+          uId: userId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Alvin',
+          nameLast: 'the Chipmunk',
+          handleStr: 'alvinthechipmunk',
+        },
+        {
+          uId: userId2,
+          email: 'z5455555@ad.unsw.edu.au',
+          nameFirst: 'Theodore',
+          nameLast: 'the Chipmunk',
+          handleStr: 'theodorethechipmunk',
+        },
+      ]
+    });
+  });
 });
