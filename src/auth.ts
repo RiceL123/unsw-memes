@@ -1,6 +1,7 @@
-import { User, Data, getData, setData } from './dataStore';
+import { User, Data, getData, setData, getHash } from './dataStore';
 import validator from 'validator';
 import { v4 as uuidv4 } from 'uuid';
+import HTTPError from 'http-errors';
 
 /** generate UniqiueToken uses uuid's v4 implementation to generate a new user token
  *
@@ -62,19 +63,20 @@ function generateHandle(nameFirst: string, nameLast: string, data: Data) {
 */
 function authLoginV2(email: string, password: string) {
   const data: Data = getData();
+  password = getHash(password);
 
   const userObj = data.users.find(x => x.email === email);
 
-  if (userObj === undefined) {
-    return { error: 'user not found in data' };
+  if (!userObj) {
+    throw HTTPError(400, 'user does not exist');
   }
 
   if (userObj.password !== password) {
-    return { error: 'password does not match email' };
+    throw HTTPError(400, 'incorrect password for email');
   }
 
   const newToken = generateUniqueToken();
-  userObj.tokens.push(newToken);
+  userObj.tokens.push(getHash(newToken));
 
   setData(data);
 
@@ -100,23 +102,23 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
   const data = getData();
 
   if (validator.isEmail(email) === false) {
-    return { error: 'invalid email' };
+    throw HTTPError(400, 'invalid email');
   }
 
   if (password.length < 6) {
-    return { error: 'password length < 6' };
+    throw HTTPError(400, 'password length < 6');
   }
 
   if (nameFirst.length < 1 || nameFirst.length > 50) {
-    return { error: 'nameFirst.length not between 1 and 50 inclusive' };
+    throw HTTPError(400, 'nameFirst length not between 1 and 50 inclusive');
   }
 
   if (nameLast.length < 1 || nameLast.length > 50) {
-    return { error: 'nameLast.length not between 1 and 50 inclusive' };
+    throw HTTPError(400, 'nameLast length not between 1 and 50 inclusive');
   }
 
   if (data.users.some(existingUsers => existingUsers.email === email)) {
-    return { error: 'email already exists' };
+    throw HTTPError(400, 'email already exists');
   }
 
   // generating a new Id by adding 1 to the current Id
@@ -125,15 +127,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     uId = Math.max.apply(null, data.users.map(x => x.uId)) + 1;
   }
 
-  // if the newly generated uId already exists, then return error
-  if (data.users.some(x => x.uId === uId)) {
-    return { error: 'could not generate new authUserId' };
-  }
-
   const handle = generateHandle(nameFirst, nameLast, data);
-  if (!(handle.match(/[a-z0-9]{1,20}\d*/))) {
-    return { error: 'could not generate a handle' };
-  }
 
   const newToken = generateUniqueToken();
 
@@ -148,10 +142,10 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     nameFirst: nameFirst,
     nameLast: nameLast,
     email: email,
-    password: password,
+    password: getHash(password),
     handleStr: handle,
     permission: permission,
-    tokens: [newToken]
+    tokens: [getHash(newToken)]
   };
 
   data.users.push(newUser);
@@ -173,11 +167,12 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
  */
 function authLogoutV1(token: string) {
   const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   userObj.tokens = userObj.tokens.filter(x => x !== token);

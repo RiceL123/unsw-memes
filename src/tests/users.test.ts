@@ -45,7 +45,7 @@ describe('/user/profile/V2', () => {
   test('invalid uId', () => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -77,7 +77,7 @@ describe('/user/profile/V2', () => {
   test('invalid token', () => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -109,7 +109,7 @@ describe('/user/profile/V2', () => {
   test('valid uId and token', () => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -151,7 +151,7 @@ describe('/user/profile/V2', () => {
   test('multiple valid users', () => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'charmander@ad.unsw.edu.au',
@@ -164,7 +164,7 @@ describe('/user/profile/V2', () => {
 
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'charmeleon@gmail.com',
@@ -177,7 +177,7 @@ describe('/user/profile/V2', () => {
 
     const res3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'charizard@yahoo.com',
@@ -274,7 +274,7 @@ describe('/user/profile/setname/v1', () => {
   beforeEach(() => {
     const userRequest1 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -584,7 +584,7 @@ describe('/user/profile/setname/v1', () => {
   test('multiple valid name change', () => {
     const userRequest2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -597,7 +597,7 @@ describe('/user/profile/setname/v1', () => {
 
     const userRequest3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z3333333@ad.unsw.edu.au',
@@ -709,7 +709,7 @@ describe('/user/profile/setEmail/v1', () => {
   beforeEach(() => {
     const userRequest1 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -773,7 +773,7 @@ describe('/user/profile/setEmail/v1', () => {
   test('invalid email already used by another user', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -841,7 +841,7 @@ describe('/user/profile/setEmail/v1', () => {
   test('valid email - multiple', () => {
     const userRequest2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -854,7 +854,7 @@ describe('/user/profile/setEmail/v1', () => {
 
     const userRequest3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z3333333@ad.unsw.edu.au',
@@ -962,7 +962,7 @@ describe('/user/profile/sethandle/v1', () => {
   beforeEach(() => {
     const userRequest1 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -1071,7 +1071,7 @@ describe('/user/profile/sethandle/v1', () => {
   test('invalid handleStr - handleStr already in use', () => {
     const userRequest2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -1253,7 +1253,7 @@ describe('/user/profile/sethandle/v1', () => {
   test('valid handleStr - multiple', () => {
     const userRequest2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -1266,7 +1266,7 @@ describe('/user/profile/sethandle/v1', () => {
 
     const userRequest3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z3333333@ad.unsw.edu.au',

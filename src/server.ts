@@ -57,18 +57,18 @@ app.get('/channels/list/v2', (req: Request, res: Response, next) => {
 /// ////////////////////////////////////////////////////////////
 /// //////////////////    auth routes      /////////////////////
 /// ////////////////////////////////////////////////////////////
-app.post('/auth/login/v2', (req: Request, res: Response, next) => {
+app.post('/auth/login/v3', (req: Request, res: Response, next) => {
   const { email, password } = req.body;
   return res.json(authLoginV2(email, password));
 });
 
-app.post('/auth/register/v2', (req: Request, res: Response, next) => {
+app.post('/auth/register/v3', (req: Request, res: Response, next) => {
   const { email, password, nameFirst, nameLast } = req.body;
   return res.json(authRegisterV2(email, password, nameFirst, nameLast));
 });
 
-app.post('/auth/logout/v1', (req: Request, res: Response, next) => {
-  const { token } = req.body;
+app.post('/auth/logout/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   return res.json(authLogoutV1(token));
 });
 

@@ -1,4 +1,4 @@
-import { Dm, Data, getData, setData } from './dataStore';
+import { Dm, Data, getData, setData, getHash } from './dataStore';
 
 interface Error {
   error: string;
@@ -46,6 +46,7 @@ function generateDmName(uIds: number[], data: Data) {
  */
 function dmCreateV1(token: string, uIds: number[]): Error | DmCreateReturn {
   const data: Data = getData();
+  token = getHash(token);
 
   const creatorObj = data.users.find(x => x.tokens.includes(token));
   if (!creatorObj) {
@@ -96,7 +97,8 @@ function dmCreateV1(token: string, uIds: number[]): Error | DmCreateReturn {
  * @returns
  */
 function dmRemoveV1(token: string, dmId: number) {
-  const data = getData();
+  const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
@@ -135,6 +137,7 @@ function dmRemoveV1(token: string, dmId: number) {
  */
 function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
   const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
@@ -179,6 +182,7 @@ function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
  */
 function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
   const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
@@ -209,6 +213,7 @@ function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
  */
 function dmListV1(token: string) {
   const data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
@@ -248,6 +253,7 @@ function dmListV1(token: string) {
 
 function dmMessagesV1(token: string, dmId: number, start: number) {
   const data = getData();
+  token = getHash(token);
 
   const pagination = 50;
 

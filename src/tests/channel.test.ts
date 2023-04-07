@@ -35,7 +35,7 @@ describe('channelDetailsV2 ', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -113,7 +113,7 @@ describe('channelDetailsV2 ', () => {
   test('valid authUserId but not a part of the channel', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -211,7 +211,7 @@ describe('channelDetailsV2 ', () => {
   test('multiple valid authUserIds are a part of the channel', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -311,7 +311,7 @@ describe('channelMessagesV2', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -414,7 +414,7 @@ describe('channelMessagesV2', () => {
   test('valid channelId but authorised user is not a member', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -469,7 +469,7 @@ describe('channelMessagesV2', () => {
   test('multiple valid empty channelMessagesV1', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -482,7 +482,7 @@ describe('channelMessagesV2', () => {
 
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z2222222@ad.unsw.edu.au',
@@ -588,7 +588,7 @@ describe('channelJoinV2', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -708,7 +708,7 @@ describe('channelJoinV2', () => {
 
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -756,7 +756,7 @@ describe('channelJoinV2', () => {
   test('private channel, user is not member or global owner', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -804,7 +804,7 @@ describe('channelJoinV2', () => {
   test('joining a public channel', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -895,7 +895,7 @@ describe('channelJoinV2', () => {
   test('joining a private channel', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -997,7 +997,7 @@ describe('channelInviteV2', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -1010,7 +1010,7 @@ describe('channelInviteV2', () => {
 
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -1114,7 +1114,7 @@ describe('channelInviteV2', () => {
   test('channelId is valid, authUser is not a member and uId is not a member', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -1310,7 +1310,7 @@ describe('/channel/leave/v1', () => {
   beforeEach(() => {
     const registerUser = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -1371,10 +1371,10 @@ describe('/channel/leave/v1', () => {
   test('invalid - user is not a member of channel', () => {
     const registerUser2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
-          email: 'z5555555@ad.unsw.edu.au',
+          email: 'z5444444@ad.unsw.edu.au',
           password: 'password1',
           nameFirst: 'Madhav',
           nameLast: 'Mishra'
@@ -1401,7 +1401,7 @@ describe('/channel/leave/v1', () => {
   test('channel member leaves', () => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -1479,7 +1479,7 @@ describe('/channel/leave/v1', () => {
   test('channel owner leaves', () => {
     const registerUser2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -1555,7 +1555,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -1568,7 +1568,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
 
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -1654,7 +1654,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   test('channelId is invalid', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -1705,7 +1705,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   test('Authorised user does not have owner permissions in this channel', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -1754,7 +1754,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   test('valid addOwner test', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -1883,7 +1883,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   test('valid globalOwner addOwner test', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -2025,7 +2025,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -2038,7 +2038,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
 
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -2124,7 +2124,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   test('uId is not a member of channel', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -2175,7 +2175,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   test('Authorised user does not have owner permissions in this channel', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -2224,7 +2224,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   test('valid addOwner test', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -2353,7 +2353,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   test('valid globalOwner addOwner test', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -2527,7 +2527,7 @@ describe('/channel/removeowner/v1', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -2540,7 +2540,7 @@ describe('/channel/removeowner/v1', () => {
 
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5455555@ad.unsw.edu.au',
@@ -2676,7 +2676,7 @@ describe('/channel/removeowner/v1', () => {
   test('valid channelId, authorised user is not an owner', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -2831,7 +2831,7 @@ describe('/channel/removeowner/v1', () => {
   test('valid remove owner - multiple', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',
@@ -3094,7 +3094,7 @@ describe('/channel/removeowner/v1', () => {
   test('valid globalOwner removeOwner test', () => {
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5355555@ad.unsw.edu.au',

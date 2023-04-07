@@ -1,4 +1,4 @@
-import { Message, Data, getData, setData } from './dataStore';
+import { Message, Data, getData, setData, getHash } from './dataStore';
 
 /**
   * generateMessageId, a helper function that generates a unique messageId using a +1 mechanism
@@ -31,6 +31,8 @@ function generateMessageId(data: Data) {
  */
 function messageSendV1(token: string, channelId: number, message: string) {
   const data = getData();
+  token = getHash(token);
+
   if (message.length > 1000 || message.length < 1) {
     return { error: 'Invalid message length' };
   }
@@ -78,6 +80,8 @@ function messageSendV1(token: string, channelId: number, message: string) {
  */
 function messageEditV1(token: string, messageId: number, message: string) {
   const data = getData();
+  token = getHash(token);
+
   if (message.length > 1000) {
     return { error: 'Invalid message length' };
   }
@@ -166,6 +170,7 @@ function messageEditV1(token: string, messageId: number, message: string) {
 */
 function messageRemoveV1(token: string, messageId: number) {
   const data = getData();
+  token = getHash(token);
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
@@ -240,6 +245,8 @@ function messageRemoveV1(token: string, messageId: number) {
 */
 function messageSendDmV1(token: string, dmId: number, message: string) {
   const data = getData();
+  token = getHash(token);
+
   if (message.length < 1 || message.length > 1000) {
     return { error: 'Invalid message length' };
   }
