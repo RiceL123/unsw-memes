@@ -27,7 +27,7 @@ describe('messageSendV1', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -133,7 +133,7 @@ describe('messageSendV1', () => {
   test('valid channelId but authorised user is not a member', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -210,7 +210,7 @@ describe('messageSendV1', () => {
   test('sending multiple messages', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -223,7 +223,7 @@ describe('messageSendV1', () => {
 
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z2222222@ad.unsw.edu.au',
@@ -485,7 +485,7 @@ describe('messageEditV1', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -580,7 +580,7 @@ describe('messageEditV1', () => {
   test('the message was not sent by the authorised user making this request', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -625,7 +625,7 @@ describe('messageEditV1', () => {
   test('the message was not sent by the authorised user making this request but user has perms', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -797,7 +797,7 @@ describe('messageEditV1', () => {
   test('working case for DM', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1003,7 +1003,7 @@ describe('messageEditV1', () => {
   test('empty string Dm with existing messages', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1102,7 +1102,7 @@ describe('messageEditV1', () => {
   test('original sender not owner can edit', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1188,7 +1188,7 @@ describe('messageEditV1', () => {
   test('sender leaves the channel, cannot edit', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1292,7 +1292,7 @@ describe('messageRemoveV1', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -1354,7 +1354,7 @@ describe('messageRemoveV1', () => {
   test('the message was not sent by the authorised user making this request', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1398,7 +1398,7 @@ describe('messageRemoveV1', () => {
   test('the message was not sent by the authorised user making this request but user has perms', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1552,7 +1552,7 @@ describe('messageRemoveV1', () => {
   test('working case for DM', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1700,7 +1700,7 @@ describe('messageRemoveV1', () => {
   test('remove for Dm with existing messages', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1808,7 +1808,7 @@ describe('/message/senddm/v1', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: email,
@@ -1911,7 +1911,7 @@ describe('/message/senddm/v1', () => {
   test('valid dmId, user is not a member of DM', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',

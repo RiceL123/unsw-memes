@@ -1,4 +1,4 @@
-import { getData, setData } from './dataStore';
+import { getData, setData, getHash } from './dataStore';
 import validator from 'validator';
 
 /**
@@ -12,6 +12,7 @@ import validator from 'validator';
 */
 function userProfileV2(token: string, uId: string) {
   const id = parseInt(uId);
+  token = getHash(token);
 
   const data = getData();
 
@@ -46,6 +47,7 @@ function userProfileV2(token: string, uId: string) {
 
 function userProfileSetNameV1(token: string, nameFirst: string, nameLast: string) {
   const data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
@@ -78,6 +80,7 @@ function userProfileSetNameV1(token: string, nameFirst: string, nameLast: string
 */
 function userProfileSetEmailV1(token: string, email: string) {
   const data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
@@ -106,6 +109,7 @@ function isAlphanumeric(str: string) {
 
 function userProfileSetHandleV1(token: string, handleStr: string) {
   const data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 

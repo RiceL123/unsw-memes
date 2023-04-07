@@ -1,4 +1,4 @@
-import { Data, getData, setData } from './dataStore';
+import { Data, getData, setData, getHash } from './dataStore';
 
 /**
  * channelDetailsV2 passes authUserId, channelId and creates a new
@@ -13,6 +13,8 @@ import { Data, getData, setData } from './dataStore';
  */
 function channelDetailsV2(token: string, channelId: string) {
   const data = getData();
+  token = getHash(token);
+
   const id = parseInt(channelId);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
@@ -81,6 +83,7 @@ function channelDetailsV2(token: string, channelId: string) {
  */
 function channelJoinV2(token: string, channelId: number) {
   const data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
@@ -126,6 +129,7 @@ function channelJoinV2(token: string, channelId: number) {
  */
 function channelInviteV2(token: string, channelId: number, uId: number) {
   const data = getData();
+  token = getHash(token);
 
   const userFind = (data.users.find(x => x.uId === uId));
   if (userFind === undefined) {
@@ -174,6 +178,8 @@ function channelInviteV2(token: string, channelId: number, uId: number) {
  */
 function channelMessagesV2(token: string, channelId: string, start: string) {
   const data = getData();
+  token = getHash(token);
+
   const chanId = parseInt(channelId);
   const startNum = parseInt(start);
 
@@ -222,6 +228,7 @@ function channelMessagesV2(token: string, channelId: string, start: string) {
  */
 function channelLeaveV1(token: string, channelId: number) {
   const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
@@ -254,6 +261,7 @@ function channelLeaveV1(token: string, channelId: number) {
  */
 function channelAddOwnerV1(token: string, channelId: number, uId: number) {
   const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
@@ -298,6 +306,7 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number) {
 */
 function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   const data: Data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {

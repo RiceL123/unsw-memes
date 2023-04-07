@@ -1,4 +1,4 @@
-import { getData } from './dataStore';
+import { getData, getHash } from './dataStore';
 
 /**
  * usersAllV1 takes in a token of a current user and then returns an array that stores
@@ -9,6 +9,7 @@ import { getData } from './dataStore';
  */
 function usersAllV1(token: string) {
   const data = getData();
+  token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 

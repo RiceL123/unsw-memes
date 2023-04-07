@@ -36,7 +36,7 @@ describe('/dm/create/v1', () => {
   beforeEach(() => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -116,7 +116,7 @@ describe('/dm/create/v1', () => {
     // register another 2 more users
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -129,7 +129,7 @@ describe('/dm/create/v1', () => {
 
     const res3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5333333@ad.unsw.edu.au',
@@ -162,7 +162,7 @@ describe('/dm/create/v1', () => {
     // register another 2 more users
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -175,7 +175,7 @@ describe('/dm/create/v1', () => {
 
     const res3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5333333@ad.unsw.edu.au',
@@ -245,7 +245,7 @@ describe('/dm/remove/v1', () => {
   beforeEach(() => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -275,7 +275,7 @@ describe('/dm/remove/v1', () => {
       'DELETE',
       SERVER_URL + '/dm/remove/v1',
       {
-        json: {
+        qs: {
           token: userObj.token + 'invalid',
           dmId: dmObj.dmId
         }
@@ -303,7 +303,7 @@ describe('/dm/remove/v1', () => {
   test('dmId valid, authId not creator of DM', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -333,7 +333,7 @@ describe('/dm/remove/v1', () => {
   test('dmId valid, authId no longer in DM', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -377,7 +377,7 @@ describe('/dm/remove/v1', () => {
   test('dmId valid, DM with one other member is deleted', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -419,7 +419,7 @@ describe('/dm/remove/v1', () => {
   test('dmId valid, DM with multiple members is deleted', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -433,7 +433,7 @@ describe('/dm/remove/v1', () => {
 
     const res3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z3333333@ad.unsw.edu.au',
@@ -478,7 +478,7 @@ describe('/dm/details/v1', () => {
   beforeEach(() => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -537,7 +537,7 @@ describe('/dm/details/v1', () => {
     // register another person however, they are not apart of the dm
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -592,7 +592,7 @@ describe('/dm/details/v1', () => {
   test('multiple dm details', () => {
     const register2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -604,7 +604,7 @@ describe('/dm/details/v1', () => {
     );
     const register3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5333333@ad.unsw.edu.au',
@@ -758,7 +758,7 @@ describe('/dm/leave/v1', () => {
   beforeEach(() => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -817,7 +817,7 @@ describe('/dm/leave/v1', () => {
     // second user is not a part of the dm
     const register2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -876,7 +876,7 @@ describe('/dm/leave/v1', () => {
   test('multiple valid leaves', () => {
     const register2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5444444@ad.unsw.edu.au',
@@ -888,7 +888,7 @@ describe('/dm/leave/v1', () => {
     );
     const register3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5333333@ad.unsw.edu.au',
@@ -1056,7 +1056,7 @@ describe('/dm/list/v1', () => {
   beforeEach(() => {
     const res = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -1195,7 +1195,7 @@ describe('/dm/list/v1', () => {
     // creating second user
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -1278,7 +1278,7 @@ describe('/dm/list/v1', () => {
   test('user is recipient of multiple dms which have multiple recipients', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -1292,7 +1292,7 @@ describe('/dm/list/v1', () => {
 
     const res3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z3333333@ad.unsw.edu.au',
@@ -1306,7 +1306,7 @@ describe('/dm/list/v1', () => {
 
     const res4 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z2222222@ad.unsw.edu.au',
@@ -1403,7 +1403,7 @@ describe('/dm/list/v1', () => {
   test('user is member of multiple dms as the owner and recipient', () => {
     const res2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z4444444@ad.unsw.edu.au',
@@ -1417,7 +1417,7 @@ describe('/dm/list/v1', () => {
 
     const res3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z3333333@ad.unsw.edu.au',
@@ -1431,7 +1431,7 @@ describe('/dm/list/v1', () => {
 
     const res4 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z2222222@ad.unsw.edu.au',
@@ -1546,7 +1546,7 @@ describe('dmMessagesV1', () => {
   beforeEach(() => {
     const userRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -1648,7 +1648,7 @@ describe('dmMessagesV1', () => {
   test('valid dmId but authorised user is not a member', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1703,7 +1703,7 @@ describe('dmMessagesV1', () => {
   test('multiple valid empty dmMessagesV1', () => {
     const userRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z1111111@ad.unsw.edu.au',
@@ -1716,7 +1716,7 @@ describe('dmMessagesV1', () => {
 
     const userRes3 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z2222222@ad.unsw.edu.au',

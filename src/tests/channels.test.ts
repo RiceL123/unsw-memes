@@ -24,7 +24,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -58,7 +58,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -92,7 +92,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -126,7 +126,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -160,7 +160,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -194,7 +194,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -228,7 +228,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -260,7 +260,7 @@ describe('channelsCreateV2', () => {
     // registering another person
     const tokenRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5535555@ad.unsw.edu.au',
@@ -293,7 +293,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -325,7 +325,7 @@ describe('channelsCreateV2', () => {
     // registering another person
     const tokenRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5535555@ad.unsw.edu.au',
@@ -359,7 +359,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -407,7 +407,7 @@ describe('channelsCreateV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -439,7 +439,7 @@ describe('channelsCreateV2', () => {
     // registering another person
     const tokenRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5535555@ad.unsw.edu.au',
@@ -478,7 +478,7 @@ describe('channelsListV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -509,7 +509,7 @@ describe('channelsListV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -565,7 +565,7 @@ describe('channelsListV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -642,7 +642,7 @@ describe('channelsListV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',
@@ -660,7 +660,7 @@ describe('channelsListV2', () => {
     // registering another person
     const tokenRes2 = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555355@ad.unsw.edu.au',
@@ -757,7 +757,7 @@ describe('channelsListAllV2', () => {
     // registering a person
     const tokenRes = request(
       'POST',
-      SERVER_URL + '/auth/register/v2',
+      SERVER_URL + '/auth/register/v3',
       {
         json: {
           email: 'z5555555@ad.unsw.edu.au',

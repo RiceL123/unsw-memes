@@ -1,4 +1,4 @@
-import { Channel, getData, setData } from './dataStore';
+import { Channel, getData, setData, getHash } from './dataStore';
 /**
   * channelsCreateV2, given a channel name and an token makes an object with
   * a new & unique channelId and pushes the object into the data.channels array locally
@@ -13,6 +13,7 @@ import { Channel, getData, setData } from './dataStore';
 
 function channelsCreateV2(token: string, name: string, isPublic: boolean) {
   const data = getData();
+  token = getHash(token);
 
   if (name.length < 1 || name.length > 20) {
     return { error: 'Invalid channel name length' };
@@ -54,6 +55,7 @@ function channelsCreateV2(token: string, name: string, isPublic: boolean) {
  */
 function channelsListV2(token : string) {
   const data = getData();
+  token = getHash(token);
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
@@ -86,6 +88,7 @@ function channelsListV2(token : string) {
  */
 function channelsListAllV2(token: string) {
   const data = getData();
+  token = getHash(token);
 
   if (!data.users.some(x => x.tokens.includes(token))) {
     return { error: 'invalid token' };

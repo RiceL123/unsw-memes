@@ -1,4 +1,5 @@
 import fs from 'fs';
+import crypto from 'crypto';
 
 interface User {
   uId: number;
@@ -58,4 +59,10 @@ function setData(newData: Data): void {
   fs.writeFileSync(dataBasePath, JSON.stringify(newData), { flag: 'w' });
 }
 
-export { User, Channel, Dm, Message, Data, getData, setData };
+const secret = '💀💀💀';
+
+function getHash(string: string): string {
+  return crypto.createHmac('sha1', secret).update(string).digest('hex');
+}
+
+export { User, Channel, Dm, Message, Data, getData, setData, getHash };
