@@ -1,11 +1,8 @@
 import { Dm, Data, getData, setData, getHash } from './dataStore';
+import HTTPError from 'http-errors';
 
 interface Error {
   error: string;
-}
-
-interface DmCreateReturn {
-  dmId: number;
 }
 
 interface DmDetailsReturn {
@@ -44,25 +41,25 @@ function generateDmName(uIds: number[], data: Data) {
  *
  * @returns {{ dmId: number }}
  */
-function dmCreateV1(token: string, uIds: number[]): Error | DmCreateReturn {
+function dmCreateV1(token: string, uIds: number[]) {
   const data: Data = getData();
   token = getHash(token);
 
   const creatorObj = data.users.find(x => x.tokens.includes(token));
   if (!creatorObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   uIds.push(creatorObj.uId);
 
   // check every uId in the array references a valid user
   if (!(uIds.every(x => data.users.some(y => y.uId === x)))) {
-    return { error: 'invalid uId - does not refer to existing user' };
+    throw HTTPError(400, 'invalid uId - does not refer to existing user');
   }
 
   // if each uId is not unique
   if (uIds.length !== new Set(uIds).size) {
-    return { error: 'invalid uId - contains duplicates' };
+    throw HTTPError(400, 'invalid uId - cannot contain duplicates');
   }
 
   // generate new unique dmId
@@ -102,24 +99,22 @@ function dmRemoveV1(token: string, dmId: number) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const dmObj = data.dms.find(x => x.dmId === dmId);
   if (!dmObj) {
-    return { error: 'invalid dmId' };
+    throw HTTPError(400, 'dmId does not refer to a valid DMn');
   }
 
   if (!dmObj.memberIds.includes(userObj.uId)) {
-    return { error: 'invalid uId - no longer in DM' };
+    throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
-  // dmId is valid and the authorised user is not the original DM creator error
   if (dmObj.creatorId !== userObj.uId) {
-    return { error: 'user is not DM creator' };
+    throw HTTPError(403, 'The authorised user is not the original DM creator');
   }
 
-  // IMPLEMENTATION
   data.dms = data.dms.filter(x => x.dmId !== dmObj.dmId);
 
   setData(data);
@@ -141,16 +136,16 @@ function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const dmObj = data.dms.find(x => x.dmId === dmId);
   if (!dmObj) {
-    return { error: 'invalid dmId' };
+    throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
   if (!dmObj.memberIds.includes(userObj.uId)) {
-    return { error: 'invalid uId - not a member of dm' };
+    throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
   const members = [];
@@ -186,16 +181,16 @@ function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const dmObj = data.dms.find(x => x.dmId === dmId);
   if (!dmObj) {
-    return { error: 'invalid dmId' };
+    throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
   if (!dmObj.memberIds.includes(userObj.uId)) {
-    return { error: 'invalid uId - not a member' };
+    throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
   dmObj.memberIds = dmObj.memberIds.filter(x => x !== userObj.uId);
@@ -217,7 +212,7 @@ function dmListV1(token: string) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const dmsArray = [];
@@ -259,21 +254,21 @@ function dmMessagesV1(token: string, dmId: number, start: number) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
-  if (userObj === undefined) {
-    return { error: 'Invalid token' };
+  if (!userObj) {
+    throw HTTPError(403, 'invalid token');
   }
 
   if (!(data.dms.some(x => x.dmId === dmId))) {
-    return { error: 'Invalid dmId' };
+    throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
   const dmFind = (data.dms.find(x => x.dmId === dmId));
   if (!(dmFind.memberIds.includes(userObj.uId))) {
-    return { error: 'Invalid authUserId: dmId is valid, but authorised user is not a member of the dm' };
+    throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
   if (start < 0 || start > dmFind.messages.length) {
-    return { error: 'Invalid start value' };
+    throw HTTPError(400, 'invalid start value');
   }
 
   if (start + pagination >= dmFind.messages.length) {
