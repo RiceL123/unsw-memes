@@ -109,12 +109,12 @@ function isAlphanumeric(str: string) {
 }
 
 /**
- * UserProfileSetHandleV2 gets the token for a user and also a string for a new handleStr.
+  * UserProfileSetHandleV2 gets the token for a user and also a string for a new handleStr.
   * Then it changes the user's current handleStr to the new handleStr.
- * @param {string} token - the user calling function
- * @param {string} handleStr - new handleStr
- * @returns {} - returns an empty object
- */
+  * @param {string} token - the user calling function
+  * @param {string} handleStr - new handleStr
+  * @returns {} - returns an empty object
+*/
 function userProfileSetHandleV2(token: string, handleStr: string) {
   const data = getData();
   token = getHash(token);
