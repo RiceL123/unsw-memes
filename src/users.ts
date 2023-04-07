@@ -1,20 +1,21 @@
 import { getData, getHash } from './dataStore';
+import HTTPError from 'http-errors';
 
 /**
- * usersAllV1 takes in a token of a current user and then returns an array that stores
+ * usersAllV2 takes in a token of a current user and then returns an array that stores
  * all the information about all users that are currently on the website
- * @param token - the token of the user
+ * @param {string} token - the token of the user
  * @returns { users } - an array of objects of users where it shows their uId, nameFirst
  * nameLast, email and handleStr
  */
-function usersAllV1(token: string) {
+function usersAllV2(token: string) {
   const data = getData();
   token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const returnedUsers = [];
@@ -35,4 +36,4 @@ function usersAllV1(token: string) {
   };
 }
 
-export { usersAllV1 };
+export { usersAllV2 };

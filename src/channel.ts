@@ -1,3 +1,4 @@
+import HTTPError from 'http-errors';
 import { Data, getData, setData, getHash } from './dataStore';
 
 /**
@@ -188,20 +189,20 @@ function channelMessagesV2(token: string, channelId: string, start: string) {
   const userObj = data.users.find(x => x.tokens.includes(token));
 
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
-  }
-
-  if (!(data.channels.some(x => x.channelId === chanId))) {
-    return { error: 'Invalid channelId' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const channelFind = (data.channels.find(x => x.channelId === chanId));
-  if (!(channelFind.allMembersIds.includes(userObj.uId))) {
-    return { error: 'Invalid authUserId: channelId is valid, but authorised user is not a member of the channel' };
+  if (channelFind === undefined) {
+    throw HTTPError(400, 'invalid channelId');
+  }
+
+  if ((channelFind.allMembersIds.includes(userObj.uId)) === false) {
+    throw HTTPError(403, 'Invalid authUserId: channelId is valid, but authorised user is not a member of the channel');
   }
 
   if (startNum < 0 || startNum > channelFind.messages.length) {
-    return { error: 'Invalid start value' };
+    throw HTTPError(400, 'Invalid start value');
   }
 
   if (startNum + pagination >= channelFind.messages.length) {
@@ -214,7 +215,7 @@ function channelMessagesV2(token: string, channelId: string, start: string) {
     return {
       messages: channelFind.messages.slice(startNum, startNum + pagination),
       start: startNum,
-      end: start + pagination,
+      end: startNum + pagination,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { clear, authRegister, dmCreate, dmMessages } from './routeRequests';
+import { clear, authRegister, dmCreate, dmMessages, channelMessages } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -177,19 +177,7 @@ describe('messageSendV1', () => {
     const messageSendData = JSON.parse(messageSendRes.getBody() as string);
     expect(messageSendData).toStrictEqual(VALID_MESSAGE);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = channelMessages(userToken, chanId, 0);
 
     expect(messageData).toStrictEqual({
       messages: [
@@ -308,42 +296,7 @@ describe('messageSendV1', () => {
     const messageSendData3 = JSON.parse(messageSendRes3.getBody() as string);
     expect(messageSendData3).toStrictEqual(VALID_MESSAGE);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageRes2 = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userData2.token,
-          channelId: channelData2.channelId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageRes3 = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userData3.token,
-          channelId: channelData3.channelId,
-          start: 0,
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
       messages: [
         {
@@ -357,7 +310,7 @@ describe('messageSendV1', () => {
       end: -1,
     });
 
-    const messageData2 = JSON.parse(messageRes2.getBody() as string);
+    const messageData2 = channelMessages(userData2.token, channelData2.channelId, 0);
     expect(messageData2).toStrictEqual({
       messages: [
         {
@@ -371,7 +324,7 @@ describe('messageSendV1', () => {
       end: -1,
     });
 
-    const messageData3 = JSON.parse(messageRes3.getBody() as string);
+    const messageData3 = channelMessages(userData3.token, channelData3.channelId, 0);
     expect(messageData3).toStrictEqual({
       messages: [
         {
@@ -433,19 +386,7 @@ describe('messageSendV1', () => {
     const messageSendData3 = JSON.parse(messageSendRes3.getBody() as string);
     expect(messageSendData3).toStrictEqual(VALID_MESSAGE);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = channelMessages(userToken, chanId, 0);
 
     expect(messageData).toStrictEqual({
       messages: [
@@ -678,19 +619,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [
         {
@@ -766,19 +695,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [
         {
@@ -874,19 +791,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [],
       start: 0,
@@ -938,19 +843,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [
         {
@@ -1088,19 +981,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [
         {
@@ -1187,19 +1068,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [
         {
@@ -1381,19 +1250,7 @@ describe('messageRemoveV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [],
       start: 0,
@@ -1459,19 +1316,7 @@ describe('messageRemoveV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).toStrictEqual({});
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [],
       start: 0,
@@ -1564,19 +1409,7 @@ describe('messageRemoveV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageReturn = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const checkMessageData = JSON.parse(messageReturn.getBody() as string);
+    const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
       messages: [
         {
