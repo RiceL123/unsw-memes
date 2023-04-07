@@ -1,3 +1,5 @@
+import { clear, authRegister, dmCreate, dmMessages } from './routeRequests';
+
 import request from 'sync-request';
 
 import { port, url } from '../config.json';
@@ -14,10 +16,7 @@ interface AuthRegisterReturn {
 }
 
 beforeEach(() => {
-  request(
-    'DELETE',
-    SERVER_URL + '/clear/v1'
-  );
+  clear();
 });
 
 describe('messageSendV1', () => {
@@ -795,31 +794,9 @@ describe('messageEditV1', () => {
   });
 
   test('working case for DM', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
 
-    const dmCreate = request(
-      'POST',
-      SERVER_URL + '/dm/create/v1',
-      {
-        json: {
-          token: userToken,
-          uIds: [userData2.authUserId],
-        }
-      }
-    );
-    const data = JSON.parse(dmCreate.getBody() as string);
     const dmId = data.dmId;
 
     const sendDmRes = request(
@@ -852,19 +829,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/dm/messages/v1',
-      {
-        qs: {
-          token: userToken,
-          dmId: dmId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
       messages: [
         {
@@ -1001,31 +966,8 @@ describe('messageEditV1', () => {
   });
 
   test('empty string Dm with existing messages', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-
-    const dmCreate = request(
-      'POST',
-      SERVER_URL + '/dm/create/v1',
-      {
-        json: {
-          token: userToken,
-          uIds: [userData2.authUserId],
-        }
-      }
-    );
-    const data = JSON.parse(dmCreate.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
     const dmId = data.dmId;
 
     const sendDmRes = request(
@@ -1072,19 +1014,7 @@ describe('messageEditV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/dm/messages/v1',
-      {
-        qs: {
-          token: userToken,
-          dmId: dmId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
       messages: [
         {
@@ -1550,32 +1480,8 @@ describe('messageRemoveV1', () => {
   });
 
   test('working case for DM', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-
-    const dmCreate = request(
-      'POST',
-      SERVER_URL + '/dm/create/v1',
-      {
-        json: {
-          token: userToken,
-          uIds: [userData2.authUserId]
-        }
-      }
-    );
-    const data = JSON.parse(dmCreate.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
     const dmId = data.dmId;
 
     const sendDmRes = request(
@@ -1607,19 +1513,7 @@ describe('messageRemoveV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/dm/messages/v1',
-      {
-        qs: {
-          token: userToken,
-          dmId: dmId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
       messages: [],
       start: 0,
@@ -1698,31 +1592,8 @@ describe('messageRemoveV1', () => {
   });
 
   test('remove for Dm with existing messages', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-
-    const dmCreate = request(
-      'POST',
-      SERVER_URL + '/dm/create/v1',
-      {
-        json: {
-          token: userToken,
-          uIds: [userData2.authUserId]
-        }
-      }
-    );
-    const data = JSON.parse(dmCreate.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
     const dmId = data.dmId;
 
     const sendDmRes = request(
@@ -1769,19 +1640,7 @@ describe('messageRemoveV1', () => {
     const setNameData = JSON.parse(setRes.getBody() as string);
     expect(setNameData).not.toStrictEqual(ERROR);
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/dm/messages/v1',
-      {
-        qs: {
-          token: userToken,
-          dmId: dmId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
       messages: [
         {
@@ -1806,33 +1665,8 @@ describe('/message/senddm/v1', () => {
   let userData: AuthRegisterReturn;
   let dmDataId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: email,
-          password: password,
-          nameFirst: nameFirst,
-          nameLast: nameLast,
-        }
-      }
-    );
-
-    userData = JSON.parse(userRes.getBody() as string);
-
-    const dmCreate = request(
-      'POST',
-      SERVER_URL + '/dm/create/v1',
-      {
-        json: {
-          token: userData.token,
-          uIds: []
-        }
-      }
-    );
-
-    const dmData = JSON.parse(dmCreate.getBody() as string);
+    userData = authRegister(email, password, nameFirst, nameLast);
+    const dmData = dmCreate(userData.token, []);
     dmDataId = dmData.dmId;
   });
 
@@ -1909,20 +1743,7 @@ describe('/message/senddm/v1', () => {
   });
 
   test('valid dmId, user is not a member of DM', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z4444444@ad.unsw.edu.au',
-          password: 'password1',
-          nameFirst: 'Charmander',
-          nameLast: 'Charizard',
-        }
-      }
-    );
-
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z4444444@ad.unsw.edu.au', 'password1', 'Charmander', 'Charizard');
 
     const sendDmRes = request(
       'POST',
@@ -1958,19 +1779,7 @@ describe('/message/senddm/v1', () => {
 
     expect(sendDmData).toStrictEqual({ messageId: expect.any(Number) });
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/dm/messages/v1',
-      {
-        qs: {
-          token: userData.token,
-          dmId: dmDataId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = dmMessages(userData.token, dmDataId, 0);
 
     expect(messageData).toStrictEqual({
       messages: [
@@ -2033,19 +1842,7 @@ describe('/message/senddm/v1', () => {
     expect(sendDmData2).toStrictEqual({ messageId: expect.any(Number) });
     expect(sendDmData3).toStrictEqual({ messageId: expect.any(Number) });
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/dm/messages/v1',
-      {
-        qs: {
-          token: userData.token,
-          dmId: dmDataId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const messageData = dmMessages(userData.token, dmDataId, 0);
 
     expect(messageData).toStrictEqual({
       messages: [

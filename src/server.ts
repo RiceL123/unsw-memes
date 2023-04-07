@@ -148,36 +148,38 @@ app.put('/user/profile/sethandle/v1', (req: Request, res: Response, next) => {
 /// ////////////////////////////////////////////////////////////
 /// //////////////////       dm routes      ////////////////////
 /// ////////////////////////////////////////////////////////////
-app.post('/dm/create/v1', (req: Request, res: Response, next) => {
-  const { token, uIds } = req.body;
+app.post('/dm/create/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { uIds } = req.body;
   return res.json(dmCreateV1(token, uIds));
 });
 
-app.get('/dm/list/v1', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
+app.get('/dm/list/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   return res.json(dmListV1(token));
 });
 
-app.delete('/dm/remove/v1', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
+app.delete('/dm/remove/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   const dmId = parseInt(req.query.dmId as string);
 
   return res.json(dmRemoveV1(token, dmId));
 });
 
-app.get('/dm/details/v1', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
+app.get('/dm/details/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   const dmId = parseInt(req.query.dmId as string);
   return res.json(dmDetailsV1(token, dmId));
 });
 
-app.post('/dm/leave/v1', (req: Request, res: Response, next) => {
-  const { token, dmId } = req.body;
+app.post('/dm/leave/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { dmId } = req.body;
   return res.json(dmLeaveV1(token, dmId));
 });
 
-app.get('/dm/messages/v1', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
+app.get('/dm/messages/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   const dmId = parseInt(req.query.dmId as string);
   const start = parseInt(req.query.start as string);
   return res.json(dmMessagesV1(token, dmId, start));

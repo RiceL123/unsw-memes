@@ -267,10 +267,12 @@ function userProfileSetHandle(token: string, handleStr: string) {
 function dmCreate(token: string, uIds: number[]) {
   return requestHelper(
     'POST',
-    '/dm/create/v1',
+    '/dm/create/v2',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         uIds: uIds
       }
     }
@@ -280,10 +282,12 @@ function dmCreate(token: string, uIds: number[]) {
 function dmRemove(token: string, dmId: number) {
   return requestHelper(
     'DELETE',
-    '/dm/remove/v1',
+    '/dm/remove/v2',
     {
+      headers: {
+        token: token
+      },
       qs: {
-        token: token,
         dmId: dmId
       }
     }
@@ -293,10 +297,12 @@ function dmRemove(token: string, dmId: number) {
 function dmDetails(token: string, dmId: number) {
   return requestHelper(
     'GET',
-    SERVER_URL + '/dm/details/v1',
+    '/dm/details/v2',
     {
+      headers: {
+        token: token
+      },
       qs: {
-        token: token,
         dmId: dmId
       }
     }
@@ -306,10 +312,12 @@ function dmDetails(token: string, dmId: number) {
 function dmLeave(token: string, dmId: number) {
   return requestHelper(
     'POST',
-    '/dm/leave/v1',
+    '/dm/leave/v2',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         dmId: dmId
       }
     }
@@ -319,9 +327,9 @@ function dmLeave(token: string, dmId: number) {
 function dmList(token: string) {
   return requestHelper(
     'GET',
-    '/dm/list/v1',
+    '/dm/list/v2',
     {
-      qs: {
+      headers: {
         token: token,
       }
     }
@@ -331,10 +339,12 @@ function dmList(token: string) {
 function dmMessages(token: string, dmId: number, start: number) {
   return requestHelper(
     'GET',
-    '/dm/messages/v1',
+    '/dm/messages/v2',
     {
+      headers: {
+        token: token
+      },
       qs: {
-        token: token,
         dmId: dmId,
         start: start,
       }
