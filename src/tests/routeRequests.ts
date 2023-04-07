@@ -118,10 +118,12 @@ function channelDetails(token: string, channelId: number) {
 function channelMessages(token: string, channelId: number, start: number) {
   return requestHelper(
     'GET',
-    '/channel/messages/v2',
+    '/channel/messages/v3',
     {
-      qs: {
+      headers: {
         token: token,
+      },
+      qs: {
         channelId: channelId,
         start: start,
       }
@@ -198,12 +200,12 @@ function channelRemoveOwner(token: string, channelId: number, uId: number) {
 }
 // ===================== users ===================== //
 function usersAll(token: string) {
-  requestHelper(
+  return requestHelper(
     'GET',
-    '/users/all/v1',
+    '/users/all/v2',
     {
-      qs: {
-        token: token,
+      headers: {
+        token: token
       },
     }
   );
@@ -213,10 +215,12 @@ function usersAll(token: string) {
 function userProfile(token: string, uId: number) {
   return requestHelper(
     'GET',
-    '/user/profile/v2',
+    '/user/profile/v3',
     {
+      headers: {
+        token: token
+      },
       qs: {
-        token: token,
         uId: uId
       }
     }
@@ -226,10 +230,12 @@ function userProfile(token: string, uId: number) {
 function userProfileSetName(token: string, nameFirst: string, nameLast: string) {
   return requestHelper(
     'PUT',
-    '/user/profile/setname/v1',
+    '/user/profile/setname/v2',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         nameFirst: nameFirst,
         nameLast: nameLast,
       },
@@ -240,10 +246,12 @@ function userProfileSetName(token: string, nameFirst: string, nameLast: string) 
 function userProfileSetEmail(token: string, email: string) {
   return requestHelper(
     'PUT',
-    '/user/profile/setemail/v1',
+    '/user/profile/setemail/v2',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         email: email,
       },
     }
@@ -253,10 +261,12 @@ function userProfileSetEmail(token: string, email: string) {
 function userProfileSetHandle(token: string, handleStr: string) {
   return requestHelper(
     'PUT',
-    '/user/profile/sethandle/v1',
+    '/user/profile/sethandle/v2',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         handleStr: handleStr,
       },
     }

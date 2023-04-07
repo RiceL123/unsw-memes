@@ -8,8 +8,8 @@ import errorHandler from 'middleware-http-errors';
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
-import { usersAllV1 } from './users';
-import { userProfileV2, userProfileSetNameV1, userProfileSetEmailV1, userProfileSetHandleV1 } from './user';
+import { usersAllV2 } from './users';
+import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
 import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV2, channelsListV2, channelsListAllV2 } from './channels';
 import { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 } from './message';
@@ -91,8 +91,8 @@ app.post('/channel/invite/v2', (req: Request, res: Response, next) => {
   return res.json(channelInviteV2(token, channelId, uId));
 });
 
-app.get('/channel/messages/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
+app.get('/channel/messages/v3', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   const channelId = req.query.channelId as string;
   const start = req.query.start as string;
   return res.json(channelMessagesV2(token, channelId, start));
@@ -116,33 +116,36 @@ app.post('/channel/removeowner/v1', (req: Request, res: Response, next) => {
 /// ////////////////////////////////////////////////////////////
 /// //////////////////    users routes      ////////////////////
 /// ////////////////////////////////////////////////////////////
-app.get('/users/all/v1', (req: Request, res: Response, next) => {
-  const userToken = req.query.token as string;
-  return res.json(usersAllV1(userToken));
+app.get('/users/all/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  return res.json(usersAllV2(token));
 });
 
 /// ////////////////////////////////////////////////////////////
 /// //////////////////    user routes      /////////////////////
 /// ////////////////////////////////////////////////////////////
-app.get('/user/profile/v2', (req: Request, res: Response, next) => {
-  const userToken = req.query.token as string;
+app.get('/user/profile/v3', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   const id = req.query.uId as string;
-  return res.json(userProfileV2(userToken, id));
+  return res.json(userProfileV3(token, id));
 });
 
-app.put('/user/profile/setname/v1', (req: Request, res: Response, next) => {
-  const { token, nameFirst, nameLast } = req.body;
-  return res.json(userProfileSetNameV1(token, nameFirst, nameLast));
+app.put('/user/profile/setname/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { nameFirst, nameLast } = req.body;
+  return res.json(userProfileSetNameV2(token, nameFirst, nameLast));
 });
 
-app.put('/user/profile/setemail/v1', (req: Request, res: Response, next) => {
-  const { token, email } = req.body;
-  return res.json(userProfileSetEmailV1(token, email));
+app.put('/user/profile/setemail/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { email } = req.body;
+  return res.json(userProfileSetEmailV2(token, email));
 });
 
-app.put('/user/profile/sethandle/v1', (req: Request, res: Response, next) => {
-  const { token, handleStr } = req.body;
-  return res.json(userProfileSetHandleV1(token, handleStr));
+app.put('/user/profile/sethandle/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { handleStr } = req.body;
+  return res.json(userProfileSetHandleV2(token, handleStr));
 });
 
 /// ////////////////////////////////////////////////////////////

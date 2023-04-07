@@ -1,3 +1,5 @@
+import { clear, authRegister, channelsCreate, channelMessages, messageSend, channelInvite } from './routeRequests';
+
 import request from 'sync-request';
 
 import { port, url } from '../config.json';
@@ -23,10 +25,7 @@ interface channelObjUser {
 }
 
 beforeEach(() => {
-  request(
-    'DELETE',
-    SERVER_URL + '/clear/v1'
-  );
+  clear();
 });
 
 describe('channelDetailsV2 ', () => {
@@ -305,161 +304,67 @@ describe('channelDetailsV2 ', () => {
   });
 });
 
-describe('channelMessagesV2', () => {
-  let userToken: string;
-  let chanId: number;
-  beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-        }
-      }
-    );
+describe('/channel/messages/v3', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
 
-    const userData = JSON.parse(userRes.getBody() as string);
-    userToken = userData.token;
-
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'Coding',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
-  });
+  const channelName = 'Coding';
 
   test('invalid channelId', () => {
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId + 1,
-          start: 0,
-        }
-      }
-    );
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const channelObj = channelsCreate(data.token, channelName, true);
 
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const start = 0;
 
-    expect(messageData).toStrictEqual(ERROR);
+    expect(channelMessages(data.token, channelObj.channelId + 1, start)).toEqual(400);
   });
 
   test('invalid token', () => {
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken + 1,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const channelObj = channelsCreate(data.token, channelName, true);
 
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const start = 0;
 
-    expect(messageData).toStrictEqual(ERROR);
+    expect(channelMessages(data.token + 1, channelObj.channelId, start)).toEqual(403);
   });
 
   test('start is greater than total messages in channel', () => {
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 50,
-        }
-      }
-    );
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const channelObj = channelsCreate(data.token, channelName, true);
 
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const start = 50;
 
-    expect(messageData).toStrictEqual(ERROR);
+    expect(channelMessages(data.token, channelObj.channelId, start)).toEqual(400);
   });
 
   test('start is less than 0', () => {
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: -1,
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const channelObj = channelsCreate(data.token, channelName, true);
 
-    expect(messageData).toStrictEqual(ERROR);
+    const start = -1;
+
+    expect(channelMessages(data.token, channelObj.channelId, start)).toEqual(400);
   });
 
   test('valid channelId but authorised user is not a member', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const data2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelObj = channelsCreate(data.token, channelName, true);
 
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const start = 0;
 
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userData2.token,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-
-    expect(messageData).toStrictEqual(ERROR);
+    expect(channelMessages(data2.token, channelObj.channelId, start)).toEqual(403);
   });
 
   test('valid empty channelMessagesV1', () => {
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const channelObj = channelsCreate(data.token, channelName, true);
 
-    const messageData = JSON.parse(messageRes.getBody() as string);
+    const start = 0;
 
-    expect(messageData).toStrictEqual({
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
       messages: [],
       start: 0,
       end: -1,
@@ -467,115 +372,1083 @@ describe('channelMessagesV2', () => {
   });
 
   test('multiple valid empty channelMessagesV1', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const data2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data3 = authRegister('z2222222@ad.unsw.edu.au', 'password', 'Charizard', 'Pokemon');
 
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z2222222@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charizard',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
+    const channelObj = channelsCreate(data.token, channelName, true);
+    const channelObj2 = channelsCreate(data2.token, 'Maths', true);
+    const channelObj3 = channelsCreate(data3.token, 'Commerce', true);
 
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const start = 0;
 
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userData2.token,
-          name: 'Maths',
-          isPublic: true,
-        }
-      }
-    );
-
-    const channelRes3 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userData3.token,
-          name: 'Commerce',
-          isPublic: true,
-        }
-      }
-    );
-
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    const channelData3 = JSON.parse(channelRes3.getBody() as string);
-
-    const messageRes = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageRes2 = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userData2.token,
-          channelId: channelData2.channelId,
-          start: 0,
-        }
-      }
-    );
-
-    const messageRes3 = request(
-      'GET',
-      SERVER_URL + '/channel/messages/v2',
-      {
-        qs: {
-          token: userData3.token,
-          channelId: channelData3.channelId,
-          start: 0,
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    expect(messageData).toStrictEqual({
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
       messages: [],
       start: 0,
       end: -1,
     });
 
-    const messageData2 = JSON.parse(messageRes2.getBody() as string);
-    expect(messageData2).toStrictEqual({
+    expect(channelMessages(data2.token, channelObj2.channelId, start)).toStrictEqual({
       messages: [],
       start: 0,
       end: -1,
     });
 
-    const messageData3 = JSON.parse(messageRes3.getBody() as string);
-    expect(messageData3).toStrictEqual({
+    expect(channelMessages(data3.token, channelObj3.channelId, start)).toStrictEqual({
       messages: [],
       start: 0,
+      end: -1,
+    });
+  });
+
+  test('valid channelMessagesV1 - 1 messages', () => {
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelObj = channelsCreate(data.token, channelName, true);
+    const start = 0;
+
+    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
+
+    const m1 = messageSend(sender.token, channelObj.channelId, 'Hello World').messageId;
+    expect(m1).toStrictEqual(expect.any(Number));
+
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
+      messages: [
+        {
+          messageId: m1,
+          uId: sender.authUserId,
+          message: 'Hello World',
+          timeSent: expect.any(Number),
+        }
+      ],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('valid channelMessagesV1 - 3 messages', () => {
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelObj = channelsCreate(data.token, channelName, true);
+    const start = 0;
+
+    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
+
+    const m1 = messageSend(sender.token, channelObj.channelId, 'Hello World').messageId;
+    const m2 = messageSend(sender.token, channelObj.channelId, 'Im Batman').messageId;
+    const m3 = messageSend(sender.token, channelObj.channelId, 'Goodbye World').messageId;
+
+    expect(m1).toStrictEqual(expect.any(Number));
+    expect(m2).toStrictEqual(expect.any(Number));
+    expect(m3).toStrictEqual(expect.any(Number));
+
+    expect(m1).not.toStrictEqual(m2);
+    expect(m1).not.toStrictEqual(m3);
+    expect(m2).not.toStrictEqual(m3);
+
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
+      messages: [
+        {
+          messageId: m3,
+          uId: sender.authUserId,
+          message: 'Goodbye World',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m2,
+          uId: sender.authUserId,
+          message: 'Im Batman',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m1,
+          uId: sender.authUserId,
+          message: 'Hello World',
+          timeSent: expect.any(Number),
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('valid channelMessagesV1 - 10 messages', () => {
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelObj = channelsCreate(data.token, channelName, true);
+
+    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
+
+    const start = 0;
+
+    const m1 = messageSend(sender.token, channelObj.channelId, 'Hello World').messageId;
+    const m2 = messageSend(sender.token, channelObj.channelId, 'Im Batman').messageId;
+    const m3 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m4 = messageSend(sender.token, channelObj.channelId, 'b').messageId;
+    const m5 = messageSend(sender.token, channelObj.channelId, 'c').messageId;
+    const m6 = messageSend(sender.token, channelObj.channelId, 'd').messageId;
+    const m7 = messageSend(sender.token, channelObj.channelId, 'e').messageId;
+    const m8 = messageSend(sender.token, channelObj.channelId, 'f').messageId;
+    const m9 = messageSend(sender.token, channelObj.channelId, 'g').messageId;
+    const m10 = messageSend(sender.token, channelObj.channelId, 'h').messageId;
+
+    expect(m1).toStrictEqual(expect.any(Number));
+    expect(m2).toStrictEqual(expect.any(Number));
+    expect(m3).toStrictEqual(expect.any(Number));
+    expect(m4).toStrictEqual(expect.any(Number));
+    expect(m5).toStrictEqual(expect.any(Number));
+    expect(m6).toStrictEqual(expect.any(Number));
+    expect(m7).toStrictEqual(expect.any(Number));
+    expect(m8).toStrictEqual(expect.any(Number));
+    expect(m9).toStrictEqual(expect.any(Number));
+    expect(m10).toStrictEqual(expect.any(Number));
+
+    const set = new Set([m1, m2, m3, m4, m5, m6, m7, m8, m9, m10]);
+
+    expect(set.size).toBe(10);
+
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
+      messages: [
+        {
+          messageId: m10,
+          uId: sender.authUserId,
+          message: 'h',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m9,
+          uId: sender.authUserId,
+          message: 'g',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m8,
+          uId: sender.authUserId,
+          message: 'f',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m7,
+          uId: sender.authUserId,
+          message: 'e',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m6,
+          uId: sender.authUserId,
+          message: 'd',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m5,
+          uId: sender.authUserId,
+          message: 'c',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m4,
+          uId: sender.authUserId,
+          message: 'b',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m3,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m2,
+          uId: sender.authUserId,
+          message: 'Im Batman',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m1,
+          uId: sender.authUserId,
+          message: 'Hello World',
+          timeSent: expect.any(Number),
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('valid channelMessagesV1 - 50 messages', () => {
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelObj = channelsCreate(data.token, channelName, true);
+    const start = 0;
+
+    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
+
+    const m1 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m2 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m3 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m4 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m5 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m6 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m7 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m8 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m9 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m10 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m11 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m12 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m13 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m14 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m15 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m16 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m17 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m18 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m19 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m20 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m21 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m22 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m23 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m24 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m25 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m26 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m27 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m28 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m29 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m30 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m31 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m32 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m33 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m34 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m35 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m36 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m37 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m38 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m39 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m40 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m41 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m42 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m43 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m44 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m45 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m46 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m47 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m48 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m49 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m50 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+
+    expect(m1).toStrictEqual(expect.any(Number));
+    expect(m2).toStrictEqual(expect.any(Number));
+    expect(m3).toStrictEqual(expect.any(Number));
+    expect(m4).toStrictEqual(expect.any(Number));
+    expect(m5).toStrictEqual(expect.any(Number));
+    expect(m6).toStrictEqual(expect.any(Number));
+    expect(m7).toStrictEqual(expect.any(Number));
+    expect(m8).toStrictEqual(expect.any(Number));
+    expect(m9).toStrictEqual(expect.any(Number));
+    expect(m10).toStrictEqual(expect.any(Number));
+    expect(m11).toStrictEqual(expect.any(Number));
+    expect(m12).toStrictEqual(expect.any(Number));
+    expect(m13).toStrictEqual(expect.any(Number));
+    expect(m14).toStrictEqual(expect.any(Number));
+    expect(m15).toStrictEqual(expect.any(Number));
+    expect(m16).toStrictEqual(expect.any(Number));
+    expect(m17).toStrictEqual(expect.any(Number));
+    expect(m18).toStrictEqual(expect.any(Number));
+    expect(m19).toStrictEqual(expect.any(Number));
+    expect(m20).toStrictEqual(expect.any(Number));
+    expect(m21).toStrictEqual(expect.any(Number));
+    expect(m22).toStrictEqual(expect.any(Number));
+    expect(m23).toStrictEqual(expect.any(Number));
+    expect(m24).toStrictEqual(expect.any(Number));
+    expect(m25).toStrictEqual(expect.any(Number));
+    expect(m26).toStrictEqual(expect.any(Number));
+    expect(m27).toStrictEqual(expect.any(Number));
+    expect(m28).toStrictEqual(expect.any(Number));
+    expect(m29).toStrictEqual(expect.any(Number));
+    expect(m30).toStrictEqual(expect.any(Number));
+    expect(m31).toStrictEqual(expect.any(Number));
+    expect(m32).toStrictEqual(expect.any(Number));
+    expect(m33).toStrictEqual(expect.any(Number));
+    expect(m34).toStrictEqual(expect.any(Number));
+    expect(m35).toStrictEqual(expect.any(Number));
+    expect(m36).toStrictEqual(expect.any(Number));
+    expect(m37).toStrictEqual(expect.any(Number));
+    expect(m38).toStrictEqual(expect.any(Number));
+    expect(m39).toStrictEqual(expect.any(Number));
+    expect(m40).toStrictEqual(expect.any(Number));
+    expect(m41).toStrictEqual(expect.any(Number));
+    expect(m42).toStrictEqual(expect.any(Number));
+    expect(m43).toStrictEqual(expect.any(Number));
+    expect(m44).toStrictEqual(expect.any(Number));
+    expect(m45).toStrictEqual(expect.any(Number));
+    expect(m46).toStrictEqual(expect.any(Number));
+    expect(m47).toStrictEqual(expect.any(Number));
+    expect(m48).toStrictEqual(expect.any(Number));
+    expect(m49).toStrictEqual(expect.any(Number));
+    expect(m50).toStrictEqual(expect.any(Number));
+
+    const set = new Set([m1, m2, m3, m4, m5, m6, m7, m8, m9, m10,
+      m11, m12, m13, m14, m15, m16, m17, m18, m19, m20,
+      m21, m22, m23, m24, m25, m26, m27, m28, m29, m30,
+      m31, m32, m33, m34, m35, m36, m37, m38, m39, m40,
+      m41, m42, m43, m44, m45, m46, m47, m48, m49, m50]);
+
+    expect(set.size).toBe(50);
+
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
+      messages: [
+        {
+          messageId: m50,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m49,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m48,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m47,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m46,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m45,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m44,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m43,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m42,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m41,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m40,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m39,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m38,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m37,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m36,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m35,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m34,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m33,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m32,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m31,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m30,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m29,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m28,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m27,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m26,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m25,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m24,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        }, {
+          messageId: m23,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m22,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m21,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m20,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m19,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m18,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m17,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m16,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m15,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m14,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m13,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m12,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m11,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m10,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m9,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m8,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m7,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m6,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m5,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m4,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m3,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m2,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m1,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+
+      ],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('valid channelMessagesV1 - 52 messages', () => {
+    const data = authRegister(email, password, nameFirst, nameLast);
+    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelObj = channelsCreate(data.token, channelName, true);
+    const start = 0;
+
+    // const Time = Math.floor((new Date()).getTime() / 1000);
+
+    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
+
+    const m1 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m2 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m3 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m4 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m5 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m6 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m7 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m8 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m9 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m10 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m11 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m12 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m13 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m14 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m15 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m16 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m17 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m18 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m19 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m20 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m21 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m22 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m23 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m24 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m25 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m26 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m27 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m28 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m29 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m30 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m31 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m32 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m33 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m34 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m35 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m36 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m37 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m38 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m39 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m40 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m41 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m42 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m43 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m44 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m45 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m46 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m47 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m48 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m49 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m50 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m51 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+    const m52 = messageSend(sender.token, channelObj.channelId, 'a').messageId;
+
+    expect(m1).toStrictEqual(expect.any(Number));
+    expect(m2).toStrictEqual(expect.any(Number));
+    expect(m3).toStrictEqual(expect.any(Number));
+    expect(m4).toStrictEqual(expect.any(Number));
+    expect(m5).toStrictEqual(expect.any(Number));
+    expect(m6).toStrictEqual(expect.any(Number));
+    expect(m7).toStrictEqual(expect.any(Number));
+    expect(m8).toStrictEqual(expect.any(Number));
+    expect(m9).toStrictEqual(expect.any(Number));
+    expect(m10).toStrictEqual(expect.any(Number));
+    expect(m11).toStrictEqual(expect.any(Number));
+    expect(m12).toStrictEqual(expect.any(Number));
+    expect(m13).toStrictEqual(expect.any(Number));
+    expect(m14).toStrictEqual(expect.any(Number));
+    expect(m15).toStrictEqual(expect.any(Number));
+    expect(m16).toStrictEqual(expect.any(Number));
+    expect(m17).toStrictEqual(expect.any(Number));
+    expect(m18).toStrictEqual(expect.any(Number));
+    expect(m19).toStrictEqual(expect.any(Number));
+    expect(m20).toStrictEqual(expect.any(Number));
+    expect(m21).toStrictEqual(expect.any(Number));
+    expect(m22).toStrictEqual(expect.any(Number));
+    expect(m23).toStrictEqual(expect.any(Number));
+    expect(m24).toStrictEqual(expect.any(Number));
+    expect(m25).toStrictEqual(expect.any(Number));
+    expect(m26).toStrictEqual(expect.any(Number));
+    expect(m27).toStrictEqual(expect.any(Number));
+    expect(m28).toStrictEqual(expect.any(Number));
+    expect(m29).toStrictEqual(expect.any(Number));
+    expect(m30).toStrictEqual(expect.any(Number));
+    expect(m31).toStrictEqual(expect.any(Number));
+    expect(m32).toStrictEqual(expect.any(Number));
+    expect(m33).toStrictEqual(expect.any(Number));
+    expect(m34).toStrictEqual(expect.any(Number));
+    expect(m35).toStrictEqual(expect.any(Number));
+    expect(m36).toStrictEqual(expect.any(Number));
+    expect(m37).toStrictEqual(expect.any(Number));
+    expect(m38).toStrictEqual(expect.any(Number));
+    expect(m39).toStrictEqual(expect.any(Number));
+    expect(m40).toStrictEqual(expect.any(Number));
+    expect(m41).toStrictEqual(expect.any(Number));
+    expect(m42).toStrictEqual(expect.any(Number));
+    expect(m43).toStrictEqual(expect.any(Number));
+    expect(m44).toStrictEqual(expect.any(Number));
+    expect(m45).toStrictEqual(expect.any(Number));
+    expect(m46).toStrictEqual(expect.any(Number));
+    expect(m47).toStrictEqual(expect.any(Number));
+    expect(m48).toStrictEqual(expect.any(Number));
+    expect(m49).toStrictEqual(expect.any(Number));
+    expect(m50).toStrictEqual(expect.any(Number));
+    expect(m51).toStrictEqual(expect.any(Number));
+    expect(m52).toStrictEqual(expect.any(Number));
+
+    const set = new Set([m1, m2, m3, m4, m5, m6, m7, m8, m9, m10,
+      m11, m12, m13, m14, m15, m16, m17, m18, m19, m20,
+      m21, m22, m23, m24, m25, m26, m27, m28, m29, m30,
+      m31, m32, m33, m34, m35, m36, m37, m38, m39, m40,
+      m41, m42, m43, m44, m45, m46, m47, m48, m49, m50,
+      m51, m52]);
+
+    expect(set.size).toBe(52);
+
+    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
+      messages: [
+        {
+          messageId: m52,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m51,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m50,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m49,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m48,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m47,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m46,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m45,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m44,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m43,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m42,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m41,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m40,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m39,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m38,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m37,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m36,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m35,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m34,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m33,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m32,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m31,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m30,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m29,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m28,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m27,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m26,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m25,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m24,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        }, {
+          messageId: m23,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m22,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m21,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m20,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m19,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m18,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m17,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m16,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m15,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m14,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m13,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m12,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m11,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m10,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m9,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m8,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m7,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m6,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m5,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m4,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m3,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+      ],
+      start: 0,
+      end: 50,
+    });
+
+    const newStart = 50;
+    expect(channelMessages(data.token, channelObj.channelId, newStart)).toStrictEqual({
+      messages: [
+        {
+          messageId: m2,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+        {
+          messageId: m1,
+          uId: sender.authUserId,
+          message: 'a',
+          timeSent: expect.any(Number),
+        },
+      ],
+      start: 50,
       end: -1,
     });
   });
