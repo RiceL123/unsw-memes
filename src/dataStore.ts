@@ -10,6 +10,7 @@ interface User {
   handleStr: string;
   permission: number;
   tokens: string[];
+  resetCode: string;
 }
 
 interface Message {

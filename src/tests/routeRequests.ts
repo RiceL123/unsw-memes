@@ -103,6 +103,31 @@ function authLogout(token: string) {
   );
 }
 
+function authPasswordResetRequest(email: string) {
+  return requestHelper(
+    'POST',
+    '/auth/passwordreset/request/v1',
+    {
+      json: {
+        email: email
+      }
+    }
+  );
+}
+
+function authPasswordResetReset(resetCode: string, newPassword: string) {
+  return requestHelper(
+    'POST',
+    '/auth/passwordreset/reset/v1',
+    {
+      json: {
+        resetCode: resetCode,
+        newPassword: newPassword
+      }
+    }
+  );
+}
+
 // ===================== channel ===================== //
 function channelDetails(token: string, channelId: number) {
   return requestHelper(
@@ -428,6 +453,8 @@ export {
   authLogin,
   authRegister,
   authLogout,
+  authPasswordResetRequest,
+  authPasswordResetReset,
   channelDetails,
   channelJoin,
   channelInvite,
