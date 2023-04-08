@@ -25,10 +25,12 @@ function clear() {
 function channelsCreate(token: string, name: string, isPublic: boolean) {
   return requestHelper(
     'POST',
-    '/channels/create/v2',
+    '/channels/create/v3',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         name: name,
         isPublic: isPublic,
       }
@@ -39,10 +41,10 @@ function channelsCreate(token: string, name: string, isPublic: boolean) {
 function channelsList(token: string) {
   return requestHelper(
     'GET',
-    '/channels/list/v2',
+    '/channels/list/v3',
     {
-      qs: {
-        token: token,
+      headers: {
+        token: token
       },
     }
   );
@@ -198,6 +200,7 @@ function channelRemoveOwner(token: string, channelId: number, uId: number) {
     }
   );
 }
+
 // ===================== users ===================== //
 function usersAll(token: string) {
   return requestHelper(

@@ -1,6 +1,8 @@
 import { Channel, getData, setData, getHash } from './dataStore';
+import HTTPError from 'http-errors';
+
 /**
-  * channelsCreateV2, given a channel name and an token makes an object with
+  * channelsCreateV3, given a channel name and an token makes an object with
   * a new & unique channelId and pushes the object into the data.channels array locally
   * and then sets it globally
   *
@@ -11,18 +13,18 @@ import { Channel, getData, setData, getHash } from './dataStore';
   * @returns {{channelId : Number}} - newly generated unique channelId
  */
 
-function channelsCreateV2(token: string, name: string, isPublic: boolean) {
+function channelsCreateV3(token: string, name: string, isPublic: boolean) {
   const data = getData();
   token = getHash(token);
 
   if (name.length < 1 || name.length > 20) {
-    return { error: 'Invalid channel name length' };
+    throw HTTPError(400, 'Invalid channel name length');
   }
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
 
   // creates new channel ID using a +1 mechanism
@@ -53,15 +55,14 @@ function channelsCreateV2(token: string, name: string, isPublic: boolean) {
   *
   * @returns {{ channels: [{channelId: Number, name: string} ]}} - Array of objects containing infomation about channelId and channelName
  */
-function channelsListV2(token : string) {
+function channelsListV3(token : string) {
   const data = getData();
   token = getHash(token);
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
 
   const channelsArr = [];
@@ -91,7 +92,7 @@ function channelsListAllV2(token: string) {
   token = getHash(token);
 
   if (!data.users.some(x => x.tokens.includes(token))) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const allChannels = [];
@@ -106,4 +107,4 @@ function channelsListAllV2(token: string) {
   return { channels: allChannels };
 }
 
-export { channelsCreateV2, channelsListV2, channelsListAllV2 };
+export { channelsCreateV3, channelsListV3, channelsListAllV2 };
