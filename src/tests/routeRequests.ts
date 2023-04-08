@@ -53,9 +53,9 @@ function channelsList(token: string) {
 function channelsListAll(token: string) {
   return requestHelper(
     'GET',
-    '/channels/listall/v2',
+    '/channels/listall/v3',
     {
-      qs: {
+      headers: {
         token: token,
       },
     }

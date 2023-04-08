@@ -11,7 +11,7 @@ import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 
 import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
 import { channelDetailsV2, channelInviteV2, channelJoinV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
-import { channelsCreateV3, channelsListV3, channelsListAllV2 } from './channels';
+import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
 import { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 } from './message';
 
 // Set up web app
@@ -45,9 +45,9 @@ app.post('/channels/create/v3', (req: Request, res: Response, next) => {
   return res.json(channelsCreateV3(token, name, isPublic));
 });
 
-app.get('/channels/listall/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
-  res.json(channelsListAllV2(token));
+app.get('/channels/listall/v3', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  res.json(channelsListAllV3(token));
 });
 
 app.get('/channels/list/v3', (req: Request, res: Response, next) => {
