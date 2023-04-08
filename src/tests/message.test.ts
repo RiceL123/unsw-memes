@@ -1,4 +1,4 @@
-import { clear, authRegister, dmCreate, dmMessages, channelMessages, channelsCreate, channelJoin } from './routeRequests';
+import { clear, authRegister, dmCreate, dmMessages, channelMessages, channelsCreate, channelJoin, channelLeave } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -1009,18 +1009,7 @@ describe('messageEditV1', () => {
     const messageData = JSON.parse(messageRes.getBody() as string);
     const messageId = messageData.messageId;
 
-    const leaveRes = request(
-      'POST',
-      SERVER_URL + '/channel/leave/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-        }
-      }
-    );
-    const leaveData = JSON.parse(leaveRes.getBody() as string);
-    expect(leaveData).not.toStrictEqual(ERROR);
+    expect(channelLeave(userData2.token, chanId)).not.toStrictEqual(ERROR);
 
     const setRes = request(
       'PUT',
