@@ -125,34 +125,37 @@ function channelJoinV3(token: string, channelId: string) {
  *
  * @returns {{}} - empty object
  */
-function channelInviteV2(token: string, channelId: number, uId: number) {
+function channelInviteV3(token: string, channelId: string, uId: string) {
   const data = getData();
   token = getHash(token);
 
-  const userFind = (data.users.find(x => x.uId === uId));
+  const chanId = parseInt(channelId);
+  const uuId = parseInt(uId);
+
+  const userFind = (data.users.find(x => x.uId === uuId));
   if (userFind === undefined) {
-    return { error: 'Invalid uId' };
+    throw HTTPError(400, 'Invalid uId');
   }
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
 
-  const channel = data.channels.find(x => x.channelId === channelId);
+  const channel = data.channels.find(x => x.channelId === chanId);
   if (channel === undefined) {
-    return { error: 'Invalid channelId' };
+    throw HTTPError(400, 'Invalid channelId');
   }
 
-  if (channel.allMembersIds.find(x => x === uId)) {
-    return { error: 'uId is already a member' };
+  if (channel.allMembersIds.find(x => x === uuId)) {
+    throw HTTPError(400, 'uId is already a member');
   }
 
   if (channel.allMembersIds.find(x => x === userObj.uId) === undefined) {
-    return { error: 'authorised user is not a member of the channel' };
+    throw HTTPError(403, 'authorised user is not a member of the channel');
   }
 
-  channel.allMembersIds.push(uId);
+  channel.allMembersIds.push(uuId);
   setData(data);
 
   return {};
@@ -336,4 +339,4 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV2, channelJoinV3, channelInviteV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
+export { channelDetailsV2, channelJoinV3, channelInviteV3, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };

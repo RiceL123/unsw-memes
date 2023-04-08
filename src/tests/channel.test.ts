@@ -1543,324 +1543,112 @@ describe('/channel/join/v3', () => {
   });
 });
 
-describe('channelInviteV2', () => {
-  // channelInviteV1 Error Tests
-  let userId: number;
-  let userId2: number;
-  let userToken: string;
-  let userToken2: string;
-  let chanId: number;
-  beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-        }
-      }
-    );
+describe('channelInviteV3', () => {
+  // channelInviteV3 Error Tests
+  const email1 = 'z5555555@ad.unsw.edu.au';
+  const password1 = 'password';
+  const nameFirst1 = 'Alvin';
+  const nameLast1 = 'the Chipmunk';
 
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
+  const email2 = 'z1111111@ad.unsw.edu.au';
+  const password2 = 'password';
+  const nameFirst2 = 'Simon';
+  const nameLast2 = 'the Chipmunk';
 
-        }
-      }
-    );
+  const email3 = 'z2222222@ad.unsw.edu.au';
+  const password3 = 'password';
+  const nameFirst3 = 'Theodore';
+  const nameLast3 = 'the Chipmunk';
 
-    const userData = JSON.parse(userRes.getBody() as string);
-    userId = userData.authUserId;
-    userToken = userData.token;
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-    userId2 = userData2.authUserId;
-    userToken2 = userData2.token;
-
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolPublicChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // chanId = channelData.channelId;
-
-    chanId = channelsCreate(userToken, 'coolPublicChannel', true).channelId;
-  });
+  const channelName1 = "Dave Seville's House";
+  const channelName2 = "Ian Hawke's House";
 
   // Cool Public Channels
   // no channel created so channelId should be invalid
+  // Simon tries to invite Theodore, but Simon doesn't even have an account.
+  test('invalid token', () => {
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const DavesHouse = channelsCreate(Alvin.token, channelName1, true);
+
+    expect(channelInvite(Alvin.token + 1, DavesHouse.channelId, Simon.authUserId)).toEqual(403);
+  });
+
   test('invalid channelId', () => {
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId + 1,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual(ERROR);
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const DavesHouse = channelsCreate(Alvin.token, channelName1, false);
+
+    expect(channelInvite(Alvin.token, DavesHouse.channelId + 1, Simon.authUserId)).toEqual(400);
   });
 
   // channel created and invited user is invalid
   test('uId does not refer to a valid user', () => {
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2 + 1,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual(ERROR);
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const DavesHouse = channelsCreate(Alvin.token, channelName1, true);
+
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Simon.authUserId + 1)).toEqual(400);
   });
 
   // channel created and uId is invited and is invited again
   test('uId refers to a member already in the channel', () => {
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const DavesHouse = channelsCreate(Alvin.token, channelName1, false);
 
-    const inviteRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData2 = JSON.parse(inviteRes2.getBody() as string);
-    expect(inviteData2).toStrictEqual(ERROR);
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Alvin.authUserId)).toEqual(400);
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Simon.authUserId)).toStrictEqual({});
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Simon.authUserId)).toEqual(400);
   });
 
   // channel is created by Alvin, Theodore invites Simon but Theodore is not a member of the channel
   test('channelId is valid, authUser is not a member and uId is not a member', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-        }
-      }
-    );
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const Theodore = authRegister(email3, password3, nameFirst3, nameLast3);
+    const DavesHouse = channelsCreate(Alvin.token, channelName1, true);
 
-    const userData3 = JSON.parse(userRes3.getBody() as string);
-
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId,
-          uId: userData3.authUserId,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual(ERROR);
-  });
-
-  // Simon tries to invite Theodore, but Simon doesn't even have an account.
-  test('invalid token', () => {
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken2 + 1,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-
-    expect(inviteData).toStrictEqual(ERROR);
+    expect(channelInvite(Theodore.token, DavesHouse.channelId, Simon.authUserId)).toEqual(403);
+    expect(channelInvite(Theodore.token, DavesHouse.channelId, Alvin.authUserId)).toEqual(400);
   });
 
   // channelInviteV1 coolPublicChannel Valid Tests
   test('authUserId invites uId to public channel', () => {
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const Theodore = authRegister(email3, password3, nameFirst3, nameLast3);
+    const DavesHouse = channelsCreate(Alvin.token, channelName1, false);
 
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-
-    expect(detailData).toStrictEqual({
-      name: 'coolPublicChannel',
-      isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk'
-        }
-      ],
-      allMembers: expect.any(Array)
-    });
-
-    const expectedArray: channelObjUser[] = [
-      {
-        uId: userId,
-        email: 'z5555555@ad.unsw.edu.au',
-        nameFirst: 'Alvin',
-        nameLast: 'the Chipmunk',
-        handleStr: 'alvinthechipmunk',
-      },
-      {
-        uId: userId2,
-        email: 'z5455555@ad.unsw.edu.au',
-        nameFirst: 'Theodore',
-        nameLast: 'the Chipmunk',
-        handleStr: 'theodorethechipmunk',
-      }
-    ];
-    // sorting the array to account for different permutations of expected array
-    expect(detailData.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
-      expectedArray.sort((a, b) => a.uId - b.uId)
-    );
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Simon.authUserId)).toStrictEqual({});
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Theodore.authUserId)).toStrictEqual({});
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Simon.authUserId)).toEqual(400);
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Theodore.authUserId)).toEqual(400);
   });
 
-  // channelInviteV1 edgyPrivateChannel Valid Tests
-  test('authUserId invites uId to private channel', () => {
-    // const channelRes2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'edgyPrivateChannel',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
+  // channelInviteV3 edgyPrivateChannel Valid Tests
+  test('any member can invite uId to private channel', () => {
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const Theodore = authRegister(email3, password3, nameFirst3, nameLast3);
+    const IansHouse = channelsCreate(Alvin.token, channelName2, false);
 
-    const channelData2 = channelsCreate(userToken, 'edgyPrivateChannel', false);
+    expect(channelInvite(Alvin.token, IansHouse.channelId, Simon.authUserId)).toStrictEqual({});
+    expect(channelInvite(Simon.token, IansHouse.channelId, Theodore.authUserId)).toStrictEqual({});
+    expect(channelInvite(Alvin.token, IansHouse.channelId, Simon.authUserId)).toEqual(400);
+    expect(channelInvite(Alvin.token, IansHouse.channelId, Theodore.authUserId)).toEqual(400);
+  });
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: channelData2.channelId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+  test('globalOwner cannot invite themselves to private channel', () => {
+    const Alvin = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Simon = authRegister(email2, password2, nameFirst2, nameLast2);
+    const Theodore = authRegister(email3, password3, nameFirst3, nameLast3);
+    const IansHouse = channelsCreate(Simon.token, channelName2, true);
 
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: channelData2.channelId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-
-    expect(detailData).toStrictEqual({
-      name: 'edgyPrivateChannel',
-      isPublic: false,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk'
-        }
-      ],
-      allMembers: expect.any(Array)
-    });
-
-    const expectedArray: channelObjUser[] = [
-      {
-        uId: userId,
-        email: 'z5555555@ad.unsw.edu.au',
-        nameFirst: 'Alvin',
-        nameLast: 'the Chipmunk',
-        handleStr: 'alvinthechipmunk',
-      },
-      {
-        uId: userId2,
-        email: 'z5455555@ad.unsw.edu.au',
-        nameFirst: 'Theodore',
-        nameLast: 'the Chipmunk',
-        handleStr: 'theodorethechipmunk',
-      }
-    ];
-    // sorting the array to account for different permutations of expected array
-    expect(detailData.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
-      expectedArray.sort((a, b) => a.uId - b.uId)
-    );
+    expect(channelInvite(Alvin.token, IansHouse.channelId, Alvin.authUserId)).toEqual(403);
+    expect(channelInvite(Alvin.token, IansHouse.channelId, Theodore.authUserId)).toEqual(403);
+    expect(channelInvite(Simon.token, IansHouse.channelId, Theodore.authUserId)).toStrictEqual({});
+    expect(channelInvite(Simon.token, IansHouse.channelId, Theodore.authUserId)).toEqual(400);
   });
 });
 
@@ -2141,19 +1929,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
 
     chanId = channelsCreate(userToken, 'coolPublicChannel', true).channelId;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken, chanId, userId2)).toStrictEqual({});
   });
 
   // channelId does not refer to a valid channel
@@ -2310,19 +2086,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken, chanId, userId3)).toStrictEqual({});
 
     const addOwnerRes = request(
       'POST',
@@ -2456,34 +2220,10 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     const chanId2 = channelsCreate(userToken3, 'chipmunksOnlyChannel', true).channelId;
 
     // Simon invites Alvin
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId2,
-          uId: userId,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken3, chanId2, userId)).toStrictEqual({});
 
     // Alvin invites Theodore
-    const inviteRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData2 = JSON.parse(inviteRes2.getBody() as string);
-    expect(inviteData2).toStrictEqual({});
+    expect(channelInvite(userToken, chanId2, userId2)).toStrictEqual({});
 
     // Alvin makes Theodore owner
     const addOwnerRes = request(
@@ -2615,19 +2355,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
 
     chanId = channelsCreate(userToken, 'edgyPrivateChannel', false).channelId;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken, chanId, userId2)).toStrictEqual({});
   });
 
   // channelId does not refer to a valid channel
@@ -2784,19 +2512,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken, chanId, userId3)).toStrictEqual({});
 
     const addOwnerRes = request(
       'POST',
@@ -2928,19 +2644,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     // const chanId2 = channelData2.channelId;
     const chanId2 = channelsCreate(userToken3, 'chipmunksOnlyChannel', false).channelId;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken3, chanId2, userId2)).toStrictEqual({});
 
     const addOwnerResErr = request(
       'POST',
@@ -2970,19 +2674,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
     expect(addOwnerData).toStrictEqual({});
 
-    const inviteRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId2,
-          uId: userId,
-        }
-      }
-    );
-    const inviteData2 = JSON.parse(inviteRes2.getBody() as string);
-    expect(inviteData2).toStrictEqual({});
+    expect(channelInvite(userToken2, chanId2, userId)).toStrictEqual({});
 
     const addOwnerRes2 = request(
       'POST',
@@ -3120,19 +2812,7 @@ describe('/channel/removeowner/v1', () => {
 
     chanId = channelsCreate(userObj.token, 'CoolChannel', true).channelId;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken, chanId, userId2)).toStrictEqual({});
   });
 
   test('invalid token', () => {
@@ -3394,19 +3074,7 @@ describe('/channel/removeowner/v1', () => {
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken, chanId, userId3)).toStrictEqual({});
 
     const addOwnerRes = request(
       'POST',
@@ -3671,33 +3339,9 @@ describe('/channel/removeowner/v1', () => {
     // const channelObj2 = JSON.parse(channelCreate2.getBody() as string);
     const chanId2 = channelsCreate(userToken3, 'CoolerChannel', true).channelId;
 
-    const inviteRes = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId2,
-          uId: userId,
-        }
-      }
-    );
-    const inviteData = JSON.parse(inviteRes.getBody() as string);
-    expect(inviteData).toStrictEqual({});
+    expect(channelInvite(userToken3, chanId2, userId)).toStrictEqual({});
 
-    const inviteRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/invite/v2',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const inviteData2 = JSON.parse(inviteRes2.getBody() as string);
-    expect(inviteData2).toStrictEqual({});
+    expect(channelInvite(userToken3, chanId2, userId2)).toStrictEqual({});
 
     const addOwnerRes = request(
       'POST',
