@@ -3,6 +3,16 @@ import validator from 'validator';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 
+import nodemailer from 'nodemailer';
+import { OAuth2Client } from 'google-auth-library';
+
+const COMPANY_DETAILS = {
+  email: 'unswmemest15bcrunchie@gmail.com',
+  clientId: '957094224176-2aq890690c1qq8dmn1rau573d8c7cu18.apps.googleusercontent.com',
+  clientSecret: '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',
+  refreshToken: '1//044BFb_xRQy7MCgYIARAAGAQSNwF-L9IrrbdQztY3bHPOU6o-gSLRzlqtW2zAdTXfksC3IWHn14lM7firMhX4t6ORUr5-b7OPDZY'
+};
+
 /** generate UniqiueToken uses uuid's v4 implementation to generate a new user token
  *
  * @param {Data} data
@@ -117,7 +127,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     throw HTTPError(400, 'nameLast length not between 1 and 50 inclusive');
   }
 
-  if (data.users.some(existingUsers => existingUsers.email === email)) {
+  if (data.users.some(x => x.email === email)) {
     throw HTTPError(400, 'email already exists');
   }
 
@@ -145,7 +155,8 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     password: getHash(password),
     handleStr: handle,
     permission: permission,
-    tokens: [getHash(newToken)]
+    tokens: [getHash(newToken)],
+    resetCode: ''
   };
 
   data.users.push(newUser);
@@ -182,4 +193,101 @@ function authLogoutV1(token: string) {
   return {};
 }
 
-export { authLoginV2, authRegisterV2, authLogoutV1 };
+async function sendEmail(email: string, subject: string, message: string) {
+  const oauth2Client = new OAuth2Client(
+    COMPANY_DETAILS.clientId,
+    COMPANY_DETAILS.clientSecret,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: COMPANY_DETAILS.refreshToken,
+  });
+
+  const { token } = await oauth2Client.getAccessToken();
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: COMPANY_DETAILS.email,
+      clientId: COMPANY_DETAILS.clientId,
+      clientSecret: COMPANY_DETAILS.clientSecret,
+      refreshToken: COMPANY_DETAILS.refreshToken,
+      accessToken: token
+    },
+  });
+
+  const info = await transporter.sendMail({
+    from: COMPANY_DETAILS.email, // sender address
+    to: email,
+    subject: subject,
+    text: message,
+  });
+
+  console.log('Message sent: %s', info.messageId);
+}
+
+function authPasswordResetRequestV1(email: string) {
+  const data: Data = getData();
+  const userObj = data.users.find(x => x.email === email);
+
+  // if email doesn't exist don't throw an error, just return {}
+  if (!userObj) {
+    return {};
+  }
+
+  // overwrite previous key-value pair
+  userObj.resetCode = uuidv4();
+
+  const subject = `
+  Password Reset Request 😱😱😱
+  `;
+
+  const message = `
+  Hello ${userObj.handleStr}!
+
+  You are an absolute dummy 💀💀💀 -> how did you forget your own password
+  Anyways here is a password reset code 
+  
+  ${userObj.resetCode}
+
+  ~~~///(^v^)\\\\\\~~~ regards,
+  UNSW Memes
+  `;
+  // send email
+  sendEmail(userObj.email, subject, message);
+
+  setData(data);
+
+  return {};
+}
+
+function authPasswordResetResetV1(resetCode: string, newPassword: string) {
+  const data: Data = getData();
+
+  // as resetCode's are initialized as '' - any input resetCodes === '' will be denied
+  if (resetCode === '') {
+    throw HTTPError(400, 'invalid reset code');
+  }
+
+  const userObj = data.users.find(x => x.resetCode === resetCode);
+
+  if (!userObj) {
+    throw HTTPError(400, 'invalid reset code');
+  }
+
+  if (newPassword.length < 6) {
+    throw HTTPError(400, 'invalid password length - minimum 6');
+  }
+  // logs out all sessions
+  userObj.tokens = [];
+  userObj.password = getHash(newPassword);
+  userObj.resetCode = '';
+
+  setData(data);
+
+  return {};
+}
+
+export { authLoginV2, authRegisterV2, authLogoutV1, authPasswordResetRequestV1, authPasswordResetResetV1 };

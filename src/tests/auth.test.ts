@@ -1,4 +1,4 @@
-import { clear, authLogin, authRegister, authLogout, userProfile } from './routeRequests';
+import { clear, authLogin, authRegister, authLogout, userProfile, authPasswordResetRequest, authPasswordResetReset } from './routeRequests';
 
 const VALID_AUTH_RETURN = { token: expect.any(String), authUserId: expect.any(Number) };
 
@@ -259,5 +259,37 @@ describe('/auth/logout/v2', () => {
     expect(authLogout(userObj.token)).toStrictEqual({});
     expect(authLogout(userObj2.token)).toStrictEqual({});
     expect(authLogout(userObj3.token)).toStrictEqual({});
+  });
+});
+
+describe('/auth/passwordreset/request/v1', () => {
+  const email = 'z5422235@ad.unsw.edu.au';
+  beforeEach(() => {
+    authRegister(email, 'password1', 'madhav', 'mishra');
+  });
+  test('invalid email - not a user in db', () => {
+    expect(authPasswordResetRequest('email@email.com')).toStrictEqual({});
+  });
+
+  test('valid email', () => {
+    expect(authPasswordResetRequest(email)).toStrictEqual({});
+  });
+});
+
+describe('/auth/passwordreset/reset/v1', () => {
+  beforeEach(() => {
+    authRegister('z555555@ad.unsw.edu.au', 'password1', 'madhav', 'mishra');
+  });
+
+  test('invalid reset code', () => {
+    expect(authPasswordResetReset('', 'newPassword')).toStrictEqual(400);
+  });
+
+  test('invalid reset code', () => {
+    expect(authPasswordResetReset('invalid-reset-code', 'newPassword')).toStrictEqual(400);
+  });
+
+  test('invalid password - (code is invalid as well)', () => {
+    expect(authPasswordResetReset('', '12345')).toStrictEqual(400);
   });
 });

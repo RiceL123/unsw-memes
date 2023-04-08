@@ -6,7 +6,7 @@ import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
 
 import { clearV1 } from './other';
-import { authRegisterV2, authLoginV2, authLogoutV1 } from './auth';
+import { authRegisterV2, authLoginV2, authLogoutV1, authPasswordResetRequestV1, authPasswordResetResetV1 } from './auth';
 import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
 import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
@@ -71,6 +71,16 @@ app.post('/auth/register/v3', (req: Request, res: Response, next) => {
 app.post('/auth/logout/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   return res.json(authLogoutV1(token));
+});
+
+app.post('/auth/passwordreset/request/v1', (req: Request, res: Response, next) => {
+  const { email } = req.body;
+  return res.json(authPasswordResetRequestV1(email));
+});
+
+app.post('/auth/passwordreset/reset/v1', (req: Request, res: Response, next) => {
+  const { resetCode, newPassword } = req.body;
+  return res.json(authPasswordResetResetV1(resetCode, newPassword));
 });
 
 /// ////////////////////////////////////////////////////////////
