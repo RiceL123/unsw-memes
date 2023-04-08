@@ -1,6 +1,6 @@
 import { clear, authRegister, channelsCreate, channelsListAll, channelJoin, channelDetails, channelsList, channelInvite } from './routeRequests';
+
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
-const ERROR = { error: expect.any(String) };
 
 interface channelObject {
   channelId: number
@@ -110,7 +110,7 @@ describe('channelsCreateV3', () => {
 
     // attempting to join a public channel
     const channelJoinData = channelJoin(person2Data.token, channel1Data.channelId);
-    expect(channelJoinData).toStrictEqual(ERROR);
+    expect(channelJoinData).toEqual(403);
   });
 
   test('user who created channel is a member', () => {

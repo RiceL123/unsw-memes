@@ -1,4 +1,4 @@
-import { clear, authRegister, dmCreate, dmMessages, channelMessages, channelsCreate } from './routeRequests';
+import { clear, authRegister, dmCreate, dmMessages, channelMessages, channelsCreate, channelJoin } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -582,19 +582,7 @@ describe('messageEditV1', () => {
     );
     const userData2 = JSON.parse(userRes2.getBody() as string);
 
-    const channelJoin = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const join = JSON.parse(channelJoin.getBody() as string);
-    expect(join).not.toStrictEqual(ERROR);
+    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
 
     const messageRes = request(
       'POST',
@@ -943,19 +931,7 @@ describe('messageEditV1', () => {
     const userData2 = JSON.parse(userRes2.getBody() as string);
     const userId2 = userData2.authUserId;
 
-    const channelJoin = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const join = JSON.parse(channelJoin.getBody() as string);
-    expect(join).not.toStrictEqual(ERROR);
+    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
 
     const messageRes = request(
       'POST',
@@ -1017,19 +993,7 @@ describe('messageEditV1', () => {
     const userData2 = JSON.parse(userRes2.getBody() as string);
     const userId2 = userData2.authUserId;
 
-    const channelJoin = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const join = JSON.parse(channelJoin.getBody() as string);
-    expect(join).not.toStrictEqual(ERROR);
+    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
 
     const messageRes = request(
       'POST',
@@ -1216,19 +1180,7 @@ describe('messageRemoveV1', () => {
     );
     const userData2 = JSON.parse(userRes2.getBody() as string);
 
-    const channelJoin = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const join = JSON.parse(channelJoin.getBody() as string);
-    expect(join).not.toStrictEqual(ERROR);
+    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
 
     const messageRes = request(
       'POST',
