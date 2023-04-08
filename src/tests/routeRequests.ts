@@ -161,10 +161,12 @@ function channelMessages(token: string, channelId: number, start: number) {
 function channelJoin(token: string, channelId: number) {
   return requestHelper(
     'POST',
-    '/channel/join/v2',
+    '/channel/join/v3',
     {
-      json: {
+      headers: {
         token: token,
+      },
+      json: {
         channelId: channelId,
       }
     }

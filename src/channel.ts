@@ -82,35 +82,32 @@ function channelDetailsV2(token: string, channelId: string) {
  *
  * @returns {{}} - empty object
  */
-function channelJoinV2(token: string, channelId: number) {
+function channelJoinV3(token: string, channelId: string) {
   const data = getData();
   token = getHash(token);
 
+  const chanId = parseInt(channelId);
+
   const userObj = data.users.find(x => x.tokens.includes(token));
-
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
-  }
-  // const user = data.users.find(x => x.uId === authUserId);
-  // if (user === undefined) {
-  //   return { error: 'Invalid authUserId' };
-  // }
-
-  const channel = data.channels.find(x => x.channelId === channelId);
-  if (channel === undefined) {
-    return { error: 'Invalid channelId' };
+    throw HTTPError(403, 'Invalid token');
   }
 
-  if (channel.allMembersIds.find(x => x === userObj.uId)) {
-    return { error: 'AuthUserId is already a member' };
+  const channelFind = (data.channels.find(x => x.channelId === chanId));
+  if (channelFind === undefined) {
+    throw HTTPError(400, 'Invalid channelId');
+  }
+
+  if (channelFind.allMembersIds.includes(userObj.uId) === true) {
+    throw HTTPError(400, 'AuthUserId is already a member');
   }
 
   const user = data.users.find(x => x.uId === userObj.uId);
-  if (channel.isPublic === false && user.permission !== 1) {
-    return { error: 'Can not join a private channel' };
+  if (channelFind.isPublic === false && user.permission !== 1) {
+    throw HTTPError(403, 'Can not join a private channel');
   }
 
-  channel.allMembersIds.push(userObj.uId);
+  channelFind.allMembersIds.push(userObj.uId);
   setData(data);
 
   return {};
@@ -138,7 +135,6 @@ function channelInviteV2(token: string, channelId: number, uId: number) {
   }
 
   const userObj = data.users.find(x => x.tokens.includes(token));
-
   if (userObj === undefined) {
     return { error: 'Invalid token' };
   }
@@ -340,4 +336,4 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV2, channelJoinV2, channelInviteV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
+export { channelDetailsV2, channelJoinV3, channelInviteV2, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };

@@ -1,4 +1,4 @@
-import { clear, authRegister, channelsCreate, channelMessages, messageSend, channelInvite } from './routeRequests';
+import { clear, authRegister, channelsCreate, channelMessages, messageSend, channelInvite, channelJoin } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -248,19 +248,7 @@ describe('channelDetailsV2 ', () => {
 
     const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', true).channelId;
 
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual({});
+    expect(channelJoin(userData2.token, chanId)).toStrictEqual({});
 
     const detailRes = request(
       'GET',
@@ -1464,423 +1452,94 @@ describe('/channel/messages/v3', () => {
   });
 });
 
-describe('channelJoinV2', () => {
+describe('/channel/join/v3', () => {
   // channelJoinV1 Error Tests
-  let userId: number;
-  let userToken: string;
-  beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Perry',
-          nameLast: 'the Platypus',
-        }
-      }
-    );
+  const email1 = 'z5555555@ad.unsw.edu.au';
+  const password1 = 'password';
+  const nameFirst1 = 'Perry';
+  const nameLast1 = 'the Platypus';
 
-    const userData = JSON.parse(userRes.getBody() as string);
-    userId = userData.authUserId;
-    userToken = userData.token;
-  });
+  const email2 = 'z1111111@ad.unsw.edu.au';
+  const password2 = 'password';
+  const nameFirst2 = 'Dr';
+  const nameLast2 = 'Doofenshmirtz';
+
+  const email3 = 'z2222222@ad.unsw.edu.au';
+  const password3 = 'password';
+  const nameFirst3 = 'Phineas';
+  const nameLast3 = 'Flynn';
+
+  const channelName1 = 'Phineas and Ferb';
+  const channelName2 = 'Evil Incorporated';
 
   test('invalid channelId', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
+    const perry = authRegister(email1, password1, nameFirst1, nameLast1);
+    const perryChannel = channelsCreate(perry.token, channelName1, true);
 
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-
-    const channelData = channelsCreate(userToken, 'coolChannel', true);
-
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: channelData.channelId + 1,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual(ERROR);
+    expect(channelJoin(perry.token, perryChannel.channelId + 1)).toEqual(400);
   });
 
   test('invalid token', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
+    const perry = authRegister(email1, password1, nameFirst1, nameLast1);
+    const perryChannel = channelsCreate(perry.token, channelName1, true);
 
-    const channelData = channelsCreate(userToken, 'coolChannel', true);
-
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userToken + 1,
-          channelId: channelData.channelId,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual(ERROR);
+    expect(channelJoin(perry.token + 1, perryChannel.channelId)).toEqual(403);
   });
 
   test('User is already a member of channel', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
+    const perry = authRegister(email1, password1, nameFirst1, nameLast1);
+    const perryChannel = channelsCreate(perry.token, channelName1, true);
 
-    const channelData = channelsCreate(userToken, 'coolChannel', true);
-
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: channelData.channelId,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual(ERROR);
+    expect(channelJoin(perry.token, perryChannel.channelId)).toEqual(400);
   });
 
   test('public channel, user is not member or global owner', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-
-    const channelData = channelsCreate(userToken, 'coolChannel', true);
-
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Dr',
-          nameLast: 'Doofenshmirtz',
-        }
-      }
-    );
-
-    // Dr user is not a global owner
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-    // Dr user is not a global owner
-    // Perry user is a global owner and member of a public channel
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: channelData.channelId,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
     // Dr user joins Perry's public channel
-    expect(joinData).toStrictEqual({});
+    const perry = authRegister(email1, password1, nameFirst1, nameLast1);
+    const doofenshmirtz = authRegister(email2, password2, nameFirst2, nameLast2);
+    const perryChannel = channelsCreate(perry.token, channelName1, true);
 
-    // Error because Dr is already in Perry's channel
-    const joinRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: channelData.channelId,
-        }
-      }
-    );
-    const joinData2 = JSON.parse(joinRes2.getBody() as string);
-    expect(joinData2).toStrictEqual(ERROR);
+    expect(channelJoin(doofenshmirtz.token, perryChannel.channelId)).toStrictEqual({});
+    expect(channelJoin(doofenshmirtz.token, perryChannel.channelId)).toEqual(400);
   });
 
   test('private channel, user is not member or global owner', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Dr',
-          nameLast: 'Doofenshmirtz',
-        }
-      }
-    );
+    const doofenshmirtz = authRegister(email2, password2, nameFirst2, nameLast2);
+    const phineas = authRegister(email3, password3, nameFirst3, nameLast3);
+    const drChannel = channelsCreate(doofenshmirtz.token, channelName2, false);
 
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolPrivateChannel',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-
-    const channelData = channelsCreate(userToken, 'coolPrivateChannel', false);
-
-    // Dr user is not a global owner
-    // Perry user is a global owner and member of private channel
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: channelData.channelId,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual(ERROR);
+    expect(channelJoin(phineas.token, drChannel.channelId)).toEqual(403);
   });
 
   // channelJoinV1 Valid Test
   test('joining a public channel', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Dr',
-          nameLast: 'Doofenshmirtz',
-        }
-      }
-    );
+    // Perry owns a public channel
+    const perry = authRegister(email1, password1, nameFirst1, nameLast1);
+    const doofenshmirtz = authRegister(email2, password2, nameFirst2, nameLast2);
+    const phineas = authRegister(email3, password3, nameFirst3, nameLast3);
+    const perryChannel = channelsCreate(perry.token, channelName1, true);
 
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    // Doofenshmirtz and Phineas both join the channel
+    expect(channelJoin(doofenshmirtz.token, perryChannel.channelId)).toStrictEqual({});
+    expect(channelJoin(phineas.token, perryChannel.channelId)).toStrictEqual({});
 
-    // const channelRes2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolPublicChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
-
-    const channelData2 = channelsCreate(userToken, 'coolPublicChannel', true);
-
-    // Perry user is a global owner and member of private channel
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userData2.token,
-          channelId: channelData2.channelId,
-        }
-      }
-    );
-
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual({});
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userData2.token,
-          channelId: channelData2.channelId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-
-    expect(detailData).toStrictEqual({
-      name: 'coolPublicChannel',
-      isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Perry',
-          nameLast: 'the Platypus',
-          handleStr: 'perrytheplatypus'
-        }
-      ],
-      allMembers: expect.any(Array)
-    });
-
-    const expectedArray: channelObjUser[] = [
-      {
-        uId: userId,
-        email: 'z5555555@ad.unsw.edu.au',
-        nameFirst: 'Perry',
-        nameLast: 'the Platypus',
-        handleStr: 'perrytheplatypus'
-      },
-      {
-        uId: userData2.authUserId,
-        email: 'z5455555@ad.unsw.edu.au',
-        nameFirst: 'Dr',
-        nameLast: 'Doofenshmirtz',
-        handleStr: 'drdoofenshmirtz'
-      }
-    ];
-    expect(detailData.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
-      expectedArray.sort((a, b) => a.uId - b.uId)
-    );
+    expect(channelJoin(doofenshmirtz.token, perryChannel.channelId)).toEqual(400);
+    expect(channelJoin(phineas.token, perryChannel.channelId)).toEqual(400);
   });
 
+  // Global owners can join private channels without an invite
   test('joining a private channel', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Dr',
-          nameLast: 'Doofenshmirtz',
-        }
-      }
-    );
-
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-
     // Dr is not a global owner but made a private channel
-    // const channelRes2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userData2.token,
-    //       name: 'edgyPrivateChannel',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    const channelData2 = channelsCreate(userData2.token, 'edgyPrivateChannel', false);
+    const perry = authRegister(email1, password1, nameFirst1, nameLast1);
+    const doofenshmirtz = authRegister(email2, password2, nameFirst2, nameLast2);
+    const phineas = authRegister(email3, password3, nameFirst3, nameLast3);
+    const drChannel = channelsCreate(doofenshmirtz.token, channelName2, false);
 
     // Perry joins a private channel because he is a global owner
-    const joinRes = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userToken,
-          channelId: channelData2.channelId,
-        }
-      }
-    );
-
-    // Global owners can join private channels without an invite
-    const joinData = JSON.parse(joinRes.getBody() as string);
-    expect(joinData).toStrictEqual({});
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userData2.token,
-          channelId: channelData2.channelId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-
-    expect(detailData).toStrictEqual({
-      name: 'edgyPrivateChannel',
-      isPublic: false,
-      ownerMembers: [
-        {
-          uId: userData2.authUserId,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Dr',
-          nameLast: 'Doofenshmirtz',
-          handleStr: 'drdoofenshmirtz'
-        }
-      ],
-      allMembers: expect.any(Array)
-    });
-
-    const expectedArray: channelObjUser[] = [
-      {
-        uId: userData2.authUserId,
-        email: 'z5455555@ad.unsw.edu.au',
-        nameFirst: 'Dr',
-        nameLast: 'Doofenshmirtz',
-        handleStr: 'drdoofenshmirtz'
-      },
-      {
-        uId: userId,
-        email: 'z5555555@ad.unsw.edu.au',
-        nameFirst: 'Perry',
-        nameLast: 'the Platypus',
-        handleStr: 'perrytheplatypus'
-      }
-    ];
-    expect(detailData.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
-      expectedArray.sort((a, b) => a.uId - b.uId)
-    );
+    expect(channelJoin(phineas.token, drChannel.channelId)).toEqual(403);
+    expect(channelJoin(perry.token, drChannel.channelId)).toStrictEqual({});
+    expect(channelJoin(perry.token, drChannel.channelId)).toEqual(400);
+    expect(channelJoin(doofenshmirtz.token, drChannel.channelId)).toEqual(400);
   });
 });
 
@@ -2315,18 +1974,7 @@ describe('/channel/leave/v1', () => {
 
     const userObj2 = JSON.parse(res.getBody() as string);
 
-    const channelJoin = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userObj2.token,
-          channelId: channelObj.channelId,
-        }
-      }
-    );
-    const channelJoinObj = JSON.parse(channelJoin.getBody() as string);
-    expect(channelJoinObj).toStrictEqual({});
+    expect(channelJoin(userObj2.token, channelObj.channelId)).toStrictEqual({});
 
     const channelLeave = request(
       'POST',
@@ -2392,18 +2040,7 @@ describe('/channel/leave/v1', () => {
     );
     const userObj2: UserRegisterReturn = JSON.parse(registerUser2.getBody() as string);
 
-    const channelJoin = request(
-      'POST',
-      SERVER_URL + '/channel/join/v2',
-      {
-        json: {
-          token: userObj2.token,
-          channelId: channelObj.channelId,
-        }
-      }
-    );
-    const channelJoinObj = JSON.parse(channelJoin.getBody() as string);
-    expect(channelJoinObj).toStrictEqual({});
+    expect(channelJoin(userObj2.token, channelObj.channelId)).toStrictEqual({});
 
     const channelLeave = request(
       'POST',
