@@ -192,10 +192,12 @@ function channelInvite(token: string, channelId: number, uId: number) {
 function channelLeave(token: string, channelId: number) {
   return requestHelper(
     'POST',
-    '/channel/leave/v1',
+    '/channel/leave/v2',
     {
-      json: {
+      headers: {
         token: token,
+      },
+      json: {
         channelId: channelId
       }
     }

@@ -226,22 +226,24 @@ function channelMessagesV2(token: string, channelId: string, start: string) {
  * @param {number} channelId
  * @returns {{}}
  */
-function channelLeaveV1(token: string, channelId: number) {
+function channelLeaveV2(token: string, channelId: string) {
   const data: Data = getData();
   token = getHash(token);
 
+  const chanId = parseInt(channelId);
+
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
+  const channelObj = data.channels.find(x => x.channelId === chanId);
   if (!channelObj) {
-    return { error: 'invalid channelId' };
+    throw HTTPError(400, 'invalid channelId');
   }
 
   if (!channelObj.allMembersIds.includes(userObj.uId)) {
-    return { error: 'invalid uId - user not apart of channel' };
+    throw HTTPError(403, 'invalid uId - user not apart of channel');
   }
 
   // remove the user from the channel - if the user was an owner, they are removed from there aswell
@@ -339,4 +341,4 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV2, channelJoinV3, channelInviteV3, channelMessagesV2, channelLeaveV1, channelAddOwnerV1, channelRemoveOwnerV1 };
+export { channelDetailsV2, channelJoinV3, channelInviteV3, channelMessagesV2, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 };

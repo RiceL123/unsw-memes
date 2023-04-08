@@ -1,4 +1,4 @@
-import { clear, authRegister, channelsCreate, channelMessages, messageSend, channelInvite, channelJoin } from './routeRequests';
+import { clear, authRegister, channelsCreate, channelMessages, messageSend, channelInvite, channelJoin, channelLeave } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -6,15 +6,6 @@ import { port, url } from '../config.json';
 const SERVER_URL = `${url}:${port}`;
 
 const ERROR = { error: expect.any(String) };
-
-interface UserRegisterReturn {
-  token: string;
-  authUserId: number;
-}
-
-interface ChannelCreateReturn {
-  channelId: number;
-}
 
 interface channelObjUser {
   uId: number;
@@ -1652,223 +1643,62 @@ describe('channelInviteV3', () => {
   });
 });
 
-describe('/channel/leave/v1', () => {
-  let userObj: UserRegisterReturn;
-  let channelObj: ChannelCreateReturn;
-  beforeEach(() => {
-    const registerUser = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password1',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra'
-        }
-      }
-    );
-    userObj = JSON.parse(registerUser.getBody() as string);
-    // const channelCreate = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userObj.token,
-    //       name: 'chanel',
-    //       isPublic: true
-    //     }
-    //   }
-    // );
-    // channelObj = JSON.parse(channelCreate.getBody() as string);
-    channelObj = channelsCreate(userObj.token, 'chanel', true);
-  });
+describe('/channel/leave/v2', () => {
+  const email1 = 'z5555555@ad.unsw.edu.au';
+  const password1 = 'password';
+  const nameFirst1 = 'Madhav';
+  const nameLast1 = 'Mishra';
+
+  const email2 = 'z1111111@ad.unsw.edu.au';
+  const password2 = 'password';
+  const nameFirst2 = 'Patrick';
+  const nameLast2 = 'Galea';
+
+  const channelSEM113 = 'SEM113';
 
   test('invalid token', () => {
-    const channelLeave = request(
-      'POST',
-      SERVER_URL + '/channel/leave/v1',
-      {
-        json: {
-          token: userObj.token + 'invalid',
-          channelId: channelObj.channelId
-        }
-      }
-    );
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
 
-    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
-    expect(channelLeaveObj).toStrictEqual(ERROR);
+    expect(channelLeave(Madhav.token + 1, SEM113.channelId)).toEqual(403);
   });
 
   test('invalid channelId', () => {
-    const channelLeave = request(
-      'POST',
-      SERVER_URL + '/channel/leave/v1',
-      {
-        json: {
-          token: userObj.token,
-          channelId: channelObj.channelId + 1
-        }
-      }
-    );
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
 
-    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
-    expect(channelLeaveObj).toStrictEqual(ERROR);
+    expect(channelLeave(Madhav.token, SEM113.channelId + 1)).toEqual(400);
   });
 
   test('invalid - user is not a member of channel', () => {
-    const registerUser2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5444444@ad.unsw.edu.au',
-          password: 'password1',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra'
-        }
-      }
-    );
-    const userObj2 = JSON.parse(registerUser2.getBody() as string);
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Patrick = authRegister(email2, password2, nameFirst2, nameLast2);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
 
-    const channelLeave = request(
-      'POST',
-      SERVER_URL + '/channel/leave/v1',
-      {
-        json: {
-          token: userObj2.token,
-          channelId: channelObj.channelId
-        }
-      }
-    );
-
-    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
-    expect(channelLeaveObj).toStrictEqual(ERROR);
+    expect(channelLeave(Patrick.token, SEM113.channelId)).toEqual(403);
   });
 
   test('channel member leaves', () => {
-    const res = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5444444@ad.unsw.edu.au',
-          password: 'password1',
-          nameFirst: 'Jephthah',
-          nameLast: 'Benjamin'
-        }
-      }
-    );
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Patrick = authRegister(email2, password2, nameFirst2, nameLast2);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
 
-    const userObj2 = JSON.parse(res.getBody() as string);
-
-    expect(channelJoin(userObj2.token, channelObj.channelId)).toStrictEqual({});
-
-    const channelLeave = request(
-      'POST',
-      SERVER_URL + '/channel/leave/v1',
-      {
-        json: {
-          token: userObj2.token,
-          channelId: channelObj.channelId
-        }
-      }
-    );
-
-    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
-    expect(channelLeaveObj).toStrictEqual({});
-
-    const channelDetails = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userObj.token,
-          channelId: channelObj.channelId
-        }
-      }
-    );
-    const channelDetailsObj = JSON.parse(channelDetails.getBody() as string);
-    expect(channelDetailsObj).toStrictEqual({
-      name: 'chanel',
-      isPublic: true,
-      ownerMembers: [
-        {
-          uId: userObj.authUserId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
-        }
-      ],
-      allMembers: [
-        {
-          uId: userObj.authUserId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
-        }
-      ]
-    });
+    expect(channelJoin(Patrick.token, SEM113.channelId)).toStrictEqual({});
+    expect(channelJoin(Patrick.token, SEM113.channelId)).toEqual(400);
+    expect(channelLeave(Patrick.token, SEM113.channelId)).toEqual({});
+    expect(channelJoin(Madhav.token, SEM113.channelId)).toStrictEqual(400);
+    expect(channelLeave(Patrick.token, SEM113.channelId)).toEqual(403);
   });
 
   test('channel owner leaves', () => {
-    const registerUser2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5444444@ad.unsw.edu.au',
-          password: 'password1',
-          nameFirst: 'Jephthah',
-          nameLast: 'Benjamin'
-        }
-      }
-    );
-    const userObj2: UserRegisterReturn = JSON.parse(registerUser2.getBody() as string);
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const Patrick = authRegister(email2, password2, nameFirst2, nameLast2);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
 
-    expect(channelJoin(userObj2.token, channelObj.channelId)).toStrictEqual({});
-
-    const channelLeave = request(
-      'POST',
-      SERVER_URL + '/channel/leave/v1',
-      {
-        json: {
-          token: userObj.token,
-          channelId: channelObj.channelId
-        }
-      }
-    );
-
-    const channelLeaveObj = JSON.parse(channelLeave.getBody() as string);
-    expect(channelLeaveObj).toStrictEqual({});
-
-    const channelDetails = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userObj2.token,
-          channelId: channelObj.channelId
-        }
-      }
-    );
-    const channelDetailsObj = JSON.parse(channelDetails.getBody() as string);
-    expect(channelDetailsObj).toStrictEqual({
-      name: 'chanel',
-      isPublic: true,
-      ownerMembers: [],
-      allMembers: [
-        {
-          uId: userObj2.authUserId,
-          email: 'z5444444@ad.unsw.edu.au',
-          nameFirst: 'Jephthah',
-          nameLast: 'Benjamin',
-          handleStr: 'jephthahbenjamin'
-        }
-      ]
-    });
+    expect(channelJoin(Patrick.token, SEM113.channelId)).toStrictEqual({});
+    expect(channelLeave(Madhav.token, SEM113.channelId)).toEqual({});
+    expect(channelJoin(Patrick.token, SEM113.channelId)).toStrictEqual(400);
+    expect(channelLeave(Madhav.token, SEM113.channelId)).toEqual(403);
   });
 });
 
