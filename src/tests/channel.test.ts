@@ -51,19 +51,21 @@ describe('channelDetailsV2 ', () => {
   });
 
   test('token is invalid', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'COMP1531 Crunchie',
-          isPublic: false,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    const chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'COMP1531 Crunchie',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // const chanId = channelData.channelId;
+
+    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false);
 
     const detailRes = request(
       'GET',
@@ -81,19 +83,21 @@ describe('channelDetailsV2 ', () => {
   });
 
   test('channelId is invalid', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'COMP1531 Crunchie',
-          isPublic: false,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    const chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'COMP1531 Crunchie',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // const chanId = channelData.channelId;
+
+    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false);
 
     const detailRes = request(
       'GET',
@@ -126,20 +130,22 @@ describe('channelDetailsV2 ', () => {
     const userData2 = JSON.parse(userRes2.getBody() as string);
     const userToken2 = userData2.token;
 
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'COMP1531 Crunchie',
-          isPublic: false,
-        }
-      }
-    );
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'COMP1531 Crunchie',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
 
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    const chanId = channelData.channelId;
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // const chanId = channelData.channelId;
+
+    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false);
 
     const detailRes = request(
       'GET',
@@ -156,20 +162,22 @@ describe('channelDetailsV2 ', () => {
   });
 
   test('valid authUserId is part of the channel', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'COMP1531 Crunchie',
-          isPublic: false,
-        }
-      }
-    );
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'COMP1531 Crunchie',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
 
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    const chanId = channelData.channelId;
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // const chanId = channelData.channelId;
+
+    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false).channelId;
 
     const detailRes = request(
       'GET',
@@ -223,20 +231,22 @@ describe('channelDetailsV2 ', () => {
 
     const userData2 = JSON.parse(userRes2.getBody() as string);
 
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'COMP1531 Crunchie',
-          isPublic: true,
-        }
-      }
-    );
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'COMP1531 Crunchie',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
 
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    const chanId = channelData.channelId;
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // const chanId = channelData.channelId;
+
+    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', true).channelId;
 
     const joinRes = request(
       'POST',
@@ -1478,19 +1488,21 @@ describe('channelJoinV2', () => {
   });
 
   test('invalid channelId', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolChannel',
-          isPublic: true,
-        }
-      }
-    );
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
 
-    const channelData = JSON.parse(channelRes.getBody() as string);
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+
+    const channelData = channelsCreate(userToken, 'coolChannel', true);
 
     const joinRes = request(
       'POST',
@@ -1508,18 +1520,20 @@ describe('channelJoinV2', () => {
   });
 
   test('invalid token', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+
+    const channelData = channelsCreate(userToken, 'coolChannel', true);
 
     const joinRes = request(
       'POST',
@@ -1537,18 +1551,20 @@ describe('channelJoinV2', () => {
   });
 
   test('User is already a member of channel', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+
+    const channelData = channelsCreate(userToken, 'coolChannel', true);
 
     const joinRes = request(
       'POST',
@@ -1566,18 +1582,20 @@ describe('channelJoinV2', () => {
   });
 
   test('public channel, user is not member or global owner', () => {
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+
+    const channelData = channelsCreate(userToken, 'coolChannel', true);
 
     const userRes2 = request(
       'POST',
@@ -1642,19 +1660,21 @@ describe('channelJoinV2', () => {
 
     const userData2 = JSON.parse(userRes2.getBody() as string);
 
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolPrivateChannel',
-          isPublic: false,
-        }
-      }
-    );
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolPrivateChannel',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
 
-    const channelData = JSON.parse(channelRes.getBody() as string);
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+
+    const channelData = channelsCreate(userToken, 'coolPrivateChannel', false);
 
     // Dr user is not a global owner
     // Perry user is a global owner and member of private channel
@@ -1690,18 +1710,21 @@ describe('channelJoinV2', () => {
 
     const userData2 = JSON.parse(userRes2.getBody() as string);
 
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolPublicChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
+    // const channelRes2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolPublicChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
+
+    const channelData2 = channelsCreate(userToken, 'coolPublicChannel', true);
+
     // Perry user is a global owner and member of private channel
     const joinRes = request(
       'POST',
@@ -1782,18 +1805,19 @@ describe('channelJoinV2', () => {
     const userData2 = JSON.parse(userRes2.getBody() as string);
 
     // Dr is not a global owner but made a private channel
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userData2.token,
-          name: 'edgyPrivateChannel',
-          isPublic: false,
-        }
-      }
-    );
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
+    // const channelRes2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userData2.token,
+    //       name: 'edgyPrivateChannel',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
+    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
+    const channelData2 = channelsCreate(userData2.token, 'edgyPrivateChannel', false);
 
     // Perry joins a private channel because he is a global owner
     const joinRes = request(
@@ -1902,19 +1926,21 @@ describe('channelInviteV2', () => {
     userId2 = userData2.authUserId;
     userToken2 = userData2.token;
 
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolPublicChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolPublicChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // chanId = channelData.channelId;
+
+    chanId = channelsCreate(userToken, 'coolPublicChannel', true).channelId;
   });
 
   // Cool Public Channels
@@ -2100,18 +2126,20 @@ describe('channelInviteV2', () => {
 
   // channelInviteV1 edgyPrivateChannel Valid Tests
   test('authUserId invites uId to private channel', () => {
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'edgyPrivateChannel',
-          isPublic: false,
-        }
-      }
-    );
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
+    // const channelRes2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'edgyPrivateChannel',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
+    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
+
+    const channelData2 = channelsCreate(userToken, 'edgyPrivateChannel', false);
 
     const inviteRes = request(
       'POST',
@@ -2194,19 +2222,19 @@ describe('/channel/leave/v1', () => {
       }
     );
     userObj = JSON.parse(registerUser.getBody() as string);
-
-    const channelCreate = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userObj.token,
-          name: 'chanel',
-          isPublic: true
-        }
-      }
-    );
-    channelObj = JSON.parse(channelCreate.getBody() as string);
+    // const channelCreate = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userObj.token,
+    //       name: 'chanel',
+    //       isPublic: true
+    //     }
+    //   }
+    // );
+    // channelObj = JSON.parse(channelCreate.getBody() as string);
+    channelObj = channelsCreate(userObj.token, 'chanel', true);
   });
 
   test('invalid token', () => {
@@ -2460,19 +2488,21 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     userId2 = userData2.authUserId;
     userToken2 = userData2.token;
 
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'coolPublicChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'coolPublicChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // chanId = channelData.channelId;
+
+    chanId = channelsCreate(userToken, 'coolPublicChannel', true).channelId;
 
     const inviteRes = request(
       'POST',
@@ -2772,19 +2802,21 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken3,
-          name: 'chipmunksOnlyChannel',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    const chanId2 = channelData2.channelId;
+    // const channelRes2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken3,
+    //       name: 'chipmunksOnlyChannel',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
+    // const chanId2 = channelData2.channelId;
+
+    const chanId2 = channelsCreate(userToken3, 'chipmunksOnlyChannel', true).channelId;
 
     // Simon invites Alvin
     const inviteRes = request(
@@ -2930,19 +2962,21 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     userId2 = userData2.authUserId;
     userToken2 = userData2.token;
 
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'edgyPrivateChannel',
-          isPublic: false,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'edgyPrivateChannel',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // chanId = channelData.channelId;
+
+    chanId = channelsCreate(userToken, 'edgyPrivateChannel', false).channelId;
 
     const inviteRes = request(
       'POST',
@@ -3242,19 +3276,20 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken3,
-          name: 'chipmunksOnlyChannel',
-          isPublic: false,
-        }
-      }
-    );
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    const chanId2 = channelData2.channelId;
+    // const channelRes2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken3,
+    //       name: 'chipmunksOnlyChannel',
+    //       isPublic: false,
+    //     }
+    //   }
+    // );
+    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
+    // const chanId2 = channelData2.channelId;
+    const chanId2 = channelsCreate(userToken3, 'chipmunksOnlyChannel', false).channelId;
 
     const inviteRes = request(
       'POST',
@@ -3432,19 +3467,21 @@ describe('/channel/removeowner/v1', () => {
     userId2 = userObj2.authUserId;
     userToken2 = userObj2.token;
 
-    const channelCreate = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userObj.token,
-          name: 'CoolChannel',
-          isPublic: true
-        }
-      }
-    );
-    const channelObj = JSON.parse(channelCreate.getBody() as string);
-    chanId = channelObj.channelId;
+    // const channelCreate = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userObj.token,
+    //       name: 'CoolChannel',
+    //       isPublic: true
+    //     }
+    //   }
+    // );
+    // const channelObj = JSON.parse(channelCreate.getBody() as string);
+    // chanId = channelObj.channelId;
+
+    chanId = channelsCreate(userObj.token, 'CoolChannel', true).channelId;
 
     const inviteRes = request(
       'POST',
@@ -3983,19 +4020,19 @@ describe('/channel/removeowner/v1', () => {
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    const channelCreate2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken3,
-          name: 'CoolerChannel',
-          isPublic: true
-        }
-      }
-    );
-    const channelObj2 = JSON.parse(channelCreate2.getBody() as string);
-    const chanId2 = channelObj2.channelId;
+    // const channelCreate2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken3,
+    //       name: 'CoolerChannel',
+    //       isPublic: true
+    //     }
+    //   }
+    // );
+    // const channelObj2 = JSON.parse(channelCreate2.getBody() as string);
+    const chanId2 = channelsCreate(userToken3, 'CoolerChannel', true).channelId;
 
     const inviteRes = request(
       'POST',

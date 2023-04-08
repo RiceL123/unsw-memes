@@ -1,4 +1,4 @@
-import { clear, authRegister, dmCreate, dmMessages, channelMessages } from './routeRequests';
+import { clear, authRegister, dmCreate, dmMessages, channelMessages, channelsCreate } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -40,19 +40,22 @@ describe('messageSendV1', () => {
     const userData = JSON.parse(userRes.getBody() as string);
     userToken = userData.token;
     userId = userData.authUserId;
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'Coding',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
+
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'Coding',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // chanId = channelData.channelId;
+
+    chanId = channelsCreate(userToken, 'Coding', true).channelId;
   });
 
   test('invalid channelId', () => {
@@ -224,32 +227,32 @@ describe('messageSendV1', () => {
     const userData2 = JSON.parse(userRes2.getBody() as string);
     const userData3 = JSON.parse(userRes3.getBody() as string);
 
-    const channelRes2 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userData2.token,
-          name: 'Maths',
-          isPublic: true,
-        }
-      }
-    );
+    // const channelRes2 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userData2.token,
+    //       name: 'Maths',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
 
-    const channelRes3 = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userData3.token,
-          name: 'Commerce',
-          isPublic: true,
-        }
-      }
-    );
+    // const channelRes3 = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userData3.token,
+    //       name: 'Commerce',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
 
-    const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    const channelData3 = JSON.parse(channelRes3.getBody() as string);
+    const channelData2 = channelsCreate(userData2.token, 'Maths', true);
+    const channelData3 = channelsCreate(userData3.token, 'Commerce', true);
 
     const expectedTime = Math.floor(Date.now() / 1000);
     const messageSendRes = request(
@@ -439,19 +442,21 @@ describe('messageEditV1', () => {
     const userData = JSON.parse(userRes.getBody() as string);
     userToken = userData.token;
     userId = userData.authUserId;
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'Coding',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'Coding',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // chanId = channelData.channelId;
+
+    chanId = channelsCreate(userToken, 'Coding', true).channelId;
   });
 
   test('invalid token', () => {
@@ -1105,19 +1110,21 @@ describe('messageRemoveV1', () => {
     const userData = JSON.parse(userRes.getBody() as string);
     userToken = userData.token;
     userId = userData.authUserId;
-    const channelRes = request(
-      'POST',
-      SERVER_URL + '/channels/create/v2',
-      {
-        json: {
-          token: userToken,
-          name: 'Coding',
-          isPublic: true,
-        }
-      }
-    );
-    const channelData = JSON.parse(channelRes.getBody() as string);
-    chanId = channelData.channelId;
+    // const channelRes = request(
+    //   'POST',
+    //   SERVER_URL + '/channels/create/v2',
+    //   {
+    //     json: {
+    //       token: userToken,
+    //       name: 'Coding',
+    //       isPublic: true,
+    //     }
+    //   }
+    // );
+    // const channelData = JSON.parse(channelRes.getBody() as string);
+    // chanId = channelData.channelId;
+
+    chanId = channelsCreate(userToken, 'Coding', true).channelId;
   });
 
   test('invalid token', () => {
