@@ -176,10 +176,12 @@ function channelJoin(token: string, channelId: number) {
 function channelInvite(token: string, channelId: number, uId: number) {
   return requestHelper(
     'POST',
-    '/channel/invite/v2',
+    '/channel/invite/v3',
     {
-      json: {
+      headers: {
         token: token,
+      },
+      json: {
         channelId: channelId,
         uId: uId,
       }
