@@ -87,7 +87,7 @@ function channelsListV3(token : string) {
  *
  * @returns { allChannels } - returns array of all channels when authUserId valid
  */
-function channelsListAllV2(token: string) {
+function channelsListAllV3(token: string) {
   const data = getData();
   token = getHash(token);
 
@@ -107,4 +107,4 @@ function channelsListAllV2(token: string) {
   return { channels: allChannels };
 }
 
-export { channelsCreateV3, channelsListV3, channelsListAllV2 };
+export { channelsCreateV3, channelsListV3, channelsListAllV3 };

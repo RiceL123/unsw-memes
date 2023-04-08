@@ -1,4 +1,4 @@
-import { clear, authRegister, channelsCreate, channelJoin, channelDetails, channelsList, channelInvite } from './routeRequests';
+import { clear, authRegister, channelsCreate, channelsListAll, channelJoin, channelDetails, channelsList, channelInvite } from './routeRequests';
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
 const ERROR = { error: expect.any(String) };
 
@@ -265,239 +265,104 @@ describe('channelsListV3', () => {
   });
 });
 
-// // TESTS FOR channelsListAllV2
-// describe('channelsListAllV2', () => {
-//   let tokenId = '';
-//   beforeEach(() => {
-//     // registering a person
-//     const tokenRes = request(
-//       'POST',
-//       SERVER_URL + '/auth/register/v3',
-//       {
-//         json: {
-//           email: 'z5555555@ad.unsw.edu.au',
-//           password: 'password',
-//           nameFirst: 'Madhav',
-//           nameLast: 'Mishra',
-//         }
-//       }
-//     );
+// // TESTS FOR channelsListAllV3
+describe('channelsListAllV3', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
 
-//     const tokenData = JSON.parse(tokenRes.getBody() as string);
-//     tokenId = tokenData.token;
-//   });
+  test('invalid token', () => {
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
+    expect(channelsListAll(person1Data.token + 1)).toEqual(403);
+  });
 
-//   test('token is invalid', () => {
-//     const res = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'COMP1531 Crunchie',
-//           isPublic: false,
-//         }
-//       }
-//     );
+  test('authUserId is valid and in one channel', () => {
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-//     const channelData = JSON.parse(res.getBody() as string);
-//     const channelId = channelData.channelId;
-//     expect(channelId).toStrictEqual(expect.any(Number));
+    const expectedArr = [
+      {
+        channelId: channelObj.channelId,
+        name: 'COMP1531 Crunchie',
+      }
+    ];
 
-//     const listRes = request(
-//       'GET',
-//       SERVER_URL + '/channels/listall/v2',
-//       {
-//         qs: {
-//           token: tokenId + 1,
-//         },
-//       }
-//     );
+    const listAllObj = channelsListAll(person1Data.token);
+    expect(listAllObj).toStrictEqual({
+      channels: expectedArr
+    });
+  });
 
-//     const listData = JSON.parse(listRes.getBody() as string);
-//     expect(listData).toStrictEqual(ERROR);
-//   });
+  test('user is part of multiple channels', () => {
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-//   test('authUserId is valid and in one channel', () => {
-//     const res = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'COMP1531 Crunchie',
-//           isPublic: false,
-//         }
-//       }
-//     );
+    const channelName2 = 'COMP1531 General';
+    const channelObj2 = channelsCreate(person1Data.token, channelName2, true);
+    expect(channelObj2).toStrictEqual(VALID_CHANNELS_CREATE);
 
-//     const channelData = JSON.parse(res.getBody() as string);
-//     const channelId = channelData.channelId;
-//     expect(channelId).toStrictEqual(expect.any(Number));
+    const listAllObj = channelsListAll(person1Data.token);
+    expect(listAllObj).toStrictEqual({ channels: expect.any(Array) });
 
-//     const listRes = request(
-//       'GET',
-//       SERVER_URL + '/channels/listall/v2',
-//       {
-//         qs: {
-//           token: tokenId,
-//         },
-//       }
-//     );
+    const expectedArr = [
+      {
+        channelId: channelObj.channelId,
+        name: 'COMP1531 Crunchie',
+      },
+      {
+        channelId: channelObj2.channelId,
+        name: 'COMP1531 General',
+      }
+    ];
 
-//     const listData = JSON.parse(listRes.getBody() as string);
-//     expect(listData).toStrictEqual({
-//       channels: [
-//         {
-//           channelId: channelId,
-//           name: 'COMP1531 Crunchie',
-//         }
-//       ]
-//     });
-//   });
+    // sorting to account for any permuation of the allChannels array
+    expect(listAllObj.channels.sort((a: channelObject, b: channelObject) => a.channelId - b.channelId)).toStrictEqual(
+      expectedArr.sort((a, b) => a.channelId - b.channelId)
+    );
+  });
 
-//   test('user is part of multiple channels', () => {
-//     const res = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'COMP1531 Crunchie',
-//           isPublic: false,
-//         }
-//       }
-//     );
+  test('user is part of multiple channels', () => {
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-//     const channelData = JSON.parse(res.getBody() as string);
-//     const channelId = channelData.channelId;
-//     expect(channelId).toStrictEqual(expect.any(Number));
+    const channelName2 = 'COMP1531 General';
+    const channelObj2 = channelsCreate(person1Data.token, channelName2, true);
+    expect(channelObj2).toStrictEqual(VALID_CHANNELS_CREATE);
 
-//     const res2 = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'COMP1531 General',
-//           isPublic: true,
-//         }
-//       }
-//     );
+    const channelName3 = 'Study Room';
+    const channelObj3 = channelsCreate(person1Data.token, channelName3, true);
+    expect(channelObj3).toStrictEqual(VALID_CHANNELS_CREATE);
 
-//     const channelData2 = JSON.parse(res2.getBody() as string);
-//     const channelId2 = channelData2.channelId;
-//     expect(channelId2).toStrictEqual(expect.any(Number));
+    const listAllObj = channelsListAll(person1Data.token);
+    expect(listAllObj).toStrictEqual({ channels: expect.any(Array) });
 
-//     const listRes = request(
-//       'GET',
-//       SERVER_URL + '/channels/listall/v2',
-//       {
-//         qs: {
-//           token: tokenId,
-//         },
-//       }
-//     );
-
-//     const listData = JSON.parse(listRes.getBody() as string);
-
-//     expect(listData).toStrictEqual({ channels: expect.any(Array) });
-//     const expectedArr = [
-//       {
-//         channelId: channelId,
-//         name: 'COMP1531 Crunchie',
-//       },
-//       {
-//         channelId: channelId2,
-//         name: 'COMP1531 General',
-//       }
-//     ];
-
-//     // sorting to account for any permuation of the allChannels array
-//     expect(listData.channels.sort((a: channelObject, b: channelObject) => a.channelId - b.channelId)).toStrictEqual(
-//       expectedArr.sort((a, b) => a.channelId - b.channelId)
-//     );
-//   });
-
-//   test('user is part of multiple channels', () => {
-//     const res = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'COMP1531 Crunchie',
-//           isPublic: false,
-//         }
-//       }
-//     );
-
-//     const channelData = JSON.parse(res.getBody() as string);
-//     const channelId = channelData.channelId;
-//     expect(channelId).toStrictEqual(expect.any(Number));
-
-//     const res2 = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'COMP1531 General',
-//           isPublic: true,
-//         }
-//       }
-//     );
-
-//     const channelData2 = JSON.parse(res2.getBody() as string);
-//     const channelId2 = channelData2.channelId;
-//     expect(channelId2).toStrictEqual(expect.any(Number));
-
-//     const res3 = request(
-//       'POST',
-//       SERVER_URL + '/channels/create/v2',
-//       {
-//         json: {
-//           token: tokenId,
-//           name: 'study room',
-//           isPublic: true,
-//         }
-//       }
-//     );
-
-//     const channelData3 = JSON.parse(res3.getBody() as string);
-//     const channelId3 = channelData3.channelId;
-//     expect(channelId3).toStrictEqual(expect.any(Number));
-
-//     const listRes = request(
-//       'GET',
-//       SERVER_URL + '/channels/listall/v2',
-//       {
-//         qs: {
-//           token: tokenId,
-//         },
-//       }
-//     );
-
-//     const listData = JSON.parse(listRes.getBody() as string);
-
-//     expect(listData).toStrictEqual({ channels: expect.any(Array) });
-//     const expectedArr = [
-//       {
-//         channelId: channelId,
-//         name: 'COMP1531 Crunchie',
-//       },
-//       {
-//         channelId: channelId2,
-//         name: 'COMP1531 General',
-//       },
-//       {
-//         channelId: channelId3,
-//         name: 'study room',
-//       }
-//     ];
-//     // sorting to account for any permuation of the allChannels array
-//     expect(listData.channels.sort((a: channelObject, b: channelObject) => a.channelId - b.channelId)).toStrictEqual(
-//       expectedArr.sort((a, b) => a.channelId - b.channelId)
-//     );
-//   });
-// });
+    const expectedArr = [
+      {
+        channelId: channelObj.channelId,
+        name: 'COMP1531 Crunchie',
+      },
+      {
+        channelId: channelObj2.channelId,
+        name: 'COMP1531 General',
+      },
+      {
+        channelId: channelObj3.channelId,
+        name: 'Study Room',
+      }
+    ];
+    // sorting to account for any permuation of the allChannels array
+    expect(listAllObj.channels.sort((a: channelObject, b: channelObject) => a.channelId - b.channelId)).toStrictEqual(
+      expectedArr.sort((a, b) => a.channelId - b.channelId)
+    );
+  });
+});
