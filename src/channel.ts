@@ -2,7 +2,7 @@ import HTTPError from 'http-errors';
 import { Data, getData, setData, getHash } from './dataStore';
 
 /**
- * channelDetailsV2 passes authUserId, channelId and creates a new
+ * channelDetailsV3 passes authUserId, channelId and creates a new
  * array for ownerMembers and channelMembers returning the basic details
  * of the given channelId
  *
@@ -12,7 +12,7 @@ import { Data, getData, setData, getHash } from './dataStore';
  * @returns {{name, isPublic, ownerMembers, allMembers}} - returns object with
  * basic details about the channel
  */
-function channelDetailsV2(token: string, channelId: string) {
+function channelDetailsV3(token: string, channelId: string) {
   const data = getData();
   token = getHash(token);
 
@@ -21,20 +21,17 @@ function channelDetailsV2(token: string, channelId: string) {
   const userObj = data.users.find(x => x.tokens.includes(token));
 
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
-  // if (!(data.users.some(x => x.tokens === token))) {
-  // return { error: 'Invalid authUserId' };
-  // }
 
   const channelObj = data.channels.find(x => x.channelId === id);
 
   if (channelObj === undefined) {
-    return { error: 'Invalid channelId' };
+    throw HTTPError(400, 'Invalid channelId');
   }
   // even if the user is a global owner, they still need to be a member
   if ((channelObj.allMembersIds.includes(userObj.uId)) === false) {
-    return { error: 'authUserId is not a member of the channel' };
+    throw HTTPError(403, 'authUserId is not a member of the channel');
   }
 
   const allMembers = [];
@@ -162,7 +159,7 @@ function channelInviteV3(token: string, channelId: string, uId: string) {
 }
 
 /**
- * channelMessagesV2 takes an authorised user as well as a channelId to access the messages
+ * channelMessagesV3 takes an authorised user as well as a channelId to access the messages
  * stored within that channel and given the start index, it uses pagination to return the messages
  * stored in an array of objects, pagination can return up to 50 messages at a time. If there are
  * no messages, the end index returned is -1 but if there are more messages stored, the end index
@@ -176,7 +173,7 @@ function channelInviteV3(token: string, channelId: string, uId: string) {
  * that has an array of objects called messages, the start index value as well as a new index for
  * end which either states that there are no more messages or there are more messages waiting.
  */
-function channelMessagesV2(token: string, channelId: string, start: string) {
+function channelMessagesV3(token: string, channelId: string, start: string) {
   const data = getData();
   token = getHash(token);
 
@@ -219,11 +216,13 @@ function channelMessagesV2(token: string, channelId: string, start: string) {
   }
 }
 
-/** Reomves a the corresponding member from the channel, if they were an owner,
+/**
+ * Removes a the corresponding member from the channel, if they were an owner,
  * remove them as well
  *
  * @param {string} token
  * @param {number} channelId
+ *
  * @returns {{}}
  */
 function channelLeaveV2(token: string, channelId: string) {
@@ -254,11 +253,13 @@ function channelLeaveV2(token: string, channelId: string) {
   return {};
 }
 
-/** Adds uId to ownerMembersIds array
+/**
+ * Adds uId to ownerMembersIds array
  *
  * @param {string} token
  * @param {number}channelId
  * @param {number} uId
+ *
  * @returns {{}}
  */
 function channelAddOwnerV1(token: string, channelId: number, uId: number) {
@@ -301,10 +302,12 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number) {
 /**
   * channelRemoveOwnerV1 takes in a token, channelId and an uId, and if the uId is an owner
   * a channel, it will remove their owner permission
+  *
   * @param {string} token
   * @param {number} channelId
   * @param {number} uId
-  * @returns {}
+  *
+  * @returns {{}}
 */
 function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   const data: Data = getData();
@@ -341,4 +344,4 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV2, channelJoinV3, channelInviteV3, channelMessagesV2, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 };
+export { channelDetailsV3, channelJoinV3, channelInviteV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 };

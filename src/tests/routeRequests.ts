@@ -132,11 +132,13 @@ function authPasswordResetReset(resetCode: string, newPassword: string) {
 function channelDetails(token: string, channelId: number) {
   return requestHelper(
     'GET',
-    '/channel/details/v2',
+    '/channel/details/v3',
     {
-      qs: {
+      headers: {
         token: token,
-        channelId: channelId
+      },
+      qs: {
+        channelId: channelId,
       }
     }
   );
