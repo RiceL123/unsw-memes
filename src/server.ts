@@ -7,10 +7,10 @@ import errorHandler from 'middleware-http-errors';
 
 import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1, authPasswordResetRequestV1, authPasswordResetResetV1 } from './auth';
-import { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 } from './dm';
+import { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 } from './dm';
 import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
-import { channelDetailsV2, channelInviteV3, channelJoinV3, channelMessagesV2, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
+import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
 import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1 } from './message';
 
@@ -86,10 +86,10 @@ app.post('/auth/passwordreset/reset/v1', (req: Request, res: Response, next) => 
 /// ////////////////////////////////////////////////////////////
 /// //////////////////   channel routes    /////////////////////
 /// ////////////////////////////////////////////////////////////
-app.get('/channel/details/v2', (req: Request, res: Response, next) => {
-  const token = req.query.token as string;
+app.get('/channel/details/v3', (req: Request, res: Response, next) => {
+  const token = req.header('token');
   const channelId = req.query.channelId as string;
-  return res.json(channelDetailsV2(token, channelId));
+  return res.json(channelDetailsV3(token, channelId));
 });
 
 app.post('/channel/join/v3', (req: Request, res: Response, next) => {
@@ -108,7 +108,7 @@ app.get('/channel/messages/v3', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const channelId = req.query.channelId as string;
   const start = req.query.start as string;
-  return res.json(channelMessagesV2(token, channelId, start));
+  return res.json(channelMessagesV3(token, channelId, start));
 });
 
 app.post('/channel/leave/v2', (req: Request, res: Response, next) => {
@@ -168,38 +168,38 @@ app.put('/user/profile/sethandle/v2', (req: Request, res: Response, next) => {
 app.post('/dm/create/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { uIds } = req.body;
-  return res.json(dmCreateV1(token, uIds));
+  return res.json(dmCreateV2(token, uIds));
 });
 
 app.get('/dm/list/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
-  return res.json(dmListV1(token));
+  return res.json(dmListV2(token));
 });
 
 app.delete('/dm/remove/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const dmId = parseInt(req.query.dmId as string);
 
-  return res.json(dmRemoveV1(token, dmId));
+  return res.json(dmRemoveV2(token, dmId));
 });
 
 app.get('/dm/details/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const dmId = parseInt(req.query.dmId as string);
-  return res.json(dmDetailsV1(token, dmId));
+  return res.json(dmDetailsV2(token, dmId));
 });
 
 app.post('/dm/leave/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { dmId } = req.body;
-  return res.json(dmLeaveV1(token, dmId));
+  return res.json(dmLeaveV2(token, dmId));
 });
 
 app.get('/dm/messages/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const dmId = parseInt(req.query.dmId as string);
   const start = parseInt(req.query.start as string);
-  return res.json(dmMessagesV1(token, dmId, start));
+  return res.json(dmMessagesV2(token, dmId, start));
 });
 
 /// ////////////////////////////////////////////////////////////

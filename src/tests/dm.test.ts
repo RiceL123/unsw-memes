@@ -28,7 +28,7 @@ beforeEach(() => {
   clear();
 });
 
-describe('/dm/create/v1', () => {
+describe('/dm/create/v2', () => {
   let userObj: AuthRegisterReturn;
 
   beforeEach(() => {
@@ -82,7 +82,7 @@ describe('/dm/create/v1', () => {
   });
 });
 
-describe('/dm/remove/v1', () => {
+describe('/dm/remove/v2', () => {
   let userObj: AuthRegisterReturn;
   let dmObj: DmCreateReturn;
 
@@ -140,7 +140,7 @@ describe('/dm/remove/v1', () => {
   });
 });
 
-describe('/dm/details/v1', () => {
+describe('/dm/details/v2', () => {
   let userObj: AuthRegisterReturn;
   let dmObj: DmCreateReturn;
   beforeEach(() => {
@@ -261,7 +261,7 @@ describe('/dm/details/v1', () => {
   });
 });
 
-describe('/dm/leave/v1', () => {
+describe('/dm/leave/v2', () => {
   let userObj: AuthRegisterReturn;
   let dmObj: DmCreateReturn;
   beforeEach(() => {
@@ -338,7 +338,7 @@ describe('/dm/leave/v1', () => {
   });
 });
 
-describe('/dm/list/v1', () => {
+describe('/dm/list/v2', () => {
   let userObj: AuthRegisterReturn;
 
   beforeEach(() => {
@@ -495,7 +495,7 @@ describe('/dm/list/v1', () => {
   });
 });
 
-describe('dmMessagesV1', () => {
+describe('dmMessagesV2', () => {
   let userObj: AuthRegisterReturn;
   let dmObj: DmCreateReturn;
   beforeEach(() => {

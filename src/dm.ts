@@ -41,7 +41,7 @@ function generateDmName(uIds: number[], data: Data) {
  *
  * @returns {{ dmId: number }}
  */
-function dmCreateV1(token: string, uIds: number[]) {
+function dmCreateV2(token: string, uIds: number[]) {
   const data: Data = getData();
   token = getHash(token);
 
@@ -93,7 +93,7 @@ function dmCreateV1(token: string, uIds: number[]) {
  * @param {number} dmId
  * @returns
  */
-function dmRemoveV1(token: string, dmId: number) {
+function dmRemoveV2(token: string, dmId: number) {
   const data: Data = getData();
   token = getHash(token);
 
@@ -130,7 +130,7 @@ function dmRemoveV1(token: string, dmId: number) {
  *
  * @returns {{ name: string, members: User[] }}
  */
-function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
+function dmDetailsV2(token: string, dmId: number): Error | DmDetailsReturn {
   const data: Data = getData();
   token = getHash(token);
 
@@ -167,7 +167,7 @@ function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
   };
 }
 
-/** dmLeaveV1 removes the corresponding user to the token argument from
+/** dmLeaveV2 removes the corresponding user to the token argument from
  * the dm
  *
  * @param {string} token
@@ -175,7 +175,7 @@ function dmDetailsV1(token: string, dmId: number): Error | DmDetailsReturn {
  *
  * @returns {{}}
  */
-function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
+function dmLeaveV2(token: string, dmId: number): Error | Record<string, never> {
   const data: Data = getData();
   token = getHash(token);
 
@@ -206,7 +206,7 @@ function dmLeaveV1(token: string, dmId: number): Error | Record<string, never> {
  *
  * @returns {{dms}}
  */
-function dmListV1(token: string) {
+function dmListV2(token: string) {
   const data = getData();
   token = getHash(token);
 
@@ -231,7 +231,7 @@ function dmListV1(token: string) {
 }
 
 /**
- * dmMessagesV1 takes an authorised user as well as a channelId to access the messages
+ * dmMessagesV2 takes an authorised user as well as a channelId to access the messages
  * stored within that channel and given the start index, it uses pagination to return the messages
  * stored in an array of objects, pagination can return up to 50 messages at a time. If there are
  * no messages, the end index returned is -1 but if there are more messages stored, the end index
@@ -246,7 +246,7 @@ function dmListV1(token: string) {
  * end which either states that there are no more messages or there are more messages waiting.
  */
 
-function dmMessagesV1(token: string, dmId: number, start: number) {
+function dmMessagesV2(token: string, dmId: number, start: number) {
   const data = getData();
   token = getHash(token);
 
@@ -286,4 +286,4 @@ function dmMessagesV1(token: string, dmId: number, start: number) {
   }
 }
 
-export { dmCreateV1, dmDetailsV1, dmLeaveV1, dmRemoveV1, dmListV1, dmMessagesV1 };
+export { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 };

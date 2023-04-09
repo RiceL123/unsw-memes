@@ -1,11 +1,7 @@
-import { clear, authRegister, channelsCreate, channelMessages, messageSend, channelInvite, channelJoin, channelLeave } from './routeRequests';
-
-import request from 'sync-request';
-
-import { port, url } from '../config.json';
-const SERVER_URL = `${url}:${port}`;
-
+import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner } from './routeRequests';
 const ERROR = { error: expect.any(String) };
+
+const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
 
 interface channelObjUser {
   uId: number;
@@ -19,175 +15,60 @@ beforeEach(() => {
   clear();
 });
 
-describe('channelDetailsV2 ', () => {
-  let userId: number;
-  let userToken: string;
-  beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-        }
-      }
-    );
+describe('channelDetailsV3 ', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
 
-    const userData = JSON.parse(userRes.getBody() as string);
-    userId = userData.authUserId;
-    userToken = userData.token;
-  });
+  test('invalid token', () => {
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-  test('token is invalid', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'COMP1531 Crunchie',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // const chanId = channelData.channelId;
-
-    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false);
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken + 1,
-          channelId: chanId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-    // channelJoinV1(authUserObj.authUserId + 1, channelObj.channelId);
-    expect(detailData).toStrictEqual(ERROR);
+    expect(channelDetails(person1Data.token + 1, channelObj.channelId)).toEqual(403);
   });
 
   test('channelId is invalid', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'COMP1531 Crunchie',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // const chanId = channelData.channelId;
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false);
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId + 1,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-    expect(detailData).toStrictEqual(ERROR);
+    const detailObj = channelDetails(person1Data.token, channelObj.channelId + 1);
+    expect(detailObj).toStrictEqual(400);
   });
 
   test('valid authUserId but not a part of the channel', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z4444444@ad.unsw.edu.au',
-          password: 'yellowfeathers',
-          nameFirst: 'Big',
-          nameLast: 'Bird',
-        }
-      }
-    );
+    const email2 = 'z4444444@ad.unsw.edu.au';
+    const password2 = 'yellowfeathers';
+    const nameFirst2 = 'Big';
+    const nameLast2 = 'Bird';
 
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-    const userToken2 = userData2.token;
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const person2Data = authRegister(email2, password2, nameFirst2, nameLast2);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'COMP1531 Crunchie',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // const chanId = channelData.channelId;
-
-    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false);
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken2,
-          channelId: chanId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-    expect(detailData).toStrictEqual(ERROR);
+    const detailObj = channelDetails(person2Data.token, channelObj.channelId);
+    expect(detailObj).toStrictEqual(403);
   });
 
   test('valid authUserId is part of the channel', () => {
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'COMP1531 Crunchie',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, false);
+    expect(channelObj).toStrictEqual(VALID_CHANNELS_CREATE);
 
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // const chanId = channelData.channelId;
-
-    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', false).channelId;
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(detailRes.getBody() as string);
-    expect(detailData).toStrictEqual({
+    const detailObj = channelDetails(person1Data.token, channelObj.channelId);
+    expect(detailObj).toStrictEqual({
       name: 'COMP1531 Crunchie',
       isPublic: false,
       ownerMembers: [
         {
-          uId: userId,
+          uId: person1Data.authUserId,
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
@@ -196,7 +77,7 @@ describe('channelDetailsV2 ', () => {
       ],
       allMembers: [
         {
-          uId: userId,
+          uId: person1Data.authUserId,
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
@@ -207,58 +88,27 @@ describe('channelDetailsV2 ', () => {
   });
 
   test('multiple valid authUserIds are a part of the channel', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z4444444@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Snoop',
-          nameLast: 'Dogg',
-        }
-      }
-    );
+    const email2 = 'z4444444@ad.unsw.edu.au';
+    const password2 = 'yellowfeathers';
+    const nameFirst2 = 'Big';
+    const nameLast2 = 'Bird';
 
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const person1Data = authRegister(email, password, nameFirst, nameLast);
+    const person2Data = authRegister(email2, password2, nameFirst2, nameLast2);
 
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'COMP1531 Crunchie',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
+    const channelName = 'COMP1531 Crunchie';
+    const channelObj = channelsCreate(person1Data.token, channelName, true);
 
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // const chanId = channelData.channelId;
+    const joinObj = channelJoin(person2Data.token, channelObj.channelId);
+    expect(joinObj).toStrictEqual({});
 
-    const chanId = channelsCreate(userToken, 'COMP1531 Crunchie', true).channelId;
-
-    expect(channelJoin(userData2.token, chanId)).toStrictEqual({});
-
-    const detailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-    const detailData = JSON.parse(detailRes.getBody() as string);
-
-    expect(detailData).toStrictEqual({
+    const detailObj = channelDetails(person1Data.token, channelObj.channelId);
+    expect(detailObj).toStrictEqual({
       name: 'COMP1531 Crunchie',
       isPublic: true,
       ownerMembers: [
         {
-          uId: userId,
+          uId: person1Data.authUserId,
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
@@ -271,23 +121,23 @@ describe('channelDetailsV2 ', () => {
 
     const expectedArr: channelObjUser[] = [
       {
-        uId: userId,
+        uId: person1Data.authUserId,
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra'
       },
       {
-        uId: userData2.authUserId,
+        uId: person2Data.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
-        nameFirst: 'Snoop',
-        nameLast: 'Dogg',
-        handleStr: 'snoopdogg'
+        nameFirst: 'Big',
+        nameLast: 'Bird',
+        handleStr: 'bigbird'
       }
     ];
 
     // to account for any permutation of the allMembers array, we sort
-    expect(detailData.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
+    expect(detailObj.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
       expectedArr.sort((a, b) => a.uId - b.uId)
     );
   });
@@ -1709,53 +1559,12 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   let userToken2: string;
   let chanId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-        }
-      }
-    );
-
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData = JSON.parse(userRes.getBody() as string);
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Alvin', 'the Chipmunk');
     userId = userData.authUserId;
     userToken = userData.token;
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z5455555@ad.unsw.edu.au', 'password', 'Theodore', 'the Chipmunk');
     userId2 = userData2.authUserId;
     userToken2 = userData2.token;
-
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'coolPublicChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // chanId = channelData.channelId;
 
     chanId = channelsCreate(userToken, 'coolPublicChannel', true).channelId;
 
@@ -1764,200 +1573,60 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
 
   // channelId does not refer to a valid channel
   test('channelId is invalid', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId + 1,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId + 1, userId2);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // uId does not refer to a valid user
   test('uId is invalid', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2 + 1,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId + userId2 + 1);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // uId does not refer to a member of the channel
-  test('channelId is invalid', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+  test('uId does not refer to member of channel', () => {
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId3);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // uId refers to a user who is already an owner
   test('uId is already an owner', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // AuthUser does not have permissions to add owners
   test('Authorised user does not have owner permissions in this channel', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+
+    const addOwnerData = channelAddOwner(userToken2, chanId, userId3);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // Token is invalid
   test('AuthUser / token is invalid', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken + 1,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken + userToken2 + 1, chanId, userId);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   test('valid addOwner test', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
     expect(channelInvite(userToken, chanId, userId3)).toStrictEqual({});
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId3);
     expect(addOwnerData).toStrictEqual({});
 
-    const addOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    const addOwnerData2 = channelAddOwner(userToken3, chanId, userId2);
     expect(addOwnerData2).toStrictEqual({});
 
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'coolPublicChannel',
       isPublic: true,
@@ -2015,37 +1684,9 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   // Alvin invites Theodore, and makes him owner
   // Alvin is still not an owner
   test('valid globalOwner addOwner test', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
-
-    // const channelRes2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken3,
-    //       name: 'chipmunksOnlyChannel',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    // const chanId2 = channelData2.channelId;
 
     const chanId2 = channelsCreate(userToken3, 'chipmunksOnlyChannel', true).channelId;
 
@@ -2056,32 +1697,10 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     expect(channelInvite(userToken, chanId2, userId2)).toStrictEqual({});
 
     // Alvin makes Theodore owner
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId2, userId2);
     expect(addOwnerData).toStrictEqual({});
 
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId2,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId2);
     expect(detailData).toStrictEqual({
       name: 'chipmunksOnlyChannel',
       isPublic: true,
@@ -2135,53 +1754,12 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   let userToken2: string;
   let chanId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-        }
-      }
-    );
-
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData = JSON.parse(userRes.getBody() as string);
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Alvin', 'the Chipmunk');
     userId = userData.authUserId;
     userToken = userData.token;
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z5455555@ad.unsw.edu.au', 'password', 'Theodore', 'the Chipmunk');
     userId2 = userData2.authUserId;
     userToken2 = userData2.token;
-
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'edgyPrivateChannel',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // chanId = channelData.channelId;
 
     chanId = channelsCreate(userToken, 'edgyPrivateChannel', false).channelId;
 
@@ -2190,200 +1768,60 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
 
   // channelId does not refer to a valid channel
   test('channelId is invalid', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId + 1,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId + 1, userId2);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // uId does not refer to a valid user
   test('uId is invalid', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2 + 1,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId2 + userId + 1);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // uId does not refer to a member of the channel
   test('uId is not a member of channel', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId3);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // uId refers to a user who is already an owner
   test('uId is already an owner', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // AuthUser does not have permissions to add owners
   test('Authorised user does not have owner permissions in this channel', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+
+    const addOwnerData = channelAddOwner(userToken2, chanId, userId3);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   // Token is invalid
   test('AuthUser / token is invalid', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken + 1,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken + userToken2, chanId, userId);
     expect(addOwnerData).toStrictEqual(ERROR);
   });
 
   test('valid addOwner test', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
     expect(channelInvite(userToken, chanId, userId3)).toStrictEqual({});
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId3);
     expect(addOwnerData).toStrictEqual({});
 
-    const addOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    const addOwnerData2 = channelAddOwner(userToken3, chanId, userId2);
     expect(addOwnerData2).toStrictEqual({});
 
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'edgyPrivateChannel',
       isPublic: false,
@@ -2441,97 +1879,30 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   // Theodore tries to make himself owner but fails, Simon and makes him owner
   // Theodore then invites Alvin, and Alvin makes himself owner
   test('valid globalOwner addOwner test', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    // const channelRes2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken3,
-    //       name: 'chipmunksOnlyChannel',
-    //       isPublic: false,
-    //     }
-    //   }
-    // );
-    // const channelData2 = JSON.parse(channelRes2.getBody() as string);
-    // const chanId2 = channelData2.channelId;
+    // Simon makes a second private channel, invites Theodore
     const chanId2 = channelsCreate(userToken3, 'chipmunksOnlyChannel', false).channelId;
 
     expect(channelInvite(userToken3, chanId2, userId2)).toStrictEqual({});
 
-    const addOwnerResErr = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerDataErr = JSON.parse(addOwnerResErr.getBody() as string);
+    // Theodore tries to make himself owner but fails not global owner
+    const addOwnerDataErr = channelAddOwner(userToken2, chanId2, userId2);
     expect(addOwnerDataErr).toStrictEqual(ERROR);
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    // Theodore is only successfully made as owner through simon
+    const addOwnerData = channelAddOwner(userToken3, chanId2, userId2);
     expect(addOwnerData).toStrictEqual({});
 
     expect(channelInvite(userToken2, chanId2, userId)).toStrictEqual({});
 
-    const addOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId2,
-          uId: userId,
-        }
-      }
-    );
-    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    // and Alvin makes himself owner - is global owner
+    const addOwnerData2 = channelAddOwner(userToken, chanId2, userId);
     expect(addOwnerData2).toStrictEqual({});
 
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId2,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId2);
     expect(detailData).toStrictEqual({
       name: 'chipmunksOnlyChannel',
       isPublic: false,
@@ -2592,53 +1963,12 @@ describe('/channel/removeowner/v1', () => {
   let userToken2: string;
   let chanId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-        }
-      }
-    );
-
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5455555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userObj = JSON.parse(userRes.getBody() as string);
+    const userObj = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Alvin', 'the Chipmunk');
     userId = userObj.authUserId;
     userToken = userObj.token;
-    const userObj2 = JSON.parse(userRes2.getBody() as string);
+    const userObj2 = authRegister('z5455555@ad.unsw.edu.au', 'password', 'Theodore', 'the Chipmunk');
     userId2 = userObj2.authUserId;
     userToken2 = userObj2.token;
-
-    // const channelCreate = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userObj.token,
-    //       name: 'CoolChannel',
-    //       isPublic: true
-    //     }
-    //   }
-    // );
-    // const channelObj = JSON.parse(channelCreate.getBody() as string);
-    // chanId = channelObj.channelId;
 
     chanId = channelsCreate(userObj.token, 'CoolChannel', true).channelId;
 
@@ -2646,150 +1976,49 @@ describe('/channel/removeowner/v1', () => {
   });
 
   test('invalid token', () => {
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken2 + 1,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken2 + userToken, chanId, userId2);
 
     expect(removeData).toStrictEqual(ERROR);
   });
 
   test('invalid channelId', () => {
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId + 1,
-          uId: userId2,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken, chanId + 1, userId2);
 
     expect(removeData).toStrictEqual(ERROR);
   });
 
   test('invalid uId', () => {
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2 + 1,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken, chanId, userId2 + userId);
 
     expect(removeData).toStrictEqual(ERROR);
   });
 
   test('user is not the owner of the channel ', () => {
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken, chanId, userId2);
 
     expect(removeData).toStrictEqual(ERROR);
   });
 
   test('user is a only owner in the channel', () => {
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken, chanId, userId);
 
     expect(removeData).toStrictEqual(ERROR);
   });
 
   test('valid channelId, authorised user is not an owner', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userToken3 = userData3.token;
 
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken3, chanId, userId2);
 
     expect(removeData).toStrictEqual(ERROR);
   });
 
   test('valid remove owner - control', () => {
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId2);
     expect(addOwnerData).toStrictEqual({});
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
 
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
@@ -2827,33 +2056,11 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
 
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken, chanId, userId2);
 
     expect(removeData).toStrictEqual({});
 
-    const channeldetailRes2 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData2 = JSON.parse(channeldetailRes2.getBody() as string);
+    const detailData2 = channelDetails(userToken, chanId);
     expect(detailData2).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
@@ -2886,66 +2093,19 @@ describe('/channel/removeowner/v1', () => {
   });
 
   test('valid remove owner - multiple', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
     expect(channelInvite(userToken, chanId, userId3)).toStrictEqual({});
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken, chanId, userId3);
     expect(addOwnerData).toStrictEqual({});
 
-    const addOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    const addOwnerData2 = channelAddOwner(userToken3, chanId, userId2);
     expect(addOwnerData2).toStrictEqual({});
 
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
@@ -2997,33 +2157,11 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
 
-    const removeOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId,
-          uId: userId3,
-        }
-      }
-    );
-    const removeData = JSON.parse(removeOwnerRes.getBody() as string);
+    const removeData = channelRemoveOwner(userToken2, chanId, userId3);
 
     expect(removeData).toStrictEqual({});
 
-    const channeldetailRes2 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData2 = JSON.parse(channeldetailRes2.getBody() as string);
+    const detailData2 = channelDetails(userToken, chanId);
     expect(detailData2).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
@@ -3067,33 +2205,12 @@ describe('/channel/removeowner/v1', () => {
         },
       ]
     });
-    const removeOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken2,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const removeData2 = JSON.parse(removeOwnerRes2.getBody() as string);
+
+    const removeData2 = channelRemoveOwner(userToken2, chanId, userId);
 
     expect(removeData2).toStrictEqual({});
 
-    const channeldetailRes3 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData3 = JSON.parse(channeldetailRes3.getBody() as string);
+    const detailData3 = channelDetails(userToken, chanId);
     expect(detailData3).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
@@ -3137,68 +2254,20 @@ describe('/channel/removeowner/v1', () => {
   // Alvin who is globalOwner changes Theodore so he is no longer an owner
   // on Alvin's channel he makes Theodore an Owner, then removes himself as Owner
   test('valid globalOwner removeOwner test', () => {
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5355555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-
-        }
-      }
-    );
-
-    const userData3 = JSON.parse(userRes3.getBody() as string);
+    const userData3 = authRegister('z5355555@ad.unsw.edu.au', 'password', 'Simon', 'the Chipmunk');
     const userId3 = userData3.authUserId;
     const userToken3 = userData3.token;
 
-    // const channelCreate2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken3,
-    //       name: 'CoolerChannel',
-    //       isPublic: true
-    //     }
-    //   }
-    // );
-    // const channelObj2 = JSON.parse(channelCreate2.getBody() as string);
     const chanId2 = channelsCreate(userToken3, 'CoolerChannel', true).channelId;
 
     expect(channelInvite(userToken3, chanId2, userId)).toStrictEqual({});
 
     expect(channelInvite(userToken3, chanId2, userId2)).toStrictEqual({});
 
-    const addOwnerRes = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken3,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData = JSON.parse(addOwnerRes.getBody() as string);
+    const addOwnerData = channelAddOwner(userToken3, chanId2, userId2);
     expect(addOwnerData).toStrictEqual({});
 
-    const channeldetailRes = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId2,
-        }
-      }
-    );
-
-    const detailData = JSON.parse(channeldetailRes.getBody() as string);
+    const detailData = channelDetails(userToken, chanId2);
     expect(detailData).toStrictEqual({
       name: 'CoolerChannel',
       isPublic: true,
@@ -3243,32 +2312,10 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
 
-    const removeOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId2,
-          uId: userId2,
-        }
-      }
-    );
-    const removeData2 = JSON.parse(removeOwnerRes2.getBody() as string);
+    const removeData2 = channelRemoveOwner(userToken, chanId2, userId2);
     expect(removeData2).toStrictEqual({});
 
-    const channeldetailRes2 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId2,
-        }
-      }
-    );
-
-    const detailData2 = JSON.parse(channeldetailRes2.getBody() as string);
+    const detailData2 = channelDetails(userToken, chanId2);
     expect(detailData2).toStrictEqual({
       name: 'CoolerChannel',
       isPublic: true,
@@ -3306,32 +2353,10 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
 
-    const addOwnerRes2 = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId2,
-          uId: userId,
-        }
-      }
-    );
-    const addOwnerData2 = JSON.parse(addOwnerRes2.getBody() as string);
+    const addOwnerData2 = channelAddOwner(userToken, chanId2, userId);
     expect(addOwnerData2).toStrictEqual({});
 
-    const channeldetailRes3 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId2,
-        }
-      }
-    );
-
-    const detailData3 = JSON.parse(channeldetailRes3.getBody() as string);
+    const detailData3 = channelDetails(userToken, chanId2);
     expect(detailData3).toStrictEqual({
       name: 'CoolerChannel',
       isPublic: true,
@@ -3376,19 +2401,7 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
 
-    // second case:
-    const channeldetailRes4 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData4 = JSON.parse(channeldetailRes4.getBody() as string);
+    const detailData4 = channelDetails(userToken, chanId);
     expect(detailData4).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
@@ -3419,46 +2432,13 @@ describe('/channel/removeowner/v1', () => {
       ]
     });
 
-    const addOwnerRes3 = request(
-      'POST',
-      SERVER_URL + '/channel/addowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId2,
-        }
-      }
-    );
-    const addOwnerData3 = JSON.parse(addOwnerRes3.getBody() as string);
+    const addOwnerData3 = channelAddOwner(userToken, chanId, userId2);
     expect(addOwnerData3).toStrictEqual({});
 
-    const removeOwnerRes3 = request(
-      'POST',
-      SERVER_URL + '/channel/removeowner/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          uId: userId,
-        }
-      }
-    );
-    const removeData3 = JSON.parse(removeOwnerRes3.getBody() as string);
+    const removeData3 = channelRemoveOwner(userToken, chanId, userId);
     expect(removeData3).toStrictEqual({});
 
-    const channeldetailRes5 = request(
-      'GET',
-      SERVER_URL + '/channel/details/v2',
-      {
-        qs: {
-          token: userToken,
-          channelId: chanId,
-        }
-      }
-    );
-
-    const detailData5 = JSON.parse(channeldetailRes5.getBody() as string);
+    const detailData5 = channelDetails(userToken, chanId);
     expect(detailData5).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
