@@ -1,4 +1,4 @@
-import { clear, authRegister, dmCreate, dmMessages, channelMessages, channelsCreate, channelJoin, channelLeave } from './routeRequests';
+import { clear, authRegister, dmCreate, dmLeave, dmMessages, channelMessages, channelLeave, channelJoin, channelsCreate, messageSend, messageEdit, messageRemove, messageSendDm } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -19,169 +19,50 @@ beforeEach(() => {
   clear();
 });
 
-describe('messageSendV1', () => {
+describe('messageSendV3', () => {
   let userToken: string;
   let userId: number;
   let chanId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-        }
-      }
-    );
-
-    const userData = JSON.parse(userRes.getBody() as string);
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Madhav', 'Mishra');
     userToken = userData.token;
     userId = userData.authUserId;
-
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'Coding',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // chanId = channelData.channelId;
-
     chanId = channelsCreate(userToken, 'Coding', true).channelId;
   });
 
   test('invalid channelId', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId + 1,
-          message: 'Wassup G',
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-
-    expect(messageData).toStrictEqual(ERROR);
+    const messageData = messageSend(userToken, chanId + 1, 'Wassup G');
+    expect(messageData).toStrictEqual(400);
   });
 
   test('invalid message length minimum', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: '',
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-
-    expect(messageData).toStrictEqual(ERROR);
+    const messageData = messageSend(userToken, chanId, '');
+    expect(messageData).toStrictEqual(400);
   });
 
   test('invalid message length maximum', () => {
     // generates 1001 character long string
     const messageLong = Array(1001).fill(undefined).map(() => Math.random().toString(36)[2]).join('');
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: messageLong,
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-
-    expect(messageData).toStrictEqual(ERROR);
+    const messageData = messageSend(userToken, chanId, messageLong);
+    expect(messageData).toStrictEqual(400);
   });
 
   test('invalid token', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken + 1,
-          channelId: chanId,
-          message: 'Wassup G'
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-
-    expect(messageData).toStrictEqual(ERROR);
+    const messageData = messageSend(userToken + 1, chanId, 'Wassup G');
+    expect(messageData).toStrictEqual(403);
   });
 
   test('valid channelId but authorised user is not a member', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    expect(messageData).toStrictEqual(ERROR);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const messageData = messageSend(userData2.token, chanId, 'Wassup G');
+    expect(messageData).toStrictEqual(403);
   });
 
   test('sending one message', () => {
     const expectedTime = Math.floor(Date.now() / 1000);
-    const messageSendRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G'
-        }
-      }
-    );
-    const messageSendData = JSON.parse(messageSendRes.getBody() as string);
-    expect(messageSendData).toStrictEqual(VALID_MESSAGE);
-
+    const messageSendRes = messageSend(userToken, chanId, 'Wassup G');
+    expect(messageSendRes).toStrictEqual(VALID_MESSAGE);
     const messageData = channelMessages(userToken, chanId, 0);
-
     expect(messageData).toStrictEqual({
       messages: [
         {
@@ -198,105 +79,23 @@ describe('messageSendV1', () => {
   });
 
   test('sending multiple messages', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-
-    const userRes3 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z2222222@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charizard',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-
-    const userData2 = JSON.parse(userRes2.getBody() as string);
-    const userData3 = JSON.parse(userRes3.getBody() as string);
-
-    // const channelRes2 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userData2.token,
-    //       name: 'Maths',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-
-    // const channelRes3 = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userData3.token,
-    //       name: 'Commerce',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const userData3 = authRegister('z2222222@ad.unsw.edu.au', 'password', 'Charizard', 'Pokemon');
 
     const channelData2 = channelsCreate(userData2.token, 'Maths', true);
     const channelData3 = channelsCreate(userData3.token, 'Commerce', true);
 
     const expectedTime = Math.floor(Date.now() / 1000);
-    const messageSendRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'This is the first msg'
-        }
-      }
-    );
-    const messageSendData = JSON.parse(messageSendRes.getBody() as string);
+
+    const messageSendData = messageSend(userToken, chanId, 'This is the first msg');
     expect(messageSendData).toStrictEqual(VALID_MESSAGE);
 
     const expectedTime2 = Math.floor(Date.now() / 1000);
-    const messageSendRes2 = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: channelData2.channelId,
-          message: 'This is the second msg'
-        }
-      }
-    );
-    const messageSendData2 = JSON.parse(messageSendRes2.getBody() as string);
+    const messageSendData2 = messageSend(userData2.token, channelData2.channelId, 'This is the second msg');
     expect(messageSendData2).toStrictEqual(VALID_MESSAGE);
 
     const expectedTime3 = Math.floor(Date.now() / 1000);
-    const messageSendRes3 = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData3.token,
-          channelId: channelData3.channelId,
-          message: 'This is the third msg'
-        }
-      }
-    );
-    const messageSendData3 = JSON.parse(messageSendRes3.getBody() as string);
+    const messageSendData3 = messageSend(userData3.token, channelData3.channelId, 'This is the third msg');
     expect(messageSendData3).toStrictEqual(VALID_MESSAGE);
 
     const messageData = channelMessages(userToken, chanId, 0);
@@ -347,46 +146,13 @@ describe('messageSendV1', () => {
 
   test('sending multiple messages in one channel', () => {
     const expectedTime = Math.floor(Date.now() / 1000);
-    const messageSendRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G'
-        }
-      }
-    );
-    const messageSendData = JSON.parse(messageSendRes.getBody() as string);
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
     expect(messageSendData).toStrictEqual(VALID_MESSAGE);
 
-    const messageSendRes2 = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Hi G'
-        }
-      }
-    );
-    const messageSendData2 = JSON.parse(messageSendRes2.getBody() as string);
+    const messageSendData2 = messageSend(userToken, chanId, 'Hi G');
     expect(messageSendData2).toStrictEqual(VALID_MESSAGE);
 
-    const messageSendRes3 = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Yoo G'
-        }
-      }
-    );
-    const messageSendData3 = JSON.parse(messageSendRes3.getBody() as string);
+    const messageSendData3 = messageSend(userToken, chanId, 'Yoo G');
     expect(messageSendData3).toStrictEqual(VALID_MESSAGE);
 
     const messageData = channelMessages(userToken, chanId, 0);
@@ -421,196 +187,60 @@ describe('messageSendV1', () => {
   });
 });
 
-describe('messageEditV1', () => {
+describe('messageEditV3', () => {
   let userToken: string;
   let userId: number;
   let chanId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-        }
-      }
-    );
-
-    const userData = JSON.parse(userRes.getBody() as string);
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Madhav', 'Mishra');
     userToken = userData.token;
     userId = userData.authUserId;
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'Coding',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // chanId = channelData.channelId;
-
     chanId = channelsCreate(userToken, 'Coding', true).channelId;
   });
 
   test('invalid token', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G'
-        }
-      }
-    );
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+    const setNameData = messageEdit(userToken + 1, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual(403);
+  });
 
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
-
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken + 1,
-          messageId: messageId,
-          message: 'This is the edited message',
-        },
-      }
-    );
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+  test('invalid messageId', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+    const setNameData = messageEdit(userToken, messageId + 1, 'This is the edited message');
+    expect(setNameData).toStrictEqual(400);
   });
 
   test('invalid message length', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G'
-        }
-      }
-    );
-
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
     const messageLong = Array(1001).fill(undefined).map(() => Math.random().toString(36)[2]).join('');
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: messageLong,
-        },
-      }
-    );
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, messageLong);
+
+    expect(setNameData).toStrictEqual(400);
   });
 
   test('the message was not sent by the authorised user making this request', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
-
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userData2.token,
-          messageId: messageId,
-          message: 'This is the edited message',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+    const setNameData = messageEdit(userData2.token, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual(403);
   });
 
   test('the message was not sent by the authorised user making this request but user has perms', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
 
-    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
-
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: 'This is the edited message',
-        },
-      }
-    );
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -627,66 +257,44 @@ describe('messageEditV1', () => {
     });
   });
 
+  test('the message was not sent by the authorised user making this request AND the user DOES NOT has perms channels', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const setNameData = messageEdit(userData2.token, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual(403);
+  });
+
+  test('the message was not sent by the authorised user making this request AND the user DOES NOT has perms DM', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userToken, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const setNameData = messageEdit(userData2.token, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual(403);
+  });
+
   test('messageId does not refer to a valid message within a channel/DM that the user has joined', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId + 1,
-          message: 'This is the edited message',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId + 1, 'This is the edited message');
+    expect(setNameData).toStrictEqual(400);
   });
 
   test('working case for Channel', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: 'This is the edited message',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -706,38 +314,13 @@ describe('messageEditV1', () => {
   test('working case for DM', () => {
     const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
     const data = dmCreate(userToken, [userData2.authUserId]);
-
     const dmId = data.dmId;
 
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userToken,
-          dmId: dmId,
-          message: 'Hello World'
-        },
-      }
-    );
-
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
+    const sendDmData = messageSendDm(userToken, dmId, 'Hello World');
     const messageId = sendDmData.messageId;
 
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: 'This is the edited message',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, 'This is the edited message');
+    expect(setNameData).toStrictEqual({});
 
     const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
@@ -754,35 +337,24 @@ describe('messageEditV1', () => {
     });
   });
 
+  test('Invalid messageId for DM', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const sendDmData = messageSendDm(userToken, dmId, 'Hello World');
+    const messageId = sendDmData.messageId;
+
+    const setNameData = messageEdit(userToken, messageId + 1, 'This is the edited message');
+    expect(setNameData).toStrictEqual(400);
+  });
+
   test('empty string Channel', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: '',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, '');
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -793,48 +365,15 @@ describe('messageEditV1', () => {
   });
 
   test('empty string Channel with existing messages', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageRes2 = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup Homie',
-        }
-      }
-    );
-    const messageData2 = JSON.parse(messageRes2.getBody() as string);
-    expect(messageData2).not.toStrictEqual(ERROR);
+    const messageSendData2 = messageSend(userToken, chanId, 'Wassup Homie');
+    const messageId2 = messageSendData2.messageId;
+    expect(messageSendData2).toStrictEqual({ messageId: messageId2 });
 
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: '',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, '');
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -856,49 +395,16 @@ describe('messageEditV1', () => {
     const data = dmCreate(userToken, [userData2.authUserId]);
     const dmId = data.dmId;
 
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userToken,
-          dmId: dmId,
-          message: 'Hello World'
-        },
-      }
-    );
-
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
+    const sendDmData = messageSendDm(userToken, dmId, 'Hello World');
     const messageId = sendDmData.messageId;
 
-    const sendDmRes2 = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userToken,
-          dmId: dmId,
-          message: 'Hello World2'
-        },
-      }
-    );
+    const sendDmData2 = messageSendDm(userToken, dmId, 'Hello World2');
+    const messageId2 = sendDmData2.messageId;
 
-    const sendDmData2 = JSON.parse(sendDmRes2.getBody() as string);
-    expect(sendDmData2).not.toStrictEqual(ERROR);
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userToken,
-          messageId: messageId,
-          message: '',
-        },
-      }
-    );
+    expect(sendDmData2).toStrictEqual({ messageId: messageId2 });
 
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userToken, messageId, '');
+    expect(setNameData).toStrictEqual({});
 
     const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
@@ -916,51 +422,17 @@ describe('messageEditV1', () => {
   });
 
   test('original sender not owner can edit', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
     const userId2 = userData2.authUserId;
 
-    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
 
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup Homie');
+    const messageId = messageSendData.messageId;
 
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userData2.token,
-          messageId: messageId,
-          message: 'Hello this is edited',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageEdit(userData2.token, messageId, 'Hello this is edited');
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -977,54 +449,35 @@ describe('messageEditV1', () => {
     });
   });
 
-  test('sender leaves the channel, cannot edit', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+  test('sender leaves the channel, cannot edit for dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const leaveData = dmLeave(userData2.token, dmId);
+    expect(leaveData).toStrictEqual({});
+
+    const setNameData = messageEdit(userData2.token, messageId, 'Hello this is edited');
+    expect(setNameData).toStrictEqual(403);
+  });
+
+  test('sender leaves the channel, cannot edit for channel', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
     const userId2 = userData2.authUserId;
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
 
-    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const leaveData = channelLeave(userData2.token, chanId);
+    expect(leaveData).toStrictEqual({});
 
-    expect(channelLeave(userData2.token, chanId)).not.toStrictEqual(ERROR);
-
-    const setRes = request(
-      'PUT',
-      SERVER_URL + '/message/edit/v1',
-      {
-        json: {
-          token: userData2.token,
-          messageId: messageId,
-          message: 'Hello this is edited',
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+    const setNameData = messageEdit(userData2.token, messageId, 'Hello this is edited');
+    expect(setNameData).toStrictEqual(403);
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -1042,161 +495,95 @@ describe('messageEditV1', () => {
   });
 });
 
-describe('messageRemoveV1', () => {
+describe('messageRemoveV3', () => {
   let userToken: string;
   let userId: number;
   let chanId: number;
   beforeEach(() => {
-    const userRes = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z5555555@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Madhav',
-          nameLast: 'Mishra',
-        }
-      }
-    );
-
-    const userData = JSON.parse(userRes.getBody() as string);
-    userToken = userData.token;
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Madhav', 'Mishra');
     userId = userData.authUserId;
-    // const channelRes = request(
-    //   'POST',
-    //   SERVER_URL + '/channels/create/v2',
-    //   {
-    //     json: {
-    //       token: userToken,
-    //       name: 'Coding',
-    //       isPublic: true,
-    //     }
-    //   }
-    // );
-    // const channelData = JSON.parse(channelRes.getBody() as string);
-    // chanId = channelData.channelId;
+    userToken = userData.token;
 
     chanId = channelsCreate(userToken, 'Coding', true).channelId;
   });
 
   test('invalid token', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G'
-        }
-      }
-    );
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const setNameData = messageRemove(userToken + 1, messageId);
+    expect(setNameData).toStrictEqual(403);
+  });
 
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken + 1,
-          messageId: messageId,
-        },
-      }
-    );
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+  test('invalid messageId in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const setNameData = messageRemove(userToken, messageId + 1);
+    expect(setNameData).toStrictEqual(400);
+  });
+
+  test('invalid messageId in Dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const removeData = messageRemove(userData2.token, messageId + 1);
+    expect(removeData).toStrictEqual(400);
+  });
+
+  test('sender leaves Dm and is not owner', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const leaveData = dmLeave(userData2.token, dmId);
+    expect(leaveData).toStrictEqual({});
+
+    const removeData = messageRemove(userData2.token, messageId);
+    expect(removeData).toStrictEqual(403);
+  });
+
+  test('guy not in Dm tries to remove', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const userData3 = authRegister('z1111211@ad.unsw.edu.au', 'password', 'Bigman', 'Pokemon');
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const removeData = messageRemove(userData3.token, messageId);
+    expect(removeData).toStrictEqual(403);
   });
 
   test('the message was not sent by the authorised user making this request', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
 
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userData2.token,
-          messageId: messageId,
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+    const setNameData = messageRemove(userData2.token, messageId);
+    expect(setNameData).toStrictEqual(403);
   });
 
   test('the message was not sent by the authorised user making this request but user has perms', () => {
-    const userRes2 = request(
-      'POST',
-      SERVER_URL + '/auth/register/v3',
-      {
-        json: {
-          email: 'z1111111@ad.unsw.edu.au',
-          password: 'password',
-          nameFirst: 'Charmander',
-          nameLast: 'Pokemon',
-        }
-      }
-    );
-    const userData2 = JSON.parse(userRes2.getBody() as string);
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
 
-    expect(channelJoin(userData2.token, chanId)).not.toStrictEqual(ERROR);
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userData2.token,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
-
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken,
-          messageId: messageId,
-        },
-      }
-    );
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageRemove(userToken, messageId);
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -1206,62 +593,43 @@ describe('messageRemoveV1', () => {
     });
   });
 
+  test('the message was not sent by the authorised user making this request AND the user DOES NOT has perms channels', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const setNameData = messageRemove(userData2.token, messageId);
+    expect(setNameData).toStrictEqual(403);
+  });
+
+  test('the message was not sent by the authorised user making this request AND the user DOES NOT has perms DM', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userToken, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const setNameData = messageRemove(userData2.token, messageId);
+    expect(setNameData).toStrictEqual(403);
+  });
+
   test('messageId does not refer to a valid message within a channel/DM that the user has joined', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken,
-          messageId: messageId + 1,
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).toStrictEqual(ERROR);
+    const setNameData = messageRemove(userToken, messageId + 1);
+    expect(setNameData).toStrictEqual(400);
   });
 
   test('working case for Channel', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken,
-          messageId: messageId,
-        },
-      }
-    );
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const setNameData = JSON.parse(setRes.getBody() as string);
+    const setNameData = messageRemove(userToken, messageId);
     expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
@@ -1277,34 +645,11 @@ describe('messageRemoveV1', () => {
     const data = dmCreate(userToken, [userData2.authUserId]);
     const dmId = data.dmId;
 
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userToken,
-          dmId: dmId,
-          message: 'Hello World'
-        },
-      }
-    );
-
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
+    const sendDmData = messageSendDm(userToken, dmId, 'Hello World');
     const messageId = sendDmData.messageId;
 
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken,
-          messageId: messageId,
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageRemove(userToken, messageId);
+    expect(setNameData).toStrictEqual({});
 
     const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({
@@ -1315,47 +660,14 @@ describe('messageRemoveV1', () => {
   });
 
   test('testing remove for channel with existing messages', () => {
-    const messageRes = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup G',
-        }
-      }
-    );
-    const messageData = JSON.parse(messageRes.getBody() as string);
-    const messageId = messageData.messageId;
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
 
-    const messageRes2 = request(
-      'POST',
-      SERVER_URL + '/message/send/v1',
-      {
-        json: {
-          token: userToken,
-          channelId: chanId,
-          message: 'Wassup Homie',
-        }
-      }
-    );
-    const messageData2 = JSON.parse(messageRes2.getBody() as string);
-    expect(messageData2).not.toStrictEqual(ERROR);
+    const messageSendData2 = messageSend(userToken, chanId, 'Wassup Homie');
+    expect(messageSendData2).toStrictEqual({ messageId: messageSendData2.messageId });
 
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken,
-          messageId: messageId,
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageRemove(userToken, messageId);
+    expect(setNameData).toStrictEqual({});
 
     const checkMessageData = channelMessages(userToken, chanId, 0);
     expect(checkMessageData).toStrictEqual({
@@ -1377,49 +689,14 @@ describe('messageRemoveV1', () => {
     const data = dmCreate(userToken, [userData2.authUserId]);
     const dmId = data.dmId;
 
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userToken,
-          dmId: dmId,
-          message: 'Hello World'
-        },
-      }
-    );
-
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
+    const sendDmData = messageSendDm(userToken, dmId, 'Hello World');
     const messageId = sendDmData.messageId;
 
-    const sendDmRes2 = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userToken,
-          dmId: dmId,
-          message: 'Hello World'
-        },
-      }
-    );
+    const sendDmData2 = messageSendDm(userToken, dmId, 'Hello World');
+    expect(sendDmData2).toStrictEqual({ messageId: sendDmData2.messageId });
 
-    const sendDmData2 = JSON.parse(sendDmRes2.getBody() as string);
-    expect(sendDmData2).not.toStrictEqual(ERROR);
-
-    const setRes = request(
-      'DELETE',
-      SERVER_URL + '/message/remove/v1',
-      {
-        qs: {
-          token: userToken,
-          messageId: messageId,
-        },
-      }
-    );
-
-    const setNameData = JSON.parse(setRes.getBody() as string);
-    expect(setNameData).not.toStrictEqual(ERROR);
+    const setNameData = messageRemove(userToken, messageId);
+    expect(setNameData).toStrictEqual({});
 
     const messageData = dmMessages(userToken, dmId, 0);
     expect(messageData).toStrictEqual({

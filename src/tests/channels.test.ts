@@ -1,7 +1,6 @@
 import { clear, authRegister, channelsCreate, channelsListAll, channelJoin, channelDetails, channelsList, channelInvite } from './routeRequests';
 
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
-
 interface channelObject {
   channelId: number
   name: string

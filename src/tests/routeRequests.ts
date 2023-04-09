@@ -400,10 +400,12 @@ function dmMessages(token: string, dmId: number, start: number) {
 function messageSend(token: string, channelId: number, message: string) {
   return requestHelper(
     'POST',
-    '/message/send/v1',
+    '/message/send/v3',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         channelId: channelId,
         message: message,
       }
@@ -414,10 +416,12 @@ function messageSend(token: string, channelId: number, message: string) {
 function messageEdit(token: string, messageId: number, message: string) {
   return requestHelper(
     'PUT',
-    '/message/edit/v1',
+    '/message/edit/v3',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         messageId: messageId,
         message: message,
       },
@@ -428,10 +432,12 @@ function messageEdit(token: string, messageId: number, message: string) {
 function messageRemove(token: string, messageId: number) {
   return requestHelper(
     'DELETE',
-    '/message/remove/v1',
+    '/message/remove/v3',
     {
+      headers: {
+        token: token
+      },
       qs: {
-        token: token,
         messageId: messageId,
       },
     }

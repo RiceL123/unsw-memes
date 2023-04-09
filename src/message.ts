@@ -1,4 +1,5 @@
 import { Message, Data, getData, setData, getHash } from './dataStore';
+import HTTPError from 'http-errors';
 
 /**
   * generateMessageId, a helper function that generates a unique messageId using a +1 mechanism
@@ -29,27 +30,27 @@ function generateMessageId(data: Data) {
   *
   * @returns {messageId: messageId} unique messageId- if no error occurs
  */
-function messageSendV1(token: string, channelId: number, message: string) {
+function messageSendV3(token: string, channelId: number, message: string) {
   const data = getData();
   token = getHash(token);
 
   if (message.length > 1000 || message.length < 1) {
-    return { error: 'Invalid message length' };
+    throw HTTPError(400, 'Invalid message length');
   }
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid Token');
   }
 
   const channelObj = data.channels.find(x => x.channelId === channelId);
   if (channelObj === undefined) {
-    return { error: 'Invalid channelId' };
+    throw HTTPError(400, 'Invalid channelId');
   }
 
   if (!(channelObj.allMembersIds.some((x: number) => x === userObj.uId))) {
-    return { error: 'Authorised user is not a member of the channel' };
+    throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
   // creates new message ID using a +1 mechanism
@@ -78,18 +79,18 @@ function messageSendV1(token: string, channelId: number, message: string) {
   *
   * @returns {} - if no error occurs
  */
-function messageEditV1(token: string, messageId: number, message: string) {
+function messageEditV3(token: string, messageId: number, message: string) {
   const data = getData();
   token = getHash(token);
 
   if (message.length > 1000) {
-    return { error: 'Invalid message length' };
+    throw HTTPError(400, 'Invalid message length');
   }
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
 
   // find the corresponding channel and dm
@@ -100,7 +101,7 @@ function messageEditV1(token: string, messageId: number, message: string) {
   // if the message was found in a dm or a channel
   let flag: string;
   if (dmObj === undefined && channelObj === undefined) {
-    return { error: 'invalid messageId' };
+    throw HTTPError(400, 'Invalid messageId');
   } else {
     flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
   }
@@ -108,18 +109,15 @@ function messageEditV1(token: string, messageId: number, message: string) {
   if (flag === 'messageInChannel') {
     // find corresponding messageObj in channel
     const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-    if (!channelMsgObj) {
-      return { error: 'invalid messageId' };
-    }
 
     // even if you sent the original message, you cannot edit ur own message if you left the channel
     if (!channelObj.allMembersIds.includes(userObj.uId)) {
-      return { error: 'invalid uId - user is not a member of the channel' };
+      throw HTTPError(403, 'User is not a member or the channel');
     }
 
-    // only if the user is a channel owner or the orinal person who sent the message, then they can edit the message
+    // only if the user is a channel owner or the original person who sent the message, then they can edit the message
     if (!(channelObj.ownerMembersIds.includes(userObj.uId) || channelMsgObj.uId === userObj.uId)) {
-      return { error: 'user is not a channel owner or original sender' };
+      throw HTTPError(403, 'User is not owner or original message sender');
     }
 
     // update the message to new message
@@ -129,21 +127,18 @@ function messageEditV1(token: string, messageId: number, message: string) {
     if (message === '') {
       channelObj.messages = channelObj.messages.filter(x => x.messageId !== messageId);
     }
-  } else if (flag === 'messageInDm') {
+  } else {
     // find corresponding messageObj in dm
     const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-    if (!dmMsgObj) {
-      return { error: 'invalid messageId' };
-    }
 
     // even if you sent the original message, you cannot edit ur own message if you left the dm
     if (!dmObj.memberIds.includes(userObj.uId)) {
-      return { error: 'invalid uId - user is not a member of the channel' };
+      throw HTTPError(403, 'User is not a member or the channel');
     }
 
     // only if the user is the dm owner or the orinal person who sent the message, then they can edit the message
     if (!(dmObj.creatorId === userObj.uId || dmMsgObj.uId === userObj.uId)) {
-      return { error: 'user is not a channel owner or original sender' };
+      throw HTTPError(403, 'User is not owner or original message sender');
     }
 
     // update the message to new message
@@ -168,14 +163,14 @@ function messageEditV1(token: string, messageId: number, message: string) {
   *
   * @returns {} - if no error occurs
 */
-function messageRemoveV1(token: string, messageId: number) {
+function messageRemoveV3(token: string, messageId: number) {
   const data = getData();
   token = getHash(token);
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
 
   // find the corresponding channel and dm
@@ -186,7 +181,7 @@ function messageRemoveV1(token: string, messageId: number) {
   // if the message was found in a dm or a channel
   let flag: string;
   if (dmObj === undefined && channelObj === undefined) {
-    return { error: 'invalid messageId' };
+    throw HTTPError(400, 'Invalid messageId');
   } else {
     flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
   }
@@ -194,36 +189,30 @@ function messageRemoveV1(token: string, messageId: number) {
   if (flag === 'messageInChannel') {
     // find corresponding messageObj in channel
     const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-    if (!channelMsgObj) {
-      return { error: 'invalid messageId' };
-    }
 
     // even if you sent the original message, you cannot edit ur own message if you left the channel
     if (!channelObj.allMembersIds.includes(userObj.uId)) {
-      return { error: 'invalid uId - user is not a member of the channel' };
+      throw HTTPError(403, 'User is not a member or the channel');
     }
 
     // only if the user is a channel owner or the orinal person who sent the message, then they can edit the message
     if (!(channelObj.ownerMembersIds.includes(userObj.uId) || channelMsgObj.uId === userObj.uId)) {
-      return { error: 'user is not a channel owner or original sender' };
+      throw HTTPError(403, 'User is not owner or original message sender');
     }
 
     channelObj.messages = channelObj.messages.filter(x => x.messageId !== messageId);
-  } else if (flag === 'messageInDm') {
+  } else {
     // find corresponding messageObj in dm
     const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-    if (!dmMsgObj) {
-      return { error: 'invalid messageId' };
-    }
 
-    // even if you sent the original message, you cannot edit ur own message if you left the dm
+    // even if you sent the original message, you cannot remove ur own message if you left the dm
     if (!dmObj.memberIds.includes(userObj.uId)) {
-      return { error: 'invalid uId - user is not a member of the channel' };
+      throw HTTPError(403, 'User is not a member or the channel');
     }
 
-    // only if the user is the dm owner or the orinal person who sent the message, then they can edit the message
+    // only if the user is the dm owner or the orinal person who sent the message, then they can remove the message
     if (!(dmObj.creatorId === userObj.uId || dmMsgObj.uId === userObj.uId)) {
-      return { error: 'user is not a channel owner or original sender' };
+      throw HTTPError(403, 'User is not owner or original message sender');
     }
 
     dmObj.messages = dmObj.messages.filter(x => x.messageId !== messageId);
@@ -285,4 +274,4 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
   return { messageId: messageId };
 }
 
-export { messageSendV1, messageEditV1, messageRemoveV1, messageSendDmV1 };
+export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1 };
