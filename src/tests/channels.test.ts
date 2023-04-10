@@ -262,6 +262,11 @@ describe('channelsListV3', () => {
       channelsArr.sort((a, b) => a.channelId - b.channelId)
     );
   });
+
+  test('valid user apart of no channels', () => {
+    const userObj2 = authRegister('z5555555@ad.unsw.edu.au', 'password', 'sponge', 'bob');
+    expect(channelsList(userObj2.token)).toStrictEqual({ channels: [] });
+  });
 });
 
 // // TESTS FOR channelsListAllV3
