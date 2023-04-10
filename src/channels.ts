@@ -23,7 +23,7 @@ function channelsCreateV3(token: string, name: string, isPublic: boolean) {
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -61,20 +61,11 @@ function channelsListV3(token : string) {
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const channelsArr = [];
-  for (const channel of data.channels) {
-    // if the user is a member of that channel, push to the channel array
-    if (channel.allMembersIds.some((x: any) => x === userObj.uId)) {
-      channelsArr.push({
-        channelId: channel.channelId,
-        name: channel.channelName,
-      });
-    }
-  }
+  const channelsArr = data.channels.filter(x => x.allMembersIds.includes(userObj.uId)).map(y => ({ channelId: y.channelId, name: y.channelName }));
 
   return { channels: channelsArr };
 }

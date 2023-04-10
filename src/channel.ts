@@ -51,12 +51,10 @@ function channelDetailsV3(token: string, channelId: string) {
     };
 
     // add the relevant details to allMembers array
-    if (userObj !== undefined) {
-      allMembers.push(returnMembersObj);
-    }
+    allMembers.push(returnMembersObj);
 
     // add the relevant details to ownerMembers array
-    if (userObj !== undefined && channelObj.ownerMembersIds.includes(userObj.uId)) {
+    if (channelObj.ownerMembersIds.includes(userObj.uId)) {
       ownerMembers.push(returnMembersObj);
     }
   }
@@ -272,11 +270,11 @@ function channelAddOwnerV1(token: string, channelId: number, uId: number) {
   }
 
   const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (channelObj === undefined) {
+  if (!channelObj) {
     return { error: 'invalid channelId' };
   }
 
-  if (data.users.find(x => x.uId === undefined)) {
+  if (!data.users.some(x => x.uId === uId)) {
     return { error: 'invalid uId' };
   }
 
@@ -323,20 +321,20 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
     return { error: 'invalid channelId' };
   }
 
-  if (data.users.find(x => x.uId === uId) === undefined) {
+  if (!data.users.some(x => x.uId === uId)) {
     return { error: 'invalid uId' };
   }
 
-  if (!channelObj.ownerMembersIds.includes(uId)) {
-    return { error: 'invalid uId - user is not an owner' };
+  if (!channelObj.allMembersIds.includes(uId)) {
+    return { error: 'invalid uId - user is not apart of the channel' };
+  }
+
+  if (!channelObj.ownerMembersIds.includes(userObj.uId) && userObj.permission !== 1) {
+    return { error: 'Invalid uId - user is not an owner of the channel' };
   }
 
   if (channelObj.ownerMembersIds.length === 1) {
     return { error: 'invalid uId - user is the only owner of the channel' };
-  }
-
-  if (!(channelObj.ownerMembersIds.includes(userObj.uId)) && userObj.permission !== 1) {
-    return { error: 'Invalid authUserId - channelId is valid, but authorised user is not a member of the channel' };
   }
 
   channelObj.ownerMembersIds = channelObj.ownerMembersIds.filter(x => x !== uId);
