@@ -461,6 +461,20 @@ function messageSendDm(token: string, dmId: number, message: string) {
     }
   );
 }
+function messagePin(token: string, messageId: number) {
+  return requestHelper(
+    'POST',
+    '/message/pin/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        messageId: messageId,
+      },
+    }
+  );
+}
 export {
   clear,
   channelsCreate,
@@ -492,5 +506,6 @@ export {
   messageSend,
   messageEdit,
   messageRemove,
-  messageSendDm
+  messageSendDm,
+  messagePin,
 };

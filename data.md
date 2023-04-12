@@ -2,7 +2,7 @@
 # UNSW Memes data
 For UNSW Memes, within the backend, data can be read and updated with the two functions `getData()` and `setData()`. The data is **persistent** as it is stored in a file called `database.json` and has constraints as according to the 5 interfaces  `User`, `Channel`, `Dm`, `Message` and `Data`.
 
-The 5 interfaces are shown below.
+The 6 interfaces are shown below.
 
 ```typescript
 interface User {
@@ -14,6 +14,7 @@ interface User {
   handleStr: string;
   permission: number;
   tokens: string[];
+  resetCode: string;
 }
 
 interface Message {
@@ -21,6 +22,8 @@ interface Message {
   uId: number;
   message: string;
   timeSent: number;
+  reacts: React[],
+  isPinned: boolean;
 }
 
 interface Channel {
@@ -38,6 +41,11 @@ interface Dm {
   creatorId: number;
   memberIds: number[],
   messages: Message[];
+}
+
+interface React {
+  reactId: number;
+  uIds: number[];
 }
 
 interface Data {
