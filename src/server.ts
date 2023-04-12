@@ -10,7 +10,7 @@ import { authRegisterV2, authLoginV2, authLogoutV1, authPasswordResetRequestV1, 
 import { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 } from './dm';
 import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
-import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
+import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
 import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1 } from './message';
 
@@ -117,9 +117,10 @@ app.post('/channel/leave/v2', (req: Request, res: Response, next) => {
   return res.json(channelLeaveV2(token, channelId));
 });
 
-app.post('/channel/addowner/v1', (req: Request, res: Response, next) => {
-  const { token, channelId, uId } = req.body;
-  return res.json(channelAddOwnerV1(token, channelId, uId));
+app.post('/channel/addowner/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { channelId, uId } = req.body;
+  return res.json(channelAddOwnerV2(token, channelId, uId));
 });
 
 app.post('/channel/removeowner/v1', (req: Request, res: Response, next) => {

@@ -260,38 +260,41 @@ function channelLeaveV2(token: string, channelId: string) {
  *
  * @returns {{}}
  */
-function channelAddOwnerV1(token: string, channelId: number, uId: number) {
+function channelAddOwnerV2(token: string, channelId: string, uId: string) {
   const data: Data = getData();
   token = getHash(token);
 
+  const chanId = parseInt(channelId);
+  const uuId = parseInt(uId);
+
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
+  const channelObj = data.channels.find(x => x.channelId === chanId);
   if (!channelObj) {
-    return { error: 'invalid channelId' };
-  }
-
-  if (!data.users.some(x => x.uId === uId)) {
-    return { error: 'invalid uId' };
-  }
-
-  if (!channelObj.allMembersIds.includes(uId)) {
-    return { error: 'invaild uId - user not apart of channel' };
+    throw HTTPError(400, 'invalid channelId');
   }
 
   if (!channelObj.ownerMembersIds.includes(userObj.uId) && userObj.permission !== 1) {
-    return { error: 'invaild uId - user is not an owner of the channel' };
+    throw HTTPError(403, 'invaild uId - user is not an owner of the channel');
   }
 
-  if (channelObj.ownerMembersIds.includes(uId)) {
-    return { error: 'uId is already an owner of the channel' };
+  if (!data.users.some(x => x.uId === uuId)) {
+    throw HTTPError(400, 'invalid uId');
+  }
+
+  if (!channelObj.allMembersIds.includes(uuId)) {
+    throw HTTPError(400, 'invaild uId - user not apart of channel');
+  }
+
+  if (channelObj.ownerMembersIds.includes(uuId)) {
+    throw HTTPError(400, 'uId is already an owner of the channel');
   }
 
   // adding the uId to the channel's ownerMembersIds array
-  channelObj.ownerMembersIds.push(uId);
+  channelObj.ownerMembersIds.push(uuId);
 
   setData(data);
   return {};
@@ -342,4 +345,4 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV3, channelJoinV3, channelInviteV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 };
+export { channelDetailsV3, channelJoinV3, channelInviteV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 };

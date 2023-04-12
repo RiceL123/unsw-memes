@@ -209,10 +209,12 @@ function channelLeave(token: string, channelId: number) {
 function channelAddOwner(token: string, channelId: number, uId: number) {
   return requestHelper(
     'POST',
-    '/channel/addowner/v1',
+    '/channel/addowner/v2',
     {
-      json: {
+      headers: {
         token: token,
+      },
+      json: {
         channelId: channelId,
         uId: uId,
       }

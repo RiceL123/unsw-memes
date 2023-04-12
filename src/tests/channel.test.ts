@@ -1341,7 +1341,7 @@ describe('/channel/leave/v2', () => {
   });
 });
 
-describe('channelAddOwnerV1 Public Channel Tests', () => {
+describe('/channel/addowner/v2 Public Channel Tests', () => {
   let userId: number;
   let userId2: number;
   let userToken: string;
@@ -1363,13 +1363,13 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   // channelId does not refer to a valid channel
   test('channelId is invalid', () => {
     const addOwnerData = channelAddOwner(userToken, chanId + 1, userId2);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // uId does not refer to a valid user
   test('uId is invalid', () => {
     const addOwnerData = channelAddOwner(userToken, chanId, userId + userId2 + 1);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // uId does not refer to a member of the channel
@@ -1378,13 +1378,13 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     const userId3 = userData3.authUserId;
 
     const addOwnerData = channelAddOwner(userToken, chanId, userId3);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // uId refers to a user who is already an owner
   test('uId is already an owner', () => {
     const addOwnerData = channelAddOwner(userToken, chanId, userId);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // AuthUser does not have permissions to add owners
@@ -1393,13 +1393,13 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
     const userId3 = userData3.authUserId;
 
     const addOwnerData = channelAddOwner(userToken2, chanId, userId3);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(403);
   });
 
   // Token is invalid
   test('AuthUser / token is invalid', () => {
     const addOwnerData = channelAddOwner(userToken + userToken2 + 1, chanId, userId);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(403);
   });
 
   test('valid addOwner test', () => {
@@ -1536,7 +1536,7 @@ describe('channelAddOwnerV1 Public Channel Tests', () => {
   });
 });
 
-describe('channelAddOwnerV1 Private Channel Tests', () => {
+describe('channel/addowner/v2 Private Channel Tests', () => {
   let userId: number;
   let userId2: number;
   let userToken: string;
@@ -1558,13 +1558,13 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
   // channelId does not refer to a valid channel
   test('channelId is invalid', () => {
     const addOwnerData = channelAddOwner(userToken, chanId + 1, userId2);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // uId does not refer to a valid user
   test('uId is invalid', () => {
     const addOwnerData = channelAddOwner(userToken, chanId, userId2 + userId + 1);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // uId does not refer to a member of the channel
@@ -1573,13 +1573,13 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     const userId3 = userData3.authUserId;
 
     const addOwnerData = channelAddOwner(userToken, chanId, userId3);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // uId refers to a user who is already an owner
   test('uId is already an owner', () => {
     const addOwnerData = channelAddOwner(userToken, chanId, userId);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(400);
   });
 
   // AuthUser does not have permissions to add owners
@@ -1588,13 +1588,13 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
     const userId3 = userData3.authUserId;
 
     const addOwnerData = channelAddOwner(userToken2, chanId, userId3);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(403);
   });
 
   // Token is invalid
   test('AuthUser / token is invalid', () => {
     const addOwnerData = channelAddOwner(userToken + userToken2, chanId, userId);
-    expect(addOwnerData).toStrictEqual(ERROR);
+    expect(addOwnerData).toStrictEqual(403);
   });
 
   test('valid addOwner test', () => {
@@ -1679,7 +1679,7 @@ describe('channelAddOwnerV1 Private Channel Tests', () => {
 
     // Theodore tries to make himself owner but fails not global owner
     const addOwnerDataErr = channelAddOwner(userToken2, chanId2, userId2);
-    expect(addOwnerDataErr).toStrictEqual(ERROR);
+    expect(addOwnerDataErr).toStrictEqual(403);
 
     // Theodore is only successfully made as owner through simon
     const addOwnerData = channelAddOwner(userToken3, chanId2, userId2);
