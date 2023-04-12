@@ -1,4 +1,4 @@
-import { clear, authRegister, dmCreate, dmLeave, dmMessages, channelMessages, channelLeave, channelJoin, channelsCreate, messageSend, messageEdit, messageRemove, messageSendDm } from './routeRequests';
+import { clear, authRegister, dmCreate, dmLeave, dmMessages, channelMessages, channelLeave, channelJoin, channelAddOwner, channelsCreate, messageSend, messageEdit, messageRemove, messageSendDm, messagePin } from './routeRequests';
 
 import request from 'sync-request';
 
@@ -70,6 +70,8 @@ describe('messageSendV3', () => {
           uId: userId,
           message: 'Wassup G',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -106,6 +108,8 @@ describe('messageSendV3', () => {
           uId: userId,
           message: 'This is the first msg',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -120,6 +124,8 @@ describe('messageSendV3', () => {
           uId: userData2.authUserId,
           message: 'This is the second msg',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -134,6 +140,8 @@ describe('messageSendV3', () => {
           uId: userData3.authUserId,
           message: 'This is the third msg',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -164,18 +172,24 @@ describe('messageSendV3', () => {
           uId: userId,
           message: 'Yoo G',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
         {
           messageId: expect.any(Number),
           uId: userId,
           message: 'Hi G',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
         {
           messageId: expect.any(Number),
           uId: userId,
           message: 'Wassup G',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -250,6 +264,8 @@ describe('messageEditV3', () => {
           uId: userData2.authUserId,
           message: 'This is the edited message',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -304,6 +320,8 @@ describe('messageEditV3', () => {
           uId: userId,
           message: 'This is the edited message',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -330,6 +348,8 @@ describe('messageEditV3', () => {
           uId: userId,
           message: 'This is the edited message',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -383,6 +403,8 @@ describe('messageEditV3', () => {
           uId: userId,
           message: 'Wassup Homie',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
       ],
       start: 0,
@@ -414,6 +436,8 @@ describe('messageEditV3', () => {
           uId: userId,
           message: 'Hello World2',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -442,6 +466,8 @@ describe('messageEditV3', () => {
           uId: userId2,
           message: 'Hello this is edited',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
       ],
       start: 0,
@@ -487,6 +513,8 @@ describe('messageEditV3', () => {
           uId: userId2,
           message: 'Wassup G',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
       ],
       start: 0,
@@ -677,6 +705,8 @@ describe('messageRemoveV3', () => {
           uId: userId,
           message: 'Wassup Homie',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
       ],
       start: 0,
@@ -706,6 +736,8 @@ describe('messageRemoveV3', () => {
           uId: userId,
           message: 'Hello World',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
@@ -846,6 +878,8 @@ describe('/message/senddm/v1', () => {
           uId: userData.authUserId,
           message: 'Hello World',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
 
       ],
@@ -909,23 +943,202 @@ describe('/message/senddm/v1', () => {
           uId: userData.authUserId,
           message: 'Goodbye World',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
         {
           messageId: expect.any(Number),
           uId: userData.authUserId,
           message: 'Hello',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         },
         {
           messageId: expect.any(Number),
           uId: userData.authUserId,
           message: 'Hello World',
           timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
         }
       ],
       start: 0,
       end: -1,
     }
     );
+  });
+});
+
+describe('/message/pin/v1', () => {
+  let userToken: string;
+  let chanId: number;
+  let userId: number;
+  beforeEach(() => {
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Madhav', 'Mishra');
+    userToken = userData.token;
+    userId = userData.authUserId;
+
+    chanId = channelsCreate(userToken, 'COMP1531', true).channelId;
+  });
+
+  test('invalid token', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken + 1, messageId);
+    expect(messagePinData).toStrictEqual(403);
+  });
+
+  test('invalid messageId in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId + 1);
+    expect(messagePinData).toStrictEqual(400);
+  });
+
+  test('invalid messageId in Dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId + 1);
+    expect(messagePinData).toStrictEqual(400);
+  });
+
+  test('same owner tries to pin message already pinned in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messagePinData2 = messagePin(userToken, messageId);
+    expect(messagePinData2).toStrictEqual(400);
+  });
+
+  test('different owner tries to pin message already pinned in channel', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
+    const addOwnerData = channelAddOwner(userToken, chanId, userData2.authUserId);
+    expect(addOwnerData).toStrictEqual({});
+
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messagePinData2 = messagePin(userData2.token, messageId);
+    expect(messagePinData2).toStrictEqual(400);
+  });
+
+  test('owner tries to pin message already pinned in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userToken, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messagePinData2 = messagePin(userToken, messageId);
+    expect(messagePinData2).toStrictEqual(400);
+  });
+
+  test('global owner attempts to pin message in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const chanId2 = channelsCreate(userData2.token, 'Crunchie', true).channelId;
+    const join = channelJoin(userToken, chanId2);
+    expect(join).toStrictEqual({});
+
+    const data = dmCreate(userData2.token, [userId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual(403);
+  });
+
+  test('global owner attempts to pin message in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userData2.token, [userId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual(403);
+  });
+
+  test('messageId valid but authUserId no owner permissions in channel', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userData2.token, messageId);
+    expect(messagePinData).toStrictEqual(403);
+  });
+
+  test('messageId valid but authUserId no owner permissions in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userToken, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userData2.token, messageId);
+    expect(messagePinData).toStrictEqual(403);
+  });
+
+  test('message successfully pinned in channel by owner', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+  });
+
+  test('message successfully pinned in channel by global owner', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const chanId2 = channelsCreate(userData2.token, 'Crunchie', true).channelId;
+    const join = channelJoin(userToken, chanId2);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userData2.token, chanId2, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+  });
+
+  test('message successfully pinned in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
   });
 });

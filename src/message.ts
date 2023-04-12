@@ -61,6 +61,8 @@ function messageSendV3(token: string, channelId: number, message: string) {
     uId: userObj.uId,
     message: message,
     timeSent: Math.floor(Date.now() / 1000),
+    reacts: [],
+    isPinned: false,
   };
 
   channelObj.messages.unshift(newMessage);
@@ -267,6 +269,8 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
     uId: userObj.uId,
     message: message,
     timeSent: Math.floor(Date.now() / 1000),
+    reacts: [],
+    isPinned: false,
   };
 
   dmObj.messages.unshift(newMessage);
@@ -274,4 +278,63 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
   return { messageId: messageId };
 }
 
-export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1 };
+/**
+ * messagePinV1, given a message within a channel or DM, marks it as "pinned".
+ * @param {string[]} token
+ * @param {number} messageId
+ *
+ * @returns {{}} - returns empty object if no error
+ */
+function messagePinV1(token: string, messageId: number) {
+  const data = getData();
+  token = getHash(token);
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    throw HTTPError(403, 'Invalid token');
+  }
+  // find the corresponding channel and dm
+  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+
+  // if both channels and dms are undefined, the messageId is invalid else determine
+  // if the message was found in a dm or a channel
+  let flag: string;
+  if ((dmObj === undefined) && (channelObj === undefined)) {
+    throw HTTPError(400, 'Invalid messageId');
+  } else {
+    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+  }
+
+  if (flag === 'messageInChannel') {
+    // find corresponding messageObj in channel
+    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
+
+    if (channelMsgObj.isPinned === true) {
+      throw HTTPError(400, 'Message is already pinned');
+    }
+    // only if user is channel owner or global owner
+    if (!channelObj.ownerMembersIds.includes(userObj.uId) && (userObj.permission !== 1)) {
+      throw HTTPError(403, 'User does not have owner permission');
+    }
+
+    channelMsgObj.isPinned = true;
+  } else {
+    // find corresponding messageObj in dm
+    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
+
+    if (dmMsgObj.isPinned === true) {
+      throw HTTPError(400, 'Message is already pinned');
+    }
+    // only if the user is the dm owner
+    if (!(dmObj.creatorId === userObj.uId)) {
+      throw HTTPError(403, 'User does not have owner permissions');
+    }
+    dmMsgObj.isPinned = true;
+  }
+  setData(data);
+  return {};
+}
+
+export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1 };

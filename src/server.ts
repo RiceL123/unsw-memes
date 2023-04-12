@@ -12,7 +12,7 @@ import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
 import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV1, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
-import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1 } from './message';
+import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1 } from './message';
 
 // Set up web app
 const app = express();
@@ -226,6 +226,12 @@ app.delete('/message/remove/v3', (req: Request, res: Response, next) => {
 app.post('/message/senddm/v1', (req: Request, res: Response, next) => {
   const { token, dmId, message } = req.body;
   return res.json(messageSendDmV1(token, dmId, message));
+});
+
+app.post('/message/pin/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { messageId } = req.body;
+  return res.json(messagePinV1(token, messageId));
 });
 
 // Keep this BENEATH route definitions

@@ -13,11 +13,18 @@ interface User {
   resetCode: string;
 }
 
+interface React {
+  reactId: number;
+  uIds: number[];
+}
+
 interface Message {
   messageId: number;
   uId: number;
   message: string;
   timeSent: number;
+  reacts: React[],
+  isPinned: boolean;
 }
 
 interface Channel {
