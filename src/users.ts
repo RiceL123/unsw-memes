@@ -20,15 +20,17 @@ function usersAllV2(token: string) {
 
   const returnedUsers = [];
   for (const user of data.users) {
-    const eachUser = {
-      uId: user.uId,
-      nameFirst: user.nameFirst,
-      nameLast: user.nameLast,
-      email: user.email,
-      handleStr: user.handleStr,
-    };
+    if (user.permission !== 420) {
+      const eachUser = {
+        uId: user.uId,
+        nameFirst: user.nameFirst,
+        nameLast: user.nameLast,
+        email: user.email,
+        handleStr: user.handleStr,
+      };
 
-    returnedUsers.push(eachUser);
+      returnedUsers.push(eachUser);
+    }
   }
 
   return {

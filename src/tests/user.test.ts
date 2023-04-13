@@ -1,4 +1,3 @@
-
 import { clear, authRegister, usersAll, userProfile, userProfileSetName, userProfileSetEmail, userProfileSetHandle } from './routeRequests';
 
 interface userObj {
@@ -20,7 +19,7 @@ describe('/user/profile/V3', () => {
   const nameLast = 'Mishra';
 
   test('invalid token / uId in empty data', () => {
-    expect(userProfile('dasdsadas', 1)).toStrictEqual(400);
+    expect(userProfile('dasdsadas', 1)).toStrictEqual(403);
   });
 
   test('invalid uId', () => {
