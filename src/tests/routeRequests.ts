@@ -494,6 +494,22 @@ function adminUserRemove(token: string, uId: string) {
   );
 }
 
+function adminUserPermissionChange(token: string, uId: string, permissionId: number) {
+  return requestHelper(
+    'POST',
+    '/admin/userpermission/change/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        uId: uId,
+        permissionId: permissionId,
+      }
+    }
+  );
+}
+
 export {
   clear,
   channelsCreate,
@@ -528,4 +544,5 @@ export {
   messageSendDm,
   messagePin,
   adminUserRemove,
+  adminUserPermissionChange,
 };
