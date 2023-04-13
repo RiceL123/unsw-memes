@@ -17,13 +17,15 @@ function userProfileV3(token: string, uId: string) {
 
   const data = getData();
 
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    throw HTTPError(403, 'invalid token');
+  }
+
   const userFind = (data.users.find(x => x.uId === id));
   if ((userFind) === undefined) {
     throw HTTPError(400, 'invalid uID');
-  }
-
-  if ((userFind.tokens.some(x => x === token)) === false) {
-    throw HTTPError(403, 'invalid token');
   }
 
   return {

@@ -165,3 +165,8 @@ Clients will manipulate the data through the various POST, PUT, GET and DELETE r
 The data has 3 keys being `users`, `channels` and `dms` which have arrays of objects as according to their corresponding interface as shown above.
 
 The `channels` and `dms` keys will both have keys called `messages` where by the corresponding `Message` interface is used.
+
+## In the User interface, the permission can have 3 possible values
+- 1 ( user is global owner)
+- 2 (user is a normal member)
+- 420 (user is banned)

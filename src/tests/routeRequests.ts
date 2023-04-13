@@ -461,6 +461,7 @@ function messageSendDm(token: string, dmId: number, message: string) {
     }
   );
 }
+
 function messagePin(token: string, messageId: number) {
   return requestHelper(
     'POST',
@@ -472,9 +473,27 @@ function messagePin(token: string, messageId: number) {
       json: {
         messageId: messageId,
       },
+
     }
   );
 }
+
+// ======================= admin ======================== //
+function adminUserRemove(token: string, uId: string) {
+  return requestHelper(
+    'DELETE',
+    '/admin/user/remove/v1',
+    {
+      headers: {
+        token: token
+      },
+      qs: {
+        uId: uId,
+      }
+    }
+  );
+}
+
 export {
   clear,
   channelsCreate,
@@ -508,4 +527,5 @@ export {
   messageRemove,
   messageSendDm,
   messagePin,
+  adminUserRemove,
 };
