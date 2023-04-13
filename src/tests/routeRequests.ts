@@ -311,6 +311,24 @@ function userProfileSetHandle(token: string, handleStr: string) {
   );
 }
 
+function userProfileUploadPhoto(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
+  return requestHelper(
+    'POST',
+    '/user/profile/uploadphoto/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        imgUrl: imgUrl,
+        xStart: xStart,
+        yStart: yStart,
+        xEnd: xEnd,
+        yEnd: yEnd,
+      },
+    }
+  );
+}
 // ===================== dm ===================== //
 function dmCreate(token: string, uIds: number[]) {
   return requestHelper(
@@ -532,6 +550,7 @@ export {
   userProfileSetName,
   userProfileSetEmail,
   userProfileSetHandle,
+  userProfileUploadPhoto,
   dmCreate,
   dmList,
   dmRemove,

@@ -27,6 +27,7 @@ function usersAllV2(token: string) {
         nameLast: user.nameLast,
         email: user.email,
         handleStr: user.handleStr,
+        profileImgUrl: user.profileImgUrl,
       };
 
       returnedUsers.push(eachUser);

@@ -11,6 +11,7 @@ interface userObj {
   nameFirst: string;
   nameLast: string;
   handleStr: string;
+  profileImgUrl: string;
 }
 
 beforeEach(() => {
@@ -75,6 +76,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
 
@@ -84,7 +86,8 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -106,14 +109,16 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: removee.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
         nameFirst: 'Charmander',
         nameLast: 'Pokemon',
-        handleStr: 'charmanderpokemon'
+        handleStr: 'charmanderpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       }
     ];
 
@@ -128,7 +133,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: expect.any(Array),
@@ -149,7 +155,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: [
@@ -158,7 +165,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -169,7 +177,8 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -182,6 +191,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
 
@@ -218,14 +228,16 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: random.authUserId,
         email: 'z3333333@ad.unsw.edu.au',
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
-        handleStr: 'charizardpokemon'
+        handleStr: 'charizardpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -240,7 +252,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: expect.any(Array)
@@ -259,7 +272,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: [
@@ -268,7 +282,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -283,7 +298,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -371,14 +387,16 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: random.authUserId,
         email: 'z3333333@ad.unsw.edu.au',
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
-        handleStr: 'charizardpokemon'
+        handleStr: 'charizardpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -396,6 +414,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
 
@@ -428,7 +447,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -439,14 +459,16 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: random.authUserId,
         email: 'z3333333@ad.unsw.edu.au',
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
-        handleStr: 'charizardpokemon'
+        handleStr: 'charizardpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -469,7 +491,8 @@ describe('/admin/user/remove/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -557,14 +580,16 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: random.authUserId,
         email: 'z3333333@ad.unsw.edu.au',
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
-        handleStr: 'charizardpokemon'
+        handleStr: 'charizardpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -582,6 +607,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
 
@@ -601,6 +627,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
 
@@ -610,7 +637,8 @@ describe('/admin/user/remove/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -627,6 +655,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Bob',
         nameLast: 'Stone',
         handleStr: 'charmanderpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
   });
@@ -709,14 +738,16 @@ describe('/admin/userpermission/change/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: person2.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
         nameFirst: 'Charmander',
         nameLast: 'Pokemon',
-        handleStr: 'charmanderpokemon'
+        handleStr: 'charmanderpokemon',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -731,7 +762,8 @@ describe('/admin/userpermission/change/v1', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: expect.any(Array),
@@ -763,7 +795,8 @@ describe('/admin/userpermission/change/v1', () => {
           email: 'z4444444@ad.unsw.edu.au',
           nameFirst: 'Charmander',
           nameLast: 'Pokemon',
-          handleStr: 'charmanderpokemon'
+          handleStr: 'charmanderpokemon',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -772,7 +805,8 @@ describe('/admin/userpermission/change/v1', () => {
           email: 'z4444444@ad.unsw.edu.au',
           nameFirst: 'Charmander',
           nameLast: 'Pokemon',
-          handleStr: 'charmanderpokemon'
+          handleStr: 'charmanderpokemon',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
     });

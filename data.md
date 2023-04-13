@@ -15,6 +15,7 @@ interface User {
   permission: number;
   tokens: string[];
   resetCode: string;
+  profileImgUrl: string;
 }
 
 interface Message {
@@ -75,7 +76,8 @@ An example of a populated data store is shown below.
       "permission": 1,
       "tokens": [ 
         "d5c5e1ca-e2e0-482e-b53f-e68b56c3bf51"
-      ]
+      ],
+      "profileImgUrl": "http://localhost:3200/profileImages/default.jpg",
     },
     {
       "uId": 2,
@@ -88,7 +90,8 @@ An example of a populated data store is shown below.
       "tokens": [
         "a18ab61a-3e70-494c-b146-00a877e58816",
         "2d30fc17-fa21-47ac-9fb6-9abb25b571bd"
-      ]
+      ],
+      "profileImgUrl": "http://localhost:3200/profileImages/default.jpg",
     }
   ],
   "channels": [

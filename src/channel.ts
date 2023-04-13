@@ -48,6 +48,8 @@ function channelDetailsV3(token: string, channelId: string) {
       nameFirst: userObj.nameFirst,
       nameLast: userObj.nameLast,
       handleStr: userObj.handleStr,
+      profileImgUrl: userObj.profileImgUrl,
+
     };
 
     // add the relevant details to allMembers array

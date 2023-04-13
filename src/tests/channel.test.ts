@@ -9,6 +9,7 @@ interface channelObjUser {
   nameFirst: string;
   nameLast: string;
   handleStr: string;
+  profileImgUrl: string;
 }
 
 beforeEach(() => {
@@ -72,7 +73,8 @@ describe('channelDetailsV3 ', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: [
@@ -81,7 +83,8 @@ describe('channelDetailsV3 ', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
     });
@@ -112,8 +115,9 @@ describe('channelDetailsV3 ', () => {
           email: 'z5555555@ad.unsw.edu.au',
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
-          handleStr: 'madhavmishra'
-        }
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        },
       ],
       // array needs to account for any permutation
       allMembers: expect.any(Array),
@@ -125,14 +129,16 @@ describe('channelDetailsV3 ', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: person2Data.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
         nameFirst: 'Big',
         nameLast: 'Bird',
-        handleStr: 'bigbird'
+        handleStr: 'bigbird',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       }
     ];
 
@@ -1658,6 +1664,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1665,6 +1672,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -1672,6 +1680,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -1681,6 +1690,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1688,6 +1698,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -1695,6 +1706,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -1732,6 +1744,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1739,6 +1752,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -1748,6 +1762,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -1755,6 +1770,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1762,6 +1778,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -1853,6 +1870,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1860,6 +1878,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -1867,6 +1886,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -1876,6 +1896,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1883,6 +1904,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -1890,6 +1912,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -1934,6 +1957,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1941,6 +1965,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -1948,6 +1973,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -1957,6 +1983,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -1964,6 +1991,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -1971,6 +1999,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2050,6 +2079,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2057,6 +2087,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2066,6 +2097,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2073,6 +2105,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2092,6 +2125,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ],
       allMembers: [
@@ -2101,6 +2135,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2108,6 +2143,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ]
     });
@@ -2137,6 +2173,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2144,6 +2181,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -2151,6 +2189,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2160,6 +2199,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2167,6 +2207,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -2174,6 +2215,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2193,6 +2235,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2200,6 +2243,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2209,6 +2253,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2216,6 +2261,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -2223,6 +2269,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2242,6 +2289,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2251,6 +2299,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2258,6 +2307,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId3,
@@ -2265,6 +2315,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2307,6 +2358,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2314,6 +2366,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2323,6 +2376,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -2330,6 +2384,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2337,6 +2392,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2355,6 +2411,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2364,6 +2421,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -2371,6 +2429,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2378,6 +2437,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2396,6 +2456,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -2403,6 +2464,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2412,6 +2474,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId,
@@ -2419,6 +2482,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2426,6 +2490,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2441,6 +2506,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2450,6 +2516,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2457,6 +2524,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });
@@ -2478,6 +2546,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ],
       allMembers: [
@@ -2487,6 +2556,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
         {
           uId: userId2,
@@ -2494,6 +2564,7 @@ describe('/channel/removeowner/v1', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         },
       ]
     });

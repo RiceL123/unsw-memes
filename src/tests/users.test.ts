@@ -6,6 +6,7 @@ interface userObj {
   nameFirst: string;
   nameLast: string;
   handleStr: string;
+  profileImgUrl: string;
 }
 
 beforeEach(() => {
@@ -34,6 +35,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -50,7 +52,8 @@ describe('/users/all/v2', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -65,14 +68,16 @@ describe('/users/all/v2', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data2.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
         nameFirst: 'Krusty',
         nameLast: 'Krabs',
-        handleStr: 'krustykrabs'
+        handleStr: 'krustykrabs',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -95,21 +100,24 @@ describe('/users/all/v2', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data2.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
         nameFirst: 'Charmander',
         nameLast: 'LastName',
-        handleStr: 'charmanderlastname'
+        handleStr: 'charmanderlastname',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data3.authUserId,
         email: 'z3333333@ad.unsw.edu.au',
         nameFirst: 'Charizard',
         nameLast: 'LastName',
-        handleStr: 'charizardlastname'
+        handleStr: 'charizardlastname',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 

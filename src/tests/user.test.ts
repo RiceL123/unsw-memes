@@ -1,4 +1,7 @@
-import { clear, authRegister, usersAll, userProfile, userProfileSetName, userProfileSetEmail, userProfileSetHandle } from './routeRequests';
+import {
+  clear, authRegister, usersAll, userProfile, userProfileSetName,
+  userProfileSetEmail, userProfileSetHandle, userProfileUploadPhoto
+} from './routeRequests';
 
 interface userObj {
   uId: number;
@@ -6,6 +9,7 @@ interface userObj {
   nameFirst: string;
   nameLast: string;
   handleStr: string;
+  profileImgUrl: string;
 }
 
 beforeEach(() => {
@@ -46,7 +50,8 @@ describe('/user/profile/V3', () => {
           email: email,
           nameFirst: nameFirst,
           nameLast: nameLast,
-          handleStr: 'madhavmishra'
+          handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       }
     );
@@ -64,7 +69,8 @@ describe('/user/profile/V3', () => {
         nameFirst: 'Charmander',
         nameLast: 'PokemonName1',
         handleStr: 'charmanderpokemonnam',
-      },
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+      }
     });
 
     expect(userProfile(data2.token, data2.authUserId)).toStrictEqual({
@@ -74,6 +80,7 @@ describe('/user/profile/V3', () => {
         nameFirst: 'Charmeleon',
         nameLast: 'PokemonName2',
         handleStr: 'charmeleonpokemonnam',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
 
@@ -84,6 +91,7 @@ describe('/user/profile/V3', () => {
         nameFirst: 'Charizard',
         nameLast: 'PokemonName3',
         handleStr: 'charizardpokemonname',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     });
   });
@@ -140,7 +148,8 @@ describe('/user/profile/setname/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Bruce',
         nameLast: 'Wayne',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -158,7 +167,8 @@ describe('/user/profile/setname/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'a',
         nameLast: 'Wayne',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -177,7 +187,8 @@ describe('/user/profile/setname/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx',
         nameLast: 'Wayne',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -195,7 +206,8 @@ describe('/user/profile/setname/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Bruce',
         nameLast: 'a',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -214,7 +226,8 @@ describe('/user/profile/setname/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Bruce',
         nameLast: 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -236,21 +249,24 @@ describe('/user/profile/setname/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Bruce',
         nameLast: 'Wayne',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data2.authUserId,
         email: 'z4444444@ad.unsw.edu.au',
         nameFirst: 'Barry',
         nameLast: 'Allen',
-        handleStr: 'johnsmith'
+        handleStr: 'johnsmith',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data3.authUserId,
         email: 'z3333333@ad.unsw.edu.au',
         nameFirst: 'Clark',
         nameLast: 'Kent',
-        handleStr: 'jamessmith'
+        handleStr: 'jamessmith',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -307,7 +323,8 @@ describe('/user/profile/setEmail/v1', () => {
         email: 'z9999999@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -329,21 +346,24 @@ describe('/user/profile/setEmail/v1', () => {
         email: 'z9999999@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'madhavmishra'
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data2.authUserId,
         email: 'z8888888@ad.unsw.edu.au',
         nameFirst: 'John',
         nameLast: 'Smith',
-        handleStr: 'johnsmith'
+        handleStr: 'johnsmith',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data3.authUserId,
         email: 'z7777777@ad.unsw.edu.au',
         nameFirst: 'James',
         nameLast: 'Smith',
-        handleStr: 'jamessmith'
+        handleStr: 'jamessmith',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -418,7 +438,8 @@ describe('/user/profile/sethandle/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'batman'
+        handleStr: 'batman',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -436,7 +457,8 @@ describe('/user/profile/sethandle/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: '123iamvengeance123'
+        handleStr: '123iamvengeance123',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -454,7 +476,8 @@ describe('/user/profile/sethandle/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'abc'
+        handleStr: 'abc',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -472,7 +495,8 @@ describe('/user/profile/sethandle/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'abcdefghijklmnopqrst'
+        handleStr: 'abcdefghijklmnopqrst',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -494,7 +518,8 @@ describe('/user/profile/sethandle/v1', () => {
         email: 'z5555555@ad.unsw.edu.au',
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
-        handleStr: 'batman'
+        handleStr: 'batman',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data2.authUserId,
@@ -502,6 +527,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'John',
         nameLast: 'Smith',
         handleStr: 'flash',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: data3.authUserId,
@@ -509,6 +535,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'James',
         nameLast: 'Smith',
         handleStr: 'superman420',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
     ];
 
@@ -519,5 +546,158 @@ describe('/user/profile/sethandle/v1', () => {
     expect(viewData.users.sort((a: userObj, b: userObj) => a.uId - b.uId)).toStrictEqual(
       expectedArray.sort((a, b) => a.uId - b.uId)
     );
+  });
+});
+
+describe('/user/profile/uploadphoto/v1', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
+
+  // 2000 x 1333 pixels
+  const image1Url = 'http://imagesvc.meredithcorp.io/v3/mm/image?url=https%3A%2F%2Fstatic.onecms.io%2Fwp-content%2Fuploads%2Fsites%2F47%2F2021%2F02%2F23%2Fmaltipoo-on-table-390083464-2000.jpg';
+  // 799 x 600 pixels
+  // const image2 = 'http://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Maltipoo_puppy.jpg/799px-Maltipoo_puppy.jpg?20190729210020';
+
+  test('invalid token', () => {
+    const person = authRegister(email, password, nameFirst, nameLast);
+    const imgUrl = image1Url;
+    const xStart = 0;
+    const yStart = 0;
+    const xEnd = 1300;
+    const yEnd = 1300;
+
+    expect(userProfileUploadPhoto(person.token + 1, imgUrl, xStart, yStart, xEnd, yEnd)).toEqual(403);
+  });
+
+  test.each([
+    { xStart: -1, yStart: 0, xEnd: 500, yEnd: 500 }, // xStart < 0
+    { xStart: 0, yStart: -1, xEnd: 500, yEnd: 500 }, // yStart < 0
+    { xStart: 0, yStart: 0, xEnd: 2001, yEnd: 502 }, // xEnd > image
+    { xStart: 0, yStart: 0, xEnd: 2000, yEnd: 1400 }, // yEnd > image
+    { xStart: 1000, yStart: 100, xEnd: 1000, yEnd: 900 }, // xEnd == xStart
+    { xStart: 200, yStart: 300, xEnd: 600, yEnd: 300 }, // yEnd == yStart
+    { xStart: 1300, yStart: 100, xEnd: 100, yEnd: 900 }, // xEnd < xStart
+    { xStart: 200, yStart: 1300, xEnd: 900, yEnd: 100 }, // yEnd < yStart
+  ])('invalid coords: xStart = $xStart, yStart = $yStart, xEnd = $xEnd, yEnd = $yEnd',
+    ({ xStart, yStart, xEnd, yEnd }) => {
+      const person = authRegister(email, password, nameFirst, nameLast);
+      const imgUrl = image1Url;
+      expect(userProfileUploadPhoto(person.token, imgUrl, xStart, yStart, xEnd, yEnd)).toEqual(400);
+    }
+  );
+
+  test.each([
+    { url: 'http://maltipoo.jpg' },
+    { url: 'http://idontknowhowtogeturls.png' },
+    { url: 'https://www.speedtest.net/' },
+    { url: 'http://localhost.jpg' },
+    { url: 'hiitsme' },
+  ])('invalid image, not a jpg', ({ url }) => {
+    const person = authRegister(email, password, nameFirst, nameLast);
+    const xStart = 0;
+    const yStart = 0;
+    const xEnd = 500;
+    const yEnd = 500;
+
+    expect(userProfileUploadPhoto(person.token, url, xStart, yStart, xEnd, yEnd)).toEqual(400);
+  });
+
+  test('valid photo upload - default', () => {
+    const person = authRegister(email, password, nameFirst, nameLast);
+
+    expect(userProfile(person.token, person.authUserId)).toStrictEqual({
+      user: {
+        uId: person.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+      }
+    });
+  });
+
+  test('valid photo upload - no crop', () => {
+    const person = authRegister(email, password, nameFirst, nameLast);
+    const imgUrl = image1Url;
+    const xStart = 0;
+    const yStart = 0;
+    const xEnd = 2000;
+    const yEnd = 1333;
+    expect(userProfileUploadPhoto(person.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({});
+
+    expect(userProfile(person.token, person.authUserId)).toStrictEqual({
+      user: {
+        uId: person.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+      }
+    });
+  });
+
+  test('valid photo upload - crop', () => {
+    const person = authRegister(email, password, nameFirst, nameLast);
+    const imgUrl = image1Url;
+    const xStart = 50;
+    const yStart = 200;
+    const xEnd = 600;
+    const yEnd = 450;
+    expect(userProfileUploadPhoto(person.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({});
+
+    expect(userProfile(person.token, person.authUserId)).toStrictEqual({
+      user: {
+        uId: person.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+      }
+    });
+  });
+
+  test('valid photo upload - upload 1, then upload another', () => {
+    const person = authRegister(email, password, nameFirst, nameLast);
+    const imgUrl = image1Url;
+    const xStart = 50;
+    const yStart = 200;
+    const xEnd = 600;
+    const yEnd = 450;
+    expect(userProfileUploadPhoto(person.token, imgUrl, xStart, yStart, xEnd, yEnd)).toStrictEqual({});
+
+    expect(userProfile(person.token, person.authUserId)).toStrictEqual({
+      user: {
+        uId: person.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+      }
+    });
+
+    const imgUrl2 = 'https://thehappypuppysite.com/wp-content/uploads/2020/11/Maltipoo-HP-long.jpg';
+    const xStart2 = 10;
+    const yStart2 = 0;
+    const xEnd2 = 400;
+    const yEnd2 = 300;
+
+    expect(userProfileUploadPhoto(person.token, imgUrl2, xStart2, yStart2, xEnd2, yEnd2)).toStrictEqual({});
+
+    expect(userProfile(person.token, person.authUserId)).toStrictEqual({
+      user: {
+        uId: person.authUserId,
+        email: email,
+        nameFirst: nameFirst,
+        nameLast: nameLast,
+        handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+      }
+    });
   });
 });

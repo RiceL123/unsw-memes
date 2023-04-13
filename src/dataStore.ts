@@ -11,6 +11,7 @@ interface User {
   permission: number;
   tokens: string[];
   resetCode: string;
+  profileImgUrl: string;
 }
 
 interface React {
