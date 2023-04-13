@@ -5,6 +5,9 @@ import HTTPError from 'http-errors';
 
 import nodemailer from 'nodemailer';
 import { OAuth2Client } from 'google-auth-library';
+import config from './config.json';
+import fs from 'fs';
+import request from 'sync-request';
 
 const COMPANY_DETAILS = {
   email: 'unswmemest15bcrunchie@gmail.com',
@@ -12,6 +15,16 @@ const COMPANY_DETAILS = {
   clientSecret: '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',
   refreshToken: '1//044BFb_xRQy7MCgYIARAAGAQSNwF-L9IrrbdQztY3bHPOU6o-gSLRzlqtW2zAdTXfksC3IWHn14lM7firMhX4t6ORUr5-b7OPDZY'
 };
+
+const PORT: number = parseInt(process.env.PORT || config.port);
+const HOST: string = process.env.IP || 'localhost';
+const defaultImg = 'https://c8.alamy.com/comp/a8cc3a/java-macaque-monkey-a8cc3a.jpg';
+const res = request(
+  'GET',
+  defaultImg
+);
+const imgPath = 'profileImages/default.jpg';
+fs.writeFileSync(imgPath, res.body, { flag: 'w' });
 
 /** generate UniqiueToken uses uuid's v4 implementation to generate a new user token
  *
@@ -156,7 +169,8 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     handleStr: handle,
     permission: permission,
     tokens: [getHash(newToken)],
-    resetCode: ''
+    resetCode: '',
+    profileImgUrl: `http://${HOST}:${PORT}/profileImages/default.jpg`,
   };
 
   data.users.push(newUser);

@@ -173,6 +173,7 @@ describe('/dm/details/v2', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ]
     });
@@ -194,6 +195,7 @@ describe('/dm/details/v2', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ]
     });
@@ -211,6 +213,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: userObj2.authUserId,
@@ -218,6 +221,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Clive',
         nameLast: 'Palmer',
         handleStr: 'clivepalmer',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       }
     ];
 
@@ -238,6 +242,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: userObj2.authUserId,
@@ -245,6 +250,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Clive',
         nameLast: 'Palmer',
         handleStr: 'clivepalmer',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       },
       {
         uId: userObj3.authUserId,
@@ -252,6 +258,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Pauline',
         nameLast: 'Hanson',
         handleStr: 'paulinehanson',
+        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
       }
     ];
 
@@ -315,6 +322,7 @@ describe('/dm/leave/v2', () => {
           nameFirst: 'Clive',
           nameLast: 'Palmer',
           handleStr: 'clivepalmer',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ]
     });
@@ -332,6 +340,7 @@ describe('/dm/leave/v2', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
+          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
         }
       ]
     });

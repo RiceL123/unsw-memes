@@ -9,7 +9,7 @@ import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1, authPasswordResetRequestV1, authPasswordResetResetV1 } from './auth';
 import { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 } from './dm';
 import { usersAllV2 } from './users';
-import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2 } from './user';
+import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2, userProfileUploadPhotoV1 } from './user';
 import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
 import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1 } from './message';
@@ -21,6 +21,7 @@ const app = express();
 app.use(json());
 // Use middleware that allows for access from other domains
 app.use(cors());
+app.use('/profileImages', express.static('profileImages'));
 // for logging errors (print to terminal)
 app.use(morgan('dev'));
 
@@ -162,6 +163,12 @@ app.put('/user/profile/sethandle/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { handleStr } = req.body;
   return res.json(userProfileSetHandleV2(token, handleStr));
+});
+
+app.post('/user/profile/uploadphoto/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { imgUrl, xStart, yStart, xEnd, yEnd } = req.body;
+  return res.json(userProfileUploadPhotoV1(token, imgUrl, xStart, yStart, xEnd, yEnd));
 });
 
 /// ////////////////////////////////////////////////////////////
