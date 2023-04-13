@@ -1,7 +1,8 @@
 import {
   clear, authRegister, usersAll, userProfile,
   channelsCreate, channelInvite, messageSend, channelMessages, channelDetails, channelJoin,
-  dmCreate, dmMessages, messageSendDm, dmDetails, adminUserRemove,
+  dmCreate, dmMessages, messageSendDm, dmDetails, adminUserRemove, adminUserPermissionChange,
+  userProfileSetHandle, userProfileSetEmail,
 } from './routeRequests';
 
 interface userObj {
@@ -585,5 +586,195 @@ describe('/admin/user/remove/v1', () => {
     });
 
     expect(usersAll(removee.token)).toStrictEqual(403);
+  });
+
+  test('valid admin remove - testing reusuable email and handleStr', () => {
+    const ownerData = authRegister(email, password, nameFirst, nameLast);
+    const removee = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserRemove(ownerData.token, removee.authUserId)).toStrictEqual({});
+
+    expect(userProfile(ownerData.token, removee.authUserId)).toStrictEqual({
+      user: {
+        uId: removee.authUserId,
+        email: '',
+        nameFirst: 'Removed',
+        nameLast: 'user',
+        handleStr: '',
+      },
+    });
+
+    const expectedUserAllArray: userObj[] = [
+      {
+        uId: ownerData.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'madhavmishra'
+      },
+    ];
+
+    expect(usersAll(ownerData.token).users).toStrictEqual(expectedUserAllArray);
+
+    const newPerson = authRegister('hi@gmail.com', 'password3', 'Bob', 'Stone');
+    expect(userProfileSetEmail(newPerson.token, email2)).toStrictEqual({});
+    expect(userProfileSetHandle(newPerson.token, 'charmanderpokemon')).toStrictEqual({});
+
+    expect(userProfile(newPerson.token, newPerson.authUserId)).toStrictEqual({
+      user: {
+        uId: newPerson.authUserId,
+        email: email2,
+        nameFirst: 'Bob',
+        nameLast: 'Stone',
+        handleStr: 'charmanderpokemon',
+      },
+    });
+  });
+});
+
+describe('/admin/userpermission/change/v1', () => {
+  const email = 'z5555555@ad.unsw.edu.au';
+  const password = 'password';
+  const nameFirst = 'Madhav';
+  const nameLast = 'Mishra';
+
+  const email2 = 'z4444444@ad.unsw.edu.au';
+  const password2 = 'password2';
+  const nameFirst2 = 'Charmander';
+  const nameLast2 = 'Pokemon';
+
+  const ownersPerms = 1;
+  const membersPerms = 2;
+
+  test('invalid token', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserPermissionChange(person1.token + 1, person2.authUserId, ownersPerms)).toEqual(403);
+  });
+
+  test('invalid uId', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserPermissionChange(person1.token, person2.authUserId + 1, ownersPerms)).toEqual(400);
+  });
+
+  test('uId refers to only global owner being demoted', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+
+    expect(adminUserPermissionChange(person1.token, person1.authUserId, membersPerms)).toEqual(400);
+  });
+
+  test('invalid uId', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    const invalidPerms = 10;
+
+    expect(adminUserPermissionChange(person1.token, person2.authUserId, invalidPerms)).toEqual(400);
+  });
+
+  test('user already has the that level of permission', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserPermissionChange(person1.token, person2.authUserId, membersPerms)).toEqual(400);
+
+    expect(adminUserPermissionChange(person1.token, person2.authUserId, ownersPerms)).toStrictEqual({});
+    expect(adminUserPermissionChange(person1.token, person2.authUserId, ownersPerms)).toEqual(400);
+  });
+
+  test('authorised user is not a global owner', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserPermissionChange(person2.token, person1.authUserId, ownersPerms)).toEqual(403);
+  });
+
+  test('valid permission change - 1 user', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserPermissionChange(person1.token, person2.authUserId, ownersPerms)).toStrictEqual({});
+
+    // testing to see if person2 is now a global owner
+    const channel = channelsCreate(person1.token, 'private', false);
+
+    expect(channelJoin(person2.token, channel.channelId)).toStrictEqual({});
+
+    const expectedMembersArray: userObj[] = [
+      {
+        uId: person1.authUserId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Madhav',
+        nameLast: 'Mishra',
+        handleStr: 'madhavmishra'
+      },
+      {
+        uId: person2.authUserId,
+        email: 'z4444444@ad.unsw.edu.au',
+        nameFirst: 'Charmander',
+        nameLast: 'Pokemon',
+        handleStr: 'charmanderpokemon'
+      },
+    ];
+
+    const detailData = channelDetails(person1.token, channel.channelId);
+
+    expect(detailData).toStrictEqual({
+      name: 'private',
+      isPublic: false,
+      ownerMembers: [
+        {
+          uId: person1.authUserId,
+          email: 'z5555555@ad.unsw.edu.au',
+          nameFirst: 'Madhav',
+          nameLast: 'Mishra',
+          handleStr: 'madhavmishra'
+        }
+      ],
+      allMembers: expect.any(Array),
+    });
+
+    expect(detailData.allMembers.sort((a: userObj, b: userObj) => a.uId - b.uId)).toStrictEqual(
+      expectedMembersArray.sort((a, b) => a.uId - b.uId)
+    );
+  });
+
+  test('valid permission change - mulitple', () => {
+    const person1 = authRegister(email, password, nameFirst, nameLast);
+    const person2 = authRegister(email2, password2, nameFirst2, nameLast2);
+
+    expect(adminUserPermissionChange(person1.token, person2.authUserId, ownersPerms)).toStrictEqual({});
+
+    expect(adminUserPermissionChange(person2.token, person1.authUserId, membersPerms)).toStrictEqual({});
+
+    const channel = channelsCreate(person2.token, 'private', false);
+
+    expect(channelJoin(person1.token, channel.channelId)).toStrictEqual(403);
+
+    expect(channelDetails(person2.token, channel.channelId)).toStrictEqual({
+      name: 'private',
+      isPublic: false,
+      ownerMembers: [
+        {
+          uId: person2.authUserId,
+          email: 'z4444444@ad.unsw.edu.au',
+          nameFirst: 'Charmander',
+          nameLast: 'Pokemon',
+          handleStr: 'charmanderpokemon'
+        },
+      ],
+      allMembers: [
+        {
+          uId: person2.authUserId,
+          email: 'z4444444@ad.unsw.edu.au',
+          nameFirst: 'Charmander',
+          nameLast: 'Pokemon',
+          handleStr: 'charmanderpokemon'
+        },
+      ],
+    });
   });
 });

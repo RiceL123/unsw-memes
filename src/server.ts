@@ -13,7 +13,7 @@ import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfile
 import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
 import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1 } from './message';
-import { adminUserRemoveV1 } from './admin';
+import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
 
 // Set up web app
 const app = express();
@@ -243,6 +243,12 @@ app.delete('/admin/user/remove/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const uId = req.query.uId as string;
   return res.json(adminUserRemoveV1(token, uId));
+});
+
+app.post('/admin/userpermission/change/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { uId, permissionId } = req.body;
+  return res.json(adminUserPermissionChangeV1(token, uId, permissionId));
 });
 
 // Keep this BENEATH route definitions
