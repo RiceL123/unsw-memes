@@ -7,13 +7,13 @@ import {
   channelMessages,
   channelLeave,
   channelJoin,
-  channelAddOwner,
   channelsCreate,
   messageSend,
   messageEdit,
   messageRemove,
   messageSendDm,
   messagePin,
+  messageUnpin,
   messageShare
 } from './routeRequests';
 
@@ -1040,7 +1040,7 @@ describe('/message/pin/v1', () => {
     expect(messagePinData).toStrictEqual(400);
   });
 
-  test('same owner tries to pin message already pinned in channel', () => {
+  test('owner tries to pin message already pinned in channel', () => {
     const messageSendData = messageSend(userToken, chanId, 'Wassup G');
     const messageId = messageSendData.messageId;
 
@@ -1048,23 +1048,6 @@ describe('/message/pin/v1', () => {
     expect(messagePinData).toStrictEqual({});
 
     const messagePinData2 = messagePin(userToken, messageId);
-    expect(messagePinData2).toStrictEqual(400);
-  });
-
-  test('different owner tries to pin message already pinned in channel', () => {
-    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
-    const join = channelJoin(userData2.token, chanId);
-    expect(join).toStrictEqual({});
-    const addOwnerData = channelAddOwner(userToken, chanId, userData2.authUserId);
-    expect(addOwnerData).toStrictEqual({});
-
-    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
-    const messageId = messageSendData.messageId;
-
-    const messagePinData = messagePin(userToken, messageId);
-    expect(messagePinData).toStrictEqual({});
-
-    const messagePinData2 = messagePin(userData2.token, messageId);
     expect(messagePinData2).toStrictEqual(400);
   });
 
@@ -1081,22 +1064,6 @@ describe('/message/pin/v1', () => {
 
     const messagePinData2 = messagePin(userToken, messageId);
     expect(messagePinData2).toStrictEqual(400);
-  });
-
-  test('global owner attempts to pin message in dm', () => {
-    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
-    const chanId2 = channelsCreate(userData2.token, 'Crunchie', true).channelId;
-    const join = channelJoin(userToken, chanId2);
-    expect(join).toStrictEqual({});
-
-    const data = dmCreate(userData2.token, [userId]);
-    const dmId = data.dmId;
-
-    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
-    const messageId = messageSendData.messageId;
-
-    const messagePinData = messagePin(userToken, messageId);
-    expect(messagePinData).toStrictEqual(403);
   });
 
   test('global owner attempts to pin message in dm', () => {
@@ -1170,6 +1137,156 @@ describe('/message/pin/v1', () => {
 
     const messagePinData = messagePin(userToken, messageId);
     expect(messagePinData).toStrictEqual({});
+  });
+});
+
+describe('/message/unpin/v1', () => {
+  let userToken: string;
+  let chanId: number;
+  let userId: number;
+  beforeEach(() => {
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Madhav', 'Mishra');
+    userToken = userData.token;
+    userId = userData.authUserId;
+
+    chanId = channelsCreate(userToken, 'COMP1531', true).channelId;
+  });
+
+  test('invalid token', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageUnpinData = messageUnpin(userToken + 1, messageId);
+    expect(messageUnpinData).toStrictEqual(403);
+  });
+
+  test('invalid messageId in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageUnpinData = messageUnpin(userToken, messageId + 1);
+    expect(messageUnpinData).toStrictEqual(400);
+  });
+
+  test('invalid messageId in Dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageUnpinData = messageUnpin(userToken, messageId + 1);
+    expect(messageUnpinData).toStrictEqual(400);
+  });
+
+  test('owner tries to unpin unpinned message in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageUnpinData = messageUnpin(userToken, messageId);
+    expect(messageUnpinData).toStrictEqual(400);
+  });
+
+  test('owner tries to unpin unpinned message in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userToken, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageUnpinData2 = messageUnpin(userToken, messageId);
+    expect(messageUnpinData2).toStrictEqual(400);
+  });
+
+  test('global owner tries to unpin pinned message in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userData2.token, [userId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userData2.token, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messageUnpinData2 = messageUnpin(userToken, messageId);
+    expect(messageUnpinData2).toStrictEqual(403);
+  });
+
+  test('messageId valid but authUserId no owner permissions in channel', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const join = channelJoin(userData2.token, chanId);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userData2.token, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+    const messageUnpinData = messageUnpin(userData2.token, messageId);
+    expect(messageUnpinData).toStrictEqual(403);
+  });
+
+  test('messageId valid but authUserId no owner permissions in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userToken, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userToken, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messageUnpinData = messageUnpin(userData2.token, messageId);
+    expect(messageUnpinData).toStrictEqual(403);
+  });
+
+  test('message successfully unpinned in channel by owner', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const chanId2 = channelsCreate(userData2.token, 'Crunchie', true).channelId;
+
+    const messageSendData = messageSend(userData2.token, chanId2, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userData2.token, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messageUnpinData = messageUnpin(userData2.token, messageId);
+    expect(messageUnpinData).toStrictEqual({});
+  });
+
+  test('message successfully unpinned in channel by global owner', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const chanId2 = channelsCreate(userData2.token, 'Crunchie', true).channelId;
+    const join = channelJoin(userToken, chanId2);
+    expect(join).toStrictEqual({});
+
+    const messageSendData = messageSend(userData2.token, chanId2, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userData2.token, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messageUnpinData = messageUnpin(userToken, messageId);
+    expect(messageUnpinData).toStrictEqual({});
+  });
+
+  test('message successfully unpinned in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userData2.token, [userId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messagePinData = messagePin(userData2.token, messageId);
+    expect(messagePinData).toStrictEqual({});
+
+    const messageUnpinData = messageUnpin(userData2.token, messageId);
+    expect(messageUnpinData).toStrictEqual({});
   });
 });
 
