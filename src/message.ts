@@ -337,4 +337,84 @@ function messagePinV1(token: string, messageId: number) {
   return {};
 }
 
-export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1 };
+function messageShareV1(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
+  const data: Data = getData();
+  token = getHash(token);
+
+  // nxor - if both / neither are channelId and dmId are equal to -1 then through an error
+  if ((channelId === -1) === (dmId === -1)) {
+    throw HTTPError(400, 'both / neither channelId and dmId are valid');
+  }
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    throw HTTPError(403, 'invalid token');
+  }
+
+  const shareToDm = channelId === -1;
+
+  const channelOgMessageObj = data.channels.flatMap(x => x.messages).find(x => x.messageId === ogMessageId);
+  const dmOgMessageObj = data.dms.flatMap(x => x.messages).find(x => x.messageId === ogMessageId);
+
+  const ogMessageObj = !channelOgMessageObj ? dmOgMessageObj : channelOgMessageObj;
+
+  if (!ogMessageObj) {
+    throw HTTPError(400, 'ogMessageId does not refer to a valid message within a channel / dm');
+  }
+
+  const newMessage = message === '' ? ogMessageObj.message : ogMessageObj.message + '\n' + message;
+
+  const sharedMessageId = generateMessageId(data);
+
+  const newMessageObj: Message = {
+    messageId: sharedMessageId,
+    uId: userObj.uId,
+    message: newMessage,
+    timeSent: Math.floor(Date.now() / 1000),
+    reacts: [],
+    isPinned: false,
+  };
+
+  if (shareToDm) {
+    const dmObj = data.dms.find(x => x.dmId === dmId);
+
+    if (!dmObj) {
+      throw HTTPError(400, 'invalid dmId');
+    }
+
+    if (!dmObj.memberIds.includes(userObj.uId)) {
+      throw HTTPError(403, 'the authorised user has not joined the dm');
+    }
+
+    if (message.length > 1000) {
+      throw HTTPError(400, 'length of optional message is more than 1000 characters');
+    }
+
+    dmObj.messages.unshift(newMessageObj);
+
+  // if the message is not being shared to dm, its being shared to a channel
+  } else {
+    const channelObj = data.channels.find(x => x.channelId === channelId);
+
+    if (!channelObj) {
+      throw HTTPError(400, 'invalid channelId');
+    }
+
+    if (!channelObj.allMembersIds.includes(userObj.uId)) {
+      throw HTTPError(403, 'the authorised user has not joined the dm');
+    }
+
+    if (message.length > 1000) {
+      throw HTTPError(400, 'length of optional message is more than 1000 characters');
+    }
+
+    channelObj.messages.unshift(newMessageObj);
+  }
+
+  setData(data);
+  return {
+    sharedMessageId: sharedMessageId
+  };
+}
+
+export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageShareV1 };

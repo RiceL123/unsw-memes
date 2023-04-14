@@ -496,6 +496,24 @@ function messagePin(token: string, messageId: number) {
   );
 }
 
+function messageShare(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
+  return requestHelper(
+    'POST',
+    '/message/share/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        ogMessageId: ogMessageId,
+        message: message,
+        channelId: channelId,
+        dmId: dmId
+      }
+    }
+  );
+}
+
 // ======================= admin ======================== //
 function adminUserRemove(token: string, uId: string) {
   return requestHelper(
@@ -562,6 +580,7 @@ export {
   messageRemove,
   messageSendDm,
   messagePin,
+  messageShare,
   adminUserRemove,
   adminUserPermissionChange,
 };

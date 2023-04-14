@@ -1,8 +1,26 @@
-import { clear, authRegister, dmCreate, dmLeave, dmMessages, channelMessages, channelLeave, channelJoin, channelAddOwner, channelsCreate, messageSend, messageEdit, messageRemove, messageSendDm, messagePin } from './routeRequests';
+import {
+  clear,
+  authRegister,
+  dmCreate,
+  dmLeave,
+  dmMessages,
+  channelMessages,
+  channelLeave,
+  channelJoin,
+  channelAddOwner,
+  channelsCreate,
+  messageSend,
+  messageEdit,
+  messageRemove,
+  messageSendDm,
+  messagePin,
+  messageShare
+} from './routeRequests';
 
 import request from 'sync-request';
 
 import { port, url } from '../config.json';
+
 const SERVER_URL = `${url}:${port}`;
 
 const ERROR = { error: expect.any(String) };
@@ -13,6 +31,18 @@ const EXPECTED_TIME_ERROR_MARGIN = 5;
 interface AuthRegisterReturn {
   token: string;
   authUserId: number;
+}
+
+interface MessageReturn {
+  messageId: number;
+}
+
+interface ChannelReturn {
+  channelId: number;
+}
+
+interface DmReturn {
+  dmId: number;
 }
 
 beforeEach(() => {
@@ -1140,5 +1170,195 @@ describe('/message/pin/v1', () => {
 
     const messagePinData = messagePin(userToken, messageId);
     expect(messagePinData).toStrictEqual({});
+  });
+});
+
+describe('/message/share/v1', () => {
+  let userObj: AuthRegisterReturn;
+  let channelObj: ChannelReturn;
+  let dmObj: DmReturn;
+  let dmOgMessage: MessageReturn;
+  let channelOgMessage: MessageReturn;
+
+  beforeEach(() => {
+    userObj = authRegister('email@email.com', 'password', 'Madhav', 'Mishra');
+    channelObj = channelsCreate(userObj.token, 'OOP', true);
+    channelOgMessage = messageSend(userObj.token, channelObj.channelId, 'channel channel');
+    dmObj = dmCreate(userObj.token, []);
+    dmOgMessage = messageSendDm(userObj.token, dmObj.dmId, 'hello dm');
+  });
+
+  test('invalid channelId and dmId inputs', () => {
+    expect(messageShare(userObj.token, channelOgMessage.messageId, '', channelObj.channelId + 1, dmObj.dmId + 1)).toStrictEqual(400);
+    expect(messageShare(userObj.token, channelOgMessage.messageId, '', channelObj.channelId, dmObj.dmId)).toStrictEqual(400);
+    expect(messageShare(userObj.token, channelOgMessage.messageId, '', channelObj.channelId + 1, -1)).toStrictEqual(400);
+    expect(messageShare(userObj.token, channelOgMessage.messageId, '', -1, dmObj.dmId + 1)).toStrictEqual(400);
+    expect(messageShare(userObj.token, channelOgMessage.messageId, '', -1, -1)).toStrictEqual(400);
+  });
+
+  test('ogMessageId does not refer to a valid messageId', () => {
+    expect(messageShare(userObj.token, channelOgMessage.messageId + dmOgMessage.messageId + 1, '', channelObj.channelId, -1)).toStrictEqual(400);
+    expect(messageShare(userObj.token, channelOgMessage.messageId + dmOgMessage.messageId + 1, '', -1, dmObj.dmId)).toStrictEqual(400);
+  });
+
+  test('message.length > 1000', () => {
+    expect(messageShare(userObj.token, channelOgMessage.messageId, 'a'.repeat(1001), -1, dmObj.dmId)).toStrictEqual(400);
+    expect(messageShare(userObj.token, channelOgMessage.messageId, 'a'.repeat(1001), channelObj.channelId, -1)).toStrictEqual(400);
+  });
+
+  test('invalid token', () => {
+    expect(messageShare(userObj.token + 'invalid', channelOgMessage.messageId, '', -1, dmObj.dmId)).toStrictEqual(403);
+  });
+
+  test('user is not a member of the dm or channel', () => {
+    const userObj2 = authRegister('z544444@ad.unsw.edu.au', 'password', 'Bobby', 'Fisher');
+    expect(messageShare(userObj2.token, channelOgMessage.messageId, '', -1, dmObj.dmId)).toStrictEqual(403);
+    expect(messageShare(userObj2.token, channelOgMessage.messageId, '', channelObj.channelId, -1)).toStrictEqual(403);
+  });
+
+  test('valid message share in dm from dm', () => {
+    const dmObj2 = dmCreate(userObj.token, []);
+    const sharedMessageObj = messageShare(userObj.token, dmOgMessage.messageId, '', -1, dmObj2.dmId);
+    expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    expect(dmMessages(userObj.token, dmObj2.dmId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: sharedMessageObj.sharedMessageId,
+          uId: userObj.authUserId,
+          message: 'hello dm',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('valid message share in dm from channel', () => {
+    const sharedMessageObj = messageShare(userObj.token, channelOgMessage.messageId, '', -1, dmObj.dmId);
+    expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    expect(dmMessages(userObj.token, dmObj.dmId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: sharedMessageObj.sharedMessageId,
+          uId: userObj.authUserId,
+          message: 'channel channel',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        },
+        {
+          messageId: dmOgMessage.messageId,
+          uId: userObj.authUserId,
+          message: 'hello dm',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        },
+      ]
+    });
+  });
+
+  test('valid message share in channel from channel', () => {
+    const channelObj2 = channelsCreate(userObj.token, 'new channel', true);
+    const sharedMessageObj = messageShare(userObj.token, channelOgMessage.messageId, '', channelObj2.channelId, -1);
+    expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    expect(channelMessages(userObj.token, channelObj2.channelId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: sharedMessageObj.sharedMessageId,
+          uId: userObj.authUserId,
+          message: 'channel channel',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('valid message share in channel from dm', () => {
+    const sharedMessageObj = messageShare(userObj.token, dmOgMessage.messageId, '', channelObj.channelId, -1);
+    expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    expect(channelMessages(userObj.token, channelObj.channelId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: sharedMessageObj.sharedMessageId,
+          uId: userObj.authUserId,
+          message: 'hello dm',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        },
+        {
+          messageId: channelOgMessage.messageId,
+          uId: userObj.authUserId,
+          message: 'channel channel',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('valid message share includes ogmessage and message as substrings', () => {
+    const channelObj2 = channelsCreate(userObj.token, 'new channel', true);
+    const sharedMessageObj = messageShare(userObj.token, channelOgMessage.messageId, 'substring', channelObj2.channelId, -1);
+    expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
+
+    const channelMessagesObj = channelMessages(userObj.token, channelObj2.channelId, 0);
+    expect(channelMessagesObj).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: sharedMessageObj.sharedMessageId,
+          uId: userObj.authUserId,
+          message: expect.any(String),
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        }
+      ]
+    });
+
+    expect(channelMessagesObj.messages[0].message).toContain('substring');
+    expect(channelMessagesObj.messages[0].message).toContain('channel channel');
+  });
+
+  test('new message has no link to original message', () => {
+    const channelObj2 = channelsCreate(userObj.token, 'new channel', true);
+    const sharedMessageObj = messageShare(userObj.token, channelOgMessage.messageId, 'substring', channelObj2.channelId, -1);
+    expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
+
+    messageRemove(userObj.token, channelOgMessage.messageId);
+
+    const channelMessagesObj = channelMessages(userObj.token, channelObj2.channelId, 0);
+    expect(channelMessagesObj).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: sharedMessageObj.sharedMessageId,
+          uId: userObj.authUserId,
+          message: expect.any(String),
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false
+        }
+      ]
+    });
+
+    expect(channelMessagesObj.messages[0].message).toContain('substring');
+    expect(channelMessagesObj.messages[0].message).toContain('channel channel');
   });
 });
