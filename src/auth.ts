@@ -4,17 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
 
 import nodemailer from 'nodemailer';
-import { OAuth2Client } from 'google-auth-library';
+
 import config from './config.json';
 import fs from 'fs';
 import request from 'sync-request';
 
-const COMPANY_DETAILS = {
-  email: 'unswmemest15bcrunchie@gmail.com',
-  clientId: '957094224176-2aq890690c1qq8dmn1rau573d8c7cu18.apps.googleusercontent.com',
-  clientSecret: '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',
-  refreshToken: '1//044BFb_xRQy7MCgYIARAAGAQSNwF-L9IrrbdQztY3bHPOU6o-gSLRzlqtW2zAdTXfksC3IWHn14lM7firMhX4t6ORUr5-b7OPDZY'
-};
+const EMAIL = 'tb15crunchie@outlook.com';
+const PASSWORD = 'imagineMakingASecurePassword!!!1234567890';
 
 const PORT: number = parseInt(process.env.PORT || config.port);
 const HOST: string = process.env.IP || 'localhost';
@@ -208,38 +204,22 @@ function authLogoutV1(token: string) {
 }
 
 async function sendEmail(email: string, subject: string, message: string) {
-  const oauth2Client = new OAuth2Client(
-    COMPANY_DETAILS.clientId,
-    COMPANY_DETAILS.clientSecret,
-    'https://developers.google.com/oauthplayground'
-  );
-
-  oauth2Client.setCredentials({
-    refresh_token: COMPANY_DETAILS.refreshToken,
-  });
-
-  const { token } = await oauth2Client.getAccessToken();
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
+  const transport = nodemailer.createTransport({
+    host: 'smtp.office365.com',
+    port: 587,
+    secure: false,
     auth: {
-      type: 'OAuth2',
-      user: COMPANY_DETAILS.email,
-      clientId: COMPANY_DETAILS.clientId,
-      clientSecret: COMPANY_DETAILS.clientSecret,
-      refreshToken: COMPANY_DETAILS.refreshToken,
-      accessToken: token
+      user: EMAIL,
+      pass: PASSWORD
     },
   });
 
-  const info = await transporter.sendMail({
-    from: COMPANY_DETAILS.email, // sender address
+  transport.sendMail({
+    from: `"YOUR MOTHER" <${EMAIL}>`,
     to: email,
     subject: subject,
     text: message,
   });
-
-  console.log('Message sent: %s', info.messageId);
 }
 
 function authPasswordResetRequestV1(email: string) {
