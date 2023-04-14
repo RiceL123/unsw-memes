@@ -18,6 +18,11 @@ interface User {
   profileImgUrl: string;
 }
 
+interface React {
+  reactId: number;
+  uIds: number[];
+}
+
 interface Message {
   messageId: number;
   uId: number;
@@ -42,11 +47,6 @@ interface Dm {
   creatorId: number;
   memberIds: number[],
   messages: Message[];
-}
-
-interface React {
-  reactId: number;
-  uIds: number[];
 }
 
 interface Data {

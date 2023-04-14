@@ -496,6 +496,21 @@ function messagePin(token: string, messageId: number) {
   );
 }
 
+function messageUnpin(token: string, messageId: number) {
+  return requestHelper(
+    'POST',
+    '/message/unpin/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        messageId: messageId,
+      },
+    }
+  );
+}
+
 function messageShare(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
   return requestHelper(
     'POST',
@@ -580,6 +595,7 @@ export {
   messageRemove,
   messageSendDm,
   messagePin,
+  messageUnpin,
   messageShare,
   adminUserRemove,
   adminUserPermissionChange,

@@ -337,6 +337,74 @@ function messagePinV1(token: string, messageId: number) {
   return {};
 }
 
+/**
+ * messageUnpinV1, given a message within a channel or DM, marks it as "unpinned".
+ * @param {string[]} token
+ * @param {number} messageId
+ *
+ * @returns {{}} - returns empty object if no error
+ */
+function messageUnpinV1(token: string, messageId: number) {
+  const data = getData();
+  token = getHash(token);
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    throw HTTPError(403, 'Invalid token');
+  }
+  // find the corresponding channel and dm
+  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+
+  // if both channels and dms are undefined, the messageId is invalid else determine
+  // if the message was found in a dm or a channel
+  let flag: string;
+  if ((dmObj === undefined) && (channelObj === undefined)) {
+    throw HTTPError(400, 'Invalid messageId');
+  } else {
+    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+  }
+
+  if (flag === 'messageInChannel') {
+    // find corresponding messageObj in channel
+    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
+
+    if (channelMsgObj.isPinned === false) {
+      throw HTTPError(400, 'Message is unpinned');
+    }
+    // only if user is channel owner or global owner
+    if (!channelObj.ownerMembersIds.includes(userObj.uId) && (userObj.permission !== 1)) {
+      throw HTTPError(403, 'User does not have owner permission');
+    }
+
+    channelMsgObj.isPinned = false;
+  } else {
+    // find corresponding messageObj in dm
+    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
+
+    if (dmMsgObj.isPinned === false) {
+      throw HTTPError(400, 'Message is unpinned');
+    }
+    // only if the user is the dm owner
+    if (!(dmObj.creatorId === userObj.uId)) {
+      throw HTTPError(403, 'User does not have owner permissions');
+    }
+    dmMsgObj.isPinned = false;
+  }
+  setData(data);
+  return {};
+}
+
+/**
+ *
+ * @param {string} token
+ * @param {number} ogMessageId
+ * @param {string} message
+ * @param  {number} channelId
+ * @param {number} dmId
+ * @returns {} returns sharedMessageId
+ */
 function messageShareV1(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
   const data: Data = getData();
   token = getHash(token);
@@ -417,4 +485,4 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   };
 }
 
-export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageShareV1 };
+export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1 };
