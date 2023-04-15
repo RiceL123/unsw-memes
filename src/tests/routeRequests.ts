@@ -545,6 +545,22 @@ function messageReact(token: string, messageId: number, reactId: number) {
   );
 }
 
+function messageUnreact(token: string, messageId: number, reactId: number) {
+  return requestHelper(
+    'POST',
+    '/message/unreact/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        messageId: messageId,
+        reactId: reactId,
+      },
+    }
+  );
+}
+
 // ======================= admin ======================== //
 function adminUserRemove(token: string, uId: string) {
   return requestHelper(
@@ -662,6 +678,7 @@ export {
   messageUnpin,
   messageShare,
   messageReact,
+  messageUnreact,
   adminUserRemove,
   adminUserPermissionChange,
   standupStart,
