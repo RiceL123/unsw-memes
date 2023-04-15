@@ -17,6 +17,7 @@ interface User {
 interface React {
   reactId: number;
   uIds: number[];
+  isThisUserReacted: boolean;
 }
 
 interface Message {
@@ -74,4 +75,4 @@ function getHash(string: string): string {
   return crypto.createHmac('sha1', secret).update(string).digest('hex');
 }
 
-export { User, Channel, Dm, Message, Data, getData, setData, getHash };
+export { User, Channel, Dm, Message, React, Data, getData, setData, getHash };

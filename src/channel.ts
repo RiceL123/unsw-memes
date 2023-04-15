@@ -173,12 +173,9 @@ function channelInviteV3(token: string, channelId: string, uId: string) {
  * that has an array of objects called messages, the start index value as well as a new index for
  * end which either states that there are no more messages or there are more messages waiting.
  */
-function channelMessagesV3(token: string, channelId: string, start: string) {
+function channelMessagesV3(token: string, channelId: number, start: number) {
   const data = getData();
   token = getHash(token);
-
-  const chanId = parseInt(channelId);
-  const startNum = parseInt(start);
 
   const pagination = 50;
 
@@ -188,32 +185,37 @@ function channelMessagesV3(token: string, channelId: string, start: string) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const channelFind = (data.channels.find(x => x.channelId === chanId));
-  if (channelFind === undefined) {
+  const channelObj = (data.channels.find(x => x.channelId === channelId));
+  if (channelObj === undefined) {
     throw HTTPError(400, 'invalid channelId');
   }
 
-  if ((channelFind.allMembersIds.includes(userObj.uId)) === false) {
+  if ((channelObj.allMembersIds.includes(userObj.uId)) === false) {
     throw HTTPError(403, 'Invalid authUserId: channelId is valid, but authorised user is not a member of the channel');
   }
 
-  if (startNum < 0 || startNum > channelFind.messages.length) {
+  if (start < 0 || start > channelObj.messages.length) {
     throw HTTPError(400, 'Invalid start value');
   }
 
-  if (startNum + pagination >= channelFind.messages.length) {
-    return {
-      messages: channelFind.messages.slice(startNum, channelFind.messages.length),
-      start: startNum,
-      end: -1,
-    };
-  } else {
-    return {
-      messages: channelFind.messages.slice(startNum, startNum + pagination),
-      start: startNum,
-      end: startNum + pagination,
-    };
-  }
+  // if start + pagination > messages.length -> slice will slice appropiately according to length
+  const messages = channelObj.messages.slice(start, start + pagination);
+
+  // for all the react objects where the uIds includes the callers uId, change the default
+  // isThisUserReacted value from false to true
+  messages.flatMap(x => x.reacts).forEach(x => {
+    if (x.uIds.includes(userObj.uId)) {
+      x.isThisUserReacted = true;
+    }
+  });
+
+  const end = start + pagination >= channelObj.messages.length ? -1 : start + pagination;
+
+  return {
+    messages: messages,
+    start: start,
+    end: end,
+  };
 }
 
 /**

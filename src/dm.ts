@@ -264,28 +264,33 @@ function dmMessagesV2(token: string, dmId: number, start: number) {
     throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
-  const dmFind = (data.dms.find(x => x.dmId === dmId));
-  if (!(dmFind.memberIds.includes(userObj.uId))) {
+  const dmObj = (data.dms.find(x => x.dmId === dmId));
+  if (!(dmObj.memberIds.includes(userObj.uId))) {
     throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
-  if (start < 0 || start > dmFind.messages.length) {
+  if (start < 0 || start > dmObj.messages.length) {
     throw HTTPError(400, 'invalid start value');
   }
 
-  if (start + pagination >= dmFind.messages.length) {
-    return {
-      messages: dmFind.messages.slice(start, dmFind.messages.length),
-      start: start,
-      end: -1,
-    };
-  } else {
-    return {
-      messages: dmFind.messages.slice(start, start + pagination),
-      start: start,
-      end: start + pagination,
-    };
-  }
+  // if start + pagination > messages.length -> slice will slice appropiately according to length
+  const messages = dmObj.messages.slice(start, start + pagination);
+
+  // for all the react objects where the uIds includes the callers uId, change the default
+  // isThisUserReacted value from false to true
+  messages.flatMap(x => x.reacts).forEach(x => {
+    if (x.uIds.includes(userObj.uId)) {
+      x.isThisUserReacted = true;
+    }
+  });
+
+  const end = start + pagination >= dmObj.messages.length ? -1 : start + pagination;
+
+  return {
+    messages: messages,
+    start: start,
+    end: end,
+  };
 }
 
 export { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 };

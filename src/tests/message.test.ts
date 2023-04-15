@@ -14,7 +14,8 @@ import {
   messageSendDm,
   messagePin,
   messageUnpin,
-  messageShare
+  messageShare,
+  messageReact,
 } from './routeRequests';
 
 import request from 'sync-request';
@@ -1477,5 +1478,384 @@ describe('/message/share/v1', () => {
 
     expect(channelMessagesObj.messages[0].message).toContain('substring');
     expect(channelMessagesObj.messages[0].message).toContain('channel channel');
+  });
+});
+
+describe('/message/react/v1', () => {
+  let userToken: string;
+  let userId: number;
+  let chanId: number;
+  const validReactId = 1;
+  beforeEach(() => {
+    const userData = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Madhav', 'Mishra');
+    userToken = userData.token;
+    userId = userData.authUserId;
+
+    chanId = channelsCreate(userToken, 'COMP1531', true).channelId;
+  });
+
+  test('invalid token', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken + 1, messageId, validReactId);
+    expect(messageReactData).toStrictEqual(403);
+  });
+
+  test('invalid messageId in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId + 1, validReactId);
+    expect(messageReactData).toStrictEqual(400);
+  });
+
+  test('invalid messageId in Dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId + 1, validReactId);
+    expect(messageReactData).toStrictEqual(400);
+  });
+
+  test('invalid reactId in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId + 1);
+    expect(messageReactData).toStrictEqual(400);
+  });
+
+  test('invalid reactId in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId + 1);
+    expect(messageReactData).toStrictEqual(400);
+  });
+
+  test('user has already reacted to given message in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData).toStrictEqual({});
+
+    const messageReactData2 = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData2).toStrictEqual(400);
+  });
+
+  test('user has already reacted to given message in dm', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData).toStrictEqual({});
+
+    const messageReactData2 = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData2).toStrictEqual(400);
+  });
+
+  test('successful message react in channel', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData).toStrictEqual({});
+
+    expect(channelMessages(userToken, chanId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId,
+          uId: userId,
+          message: 'Wassup G',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId],
+              isThisUserReacted: true
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('different user reacts to message with react in channel', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const channelJoinData = channelJoin(userData2.token, chanId);
+    expect(channelJoinData).toStrictEqual({});
+
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData).toStrictEqual({});
+
+    const messageReactData2 = messageReact(userData2.token, messageId, validReactId);
+    expect(messageReactData2).toStrictEqual({});
+  });
+
+  test('successful message react in dm ', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData).toStrictEqual({});
+
+    expect(dmMessages(userToken, dmId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId,
+          uId: userData2.authUserId,
+          message: 'Wassup G',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId],
+              isThisUserReacted: true
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('different user reacts to message with react in dm ', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const data = dmCreate(userToken, [userData2.authUserId]);
+    const dmId = data.dmId;
+
+    const messageSendData = messageSendDm(userData2.token, dmId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+
+    const messageReactData = messageReact(userToken, messageId, validReactId);
+    expect(messageReactData).toStrictEqual({});
+
+    const messageReactData2 = messageReact(userData2.token, messageId, validReactId);
+    expect(messageReactData2).toStrictEqual({});
+
+    expect(dmMessages(userToken, dmId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId,
+          uId: userData2.authUserId,
+          message: 'Wassup G',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId, userData2.authUserId],
+              isThisUserReacted: true
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('two messages in channel - user only reacted to 1 of them', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    expect(channelJoin(userData2.token, chanId)).toStrictEqual({});
+
+    const messageSendData1 = messageSend(userToken, chanId, 'Wassup G - Charmander react to me plz');
+    const messageId1 = messageSendData1.messageId;
+
+    const messageSendData2 = messageSend(userToken, chanId, 'Wassup B - Madhav react to me plz');
+    const messageId2 = messageSendData2.messageId;
+
+    // charmander reacts to messageId1
+    expect(messageReact(userData2.token, messageId1, validReactId)).toStrictEqual({});
+
+    // madhav reacts to messageId2
+    expect(messageReact(userToken, messageId2, validReactId)).toStrictEqual({});
+
+    // when madhav calls channelMessages isThisUserReacted returns true only for messageId2
+    expect(channelMessages(userToken, chanId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId2,
+          uId: userId,
+          message: 'Wassup B - Madhav react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId],
+              isThisUserReacted: true // madhav has reacted to messageId2
+            }
+          ],
+          isPinned: false
+        },
+        {
+          messageId: messageId1,
+          uId: userId,
+          message: 'Wassup G - Charmander react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userData2.authUserId],
+              isThisUserReacted: false // madhav has not reacted to messageId1
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
+
+    // when charmander calls channelMessages isThisUserReacted returns true only for messageId1
+    expect(channelMessages(userData2.token, chanId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId2,
+          uId: userId,
+          message: 'Wassup B - Madhav react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId],
+              isThisUserReacted: false // charmander has not reacted to messageId2
+            }
+          ],
+          isPinned: false
+        },
+        {
+          messageId: messageId1,
+          uId: userId,
+          message: 'Wassup G - Charmander react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userData2.authUserId],
+              isThisUserReacted: true // charmander has reacted to messageId1
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
+  });
+
+  test('two messages in dm - user only reacted to 1 of them', () => {
+    const userData2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
+    const dmData = dmCreate(userToken, [userData2.authUserId]);
+
+    const messageSendData1 = messageSendDm(userToken, dmData.dmId, 'Wassup G - Charmander react to me plz');
+    const messageId1 = messageSendData1.messageId;
+
+    const messageSendData2 = messageSendDm(userToken, dmData.dmId, 'Wassup B - Madhav react to me plz');
+    const messageId2 = messageSendData2.messageId;
+
+    // charmander reacts to messageId1
+    expect(messageReact(userData2.token, messageId1, validReactId)).toStrictEqual({});
+
+    // madhav reacts to messageId2
+    expect(messageReact(userToken, messageId2, validReactId)).toStrictEqual({});
+
+    // when madhav calls dmMessages isThisUserReacted returns true only for messageId2
+    expect(dmMessages(userToken, dmData.dmId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId2,
+          uId: userId,
+          message: 'Wassup B - Madhav react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId],
+              isThisUserReacted: true // madhav has reacted to messageId2
+            }
+          ],
+          isPinned: false
+        },
+        {
+          messageId: messageId1,
+          uId: userId,
+          message: 'Wassup G - Charmander react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userData2.authUserId],
+              isThisUserReacted: false // madhav has not reacted to messageId1
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
+
+    // when charmander calls dmMessages isThisUserReacted returns true only for messageId1
+    expect(dmMessages(userData2.token, dmData.dmId, 0)).toStrictEqual({
+      start: 0,
+      end: -1,
+      messages: [
+        {
+          messageId: messageId2,
+          uId: userId,
+          message: 'Wassup B - Madhav react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userId],
+              isThisUserReacted: false // charmander has not reacted to messageId2
+            }
+          ],
+          isPinned: false
+        },
+        {
+          messageId: messageId1,
+          uId: userId,
+          message: 'Wassup G - Charmander react to me plz',
+          timeSent: expect.any(Number),
+          reacts: [
+            {
+              reactId: expect.any(Number),
+              uIds: [userData2.authUserId],
+              isThisUserReacted: true // charmander has reacted to messageId1
+            }
+          ],
+          isPinned: false
+        }
+      ]
+    });
   });
 });
