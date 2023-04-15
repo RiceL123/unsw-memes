@@ -39,6 +39,10 @@ function channelsCreateV3(token: string, name: string, isPublic: boolean) {
     ownerMembersIds: [userObj.uId],
     allMembersIds: [userObj.uId],
     isPublic: isPublic,
+    standupOwner: -1,
+    standupIsActive: false,
+    standupTimeFinish: 0,
+    currStandUpQueue: [],
     messages: [],
   };
 

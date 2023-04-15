@@ -12,6 +12,7 @@ import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2, userProfileUploadPhotoV1 } from './user';
 import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
+import { standupActiveV1, standupSendV1, standupStartV1 } from './standup';
 import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1 } from './message';
 import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
 
@@ -274,6 +275,27 @@ app.post('/admin/userpermission/change/v1', (req: Request, res: Response, next) 
   const token = req.header('token');
   const { uId, permissionId } = req.body;
   return res.json(adminUserPermissionChangeV1(token, uId, permissionId));
+});
+
+/// ////////////////////////////////////////////////////////////
+/// //////////////////   standup routes     ////////////////////
+/// ////////////////////////////////////////////////////////////
+app.post('/standup/start/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { channelId, length } = req.body;
+  return res.json(standupStartV1(token, channelId, length));
+});
+
+app.get('/standup/active/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const channelId = parseInt(req.query.channelId as string);
+  return res.json(standupActiveV1(token, channelId));
+});
+
+app.post('/standup/send/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { channelId, message } = req.body;
+  return res.json(standupSendV1(token, channelId, message));
 });
 
 // Keep this BENEATH route definitions

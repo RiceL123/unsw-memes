@@ -15,6 +15,8 @@ import {
   messagePin,
   messageUnpin,
   messageShare,
+  standupStart,
+  standupSend,
   messageReact,
 } from './routeRequests';
 
@@ -44,6 +46,20 @@ interface ChannelReturn {
 
 interface DmReturn {
   dmId: number;
+}
+
+interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
+  reacts: any[];
+  isPinned: boolean;
+}
+
+function sleep(ms: number) {
+  const start = Date.now();
+  while (Date.now() - start < ms);
 }
 
 beforeEach(() => {
@@ -547,6 +563,174 @@ describe('messageEditV3', () => {
           reacts: [],
           isPinned: false,
         },
+      ],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('standup edits', () => {
+    // start standup
+    const startData = standupStart(userToken, chanId, 3);
+    expect(startData).toStrictEqual({ timeFinish: expect.any(Number) });
+
+    // send messages into standup
+    const message1 = standupSend(userToken, chanId, 'I ate a catfish');
+    expect(message1).toStrictEqual({});
+
+    const messagePackage = 'madhavmishra: I ate a catfish';
+
+    sleep(3000);
+
+    const messageData = channelMessages(userToken, chanId, 0);
+    const messageStandupId = messageData.messages.find((x: Message) => x.message === messagePackage).messageId;
+
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          isPinned: false,
+          messageId: expect.any(Number),
+          uId: userId,
+          message: messagePackage,
+          timeSent: expect.any(Number),
+          reacts: [],
+        }
+      ],
+      start: 0,
+      end: -1,
+    });
+
+    const setNameData = messageEdit(userToken, messageStandupId, 'Hello this is edited');
+    expect(setNameData).toStrictEqual({});
+
+    const checkMessageData = channelMessages(userToken, chanId, 0);
+    expect(checkMessageData).toStrictEqual({
+      messages: [
+        {
+          messageId: expect.any(Number),
+          uId: userId,
+          message: 'Hello this is edited',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('standup edits empty string', () => {
+    // start standup
+    const startData = standupStart(userToken, chanId, 3);
+    expect(startData).toStrictEqual({ timeFinish: expect.any(Number) });
+
+    // send messages into standup
+    const message1 = standupSend(userToken, chanId, 'I ate a catfish');
+    expect(message1).toStrictEqual({});
+
+    const messagePackage = 'madhavmishra: I ate a catfish';
+
+    sleep(3000);
+
+    const messageData = channelMessages(userToken, chanId, 0);
+    const messageStandupId = messageData.messages.find((x: Message) => x.message === messagePackage).messageId;
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          isPinned: false,
+          messageId: expect.any(Number),
+          uId: userId,
+          message: messagePackage,
+          timeSent: expect.any(Number),
+          reacts: [],
+        }
+      ],
+      start: 0,
+      end: -1,
+    });
+
+    const setNameData = messageEdit(userToken, messageStandupId, '');
+    expect(setNameData).toStrictEqual({});
+
+    const checkMessageData = channelMessages(userToken, chanId, 0);
+    expect(checkMessageData).toStrictEqual({
+      messages: [],
+      start: 0,
+      end: -1,
+    });
+  });
+
+  test('standup edits 2 msg', () => {
+    const messageSendData = messageSend(userToken, chanId, 'Wassup G');
+    const messageId = messageSendData.messageId;
+    const checkNormData = channelMessages(userToken, chanId, 0);
+    expect(checkNormData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId,
+          uId: userId,
+          message: 'Wassup G',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        }
+      ],
+      start: 0,
+      end: -1,
+    });
+
+    // start standup
+    const startData = standupStart(userToken, chanId, 3);
+    expect(startData).toStrictEqual({ timeFinish: expect.any(Number) });
+
+    // send messages into standup
+    const message1 = standupSend(userToken, chanId, 'I ate a catfish');
+    expect(message1).toStrictEqual({});
+
+    const messagePackage = 'madhavmishra: I ate a catfish';
+
+    sleep(3000);
+
+    const messageData = channelMessages(userToken, chanId, 0);
+    const messageStandupId = messageData.messages.find((x: Message) => x.message === messagePackage).messageId;
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          isPinned: false,
+          messageId: expect.any(Number),
+          uId: userId,
+          message: messagePackage,
+          timeSent: expect.any(Number),
+          reacts: [],
+        },
+        {
+          isPinned: false,
+          messageId: expect.any(Number),
+          uId: userId,
+          message: 'Wassup G',
+          timeSent: expect.any(Number),
+          reacts: [],
+        }
+      ],
+      start: 0,
+      end: -1,
+    });
+
+    const setNameData = messageEdit(userToken, messageStandupId, '');
+    expect(setNameData).toStrictEqual({});
+
+    const checkMessageData = channelMessages(userToken, chanId, 0);
+    expect(checkMessageData).toStrictEqual({
+      messages: [
+        {
+          messageId: expect.any(Number),
+          uId: userId,
+          message: 'Wassup G',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        }
       ],
       start: 0,
       end: -1,
