@@ -9,7 +9,7 @@ import HTTPError from 'http-errors';
   *
   * @returns {{messageId : Number}} - newly generated unique messageId
  */
-function generateMessageId(data: Data) {
+export function generateMessageId(data: Data) {
   let uniqueMessageId = 1;
   const messagesIdsinChannels = data.channels.map(x => x.messages.map(y => y.messageId)).flat();
   const messagesIdsinDms = data.dms.map(x => x.messages.map(y => y.messageId)).flat();

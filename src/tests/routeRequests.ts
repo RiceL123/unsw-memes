@@ -577,6 +577,54 @@ function adminUserPermissionChange(token: string, uId: string, permissionId: num
   );
 }
 
+// ======================= standup ======================== //
+function standupStart(token: string, channelId: number, length: number) {
+  return requestHelper(
+    'POST',
+    '/standup/start/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        channelId: channelId,
+        length: length
+      },
+    }
+  );
+}
+
+function standupActive(token: string, channelId: number) {
+  return requestHelper(
+    'GET',
+    '/standup/active/v1',
+    {
+      headers: {
+        token: token
+      },
+      qs: {
+        channelId: channelId,
+      },
+    }
+  );
+}
+
+function standupSend(token: string, channelId: number, message: string) {
+  return requestHelper(
+    'POST',
+    '/standup/send/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        channelId: channelId,
+        message: message
+      },
+    }
+  );
+}
+
 export {
   clear,
   channelsCreate,
@@ -616,4 +664,7 @@ export {
   messageReact,
   adminUserRemove,
   adminUserPermissionChange,
+  standupStart,
+  standupActive,
+  standupSend
 };

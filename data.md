@@ -39,6 +39,9 @@ interface Channel {
   ownerMembersIds: number[];
   allMembersIds: number[];
   isPublic: boolean;
+  standupIsActive: boolean;
+  standupTimeFinish: number;
+  currStandUpQueue: string[];
   messages: Message[];
 }
 
@@ -107,6 +110,12 @@ An example of a populated data store is shown below.
         2
       ],
       "isPublic": true,
+      "standupIsActive": false,
+      "standupTimeFinish": 1680372750,
+      "currStandUpQueue": [
+        "jake: 'I ate a catfish",
+        "giuliana: 'I went to kmart",
+      ],
       "messages": [
         {
           "messageId": 2,

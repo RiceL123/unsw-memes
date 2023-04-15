@@ -35,6 +35,10 @@ interface Channel {
   ownerMembersIds: number[];
   allMembersIds: number[];
   isPublic: boolean;
+  standupOwner: number;
+  standupIsActive: boolean;
+  standupTimeFinish: number | null;
+  currStandUpQueue: string[];
   messages: Message[];
 }
 
