@@ -529,6 +529,22 @@ function messageShare(token: string, ogMessageId: number, message: string, chann
   );
 }
 
+function messageReact(token: string, messageId: number, reactId: number) {
+  return requestHelper(
+    'POST',
+    '/message/react/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        messageId: messageId,
+        reactId: reactId,
+      },
+    }
+  );
+}
+
 // ======================= admin ======================== //
 function adminUserRemove(token: string, uId: string) {
   return requestHelper(
@@ -597,6 +613,7 @@ export {
   messagePin,
   messageUnpin,
   messageShare,
+  messageReact,
   adminUserRemove,
   adminUserPermissionChange,
 };

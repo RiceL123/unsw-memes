@@ -1,4 +1,4 @@
-import { Message, Data, getData, setData, getHash } from './dataStore';
+import { Message, Data, React, getData, setData, getHash } from './dataStore';
 import HTTPError from 'http-errors';
 
 /**
@@ -398,7 +398,7 @@ function messageUnpinV1(token: string, messageId: number) {
 
 /**
  *
- * @param {string} token
+ * @param {string[]} token
  * @param {number} ogMessageId
  * @param {string} message
  * @param  {number} channelId
@@ -485,4 +485,85 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
   };
 }
 
-export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1 };
+/**
+ * Given a message within a channel or DM the authorised user is part of,
+ * adds a "react" to that particular message.
+ *
+ * @param {string[]} token
+ * @param {number} messageId
+ * @param {number} reactId
+ *
+ * @returns {{}} - returns empty object if successful
+ */
+function messageReactV1(token: string, messageId: number, reactId: number) {
+  const data = getData();
+  token = getHash(token);
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    throw HTTPError(403, 'Invalid token');
+  }
+
+  if (reactId !== 1) {
+    throw HTTPError(400, 'Invalid reactId');
+  }
+  // find the corresponding channel and dm
+  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+
+  // if both channels and dms are undefined, the messageId is invalid else determine
+  // if the message was found in a dm or a channel
+  let flag: string;
+  if ((dmObj === undefined) && (channelObj === undefined)) {
+    throw HTTPError(400, 'Invalid messageId');
+  } else {
+    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+  }
+
+  if (flag === 'messageInChannel') {
+    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
+    const reactsObj = channelMsgObj.reacts.find(x => x.reactId === reactId);
+    // if the reaction already exists then try to push the userId into the uIds array
+    if (reactsObj) {
+      if (reactsObj.uIds.includes(userObj.uId)) {
+        throw HTTPError(400, 'User has already reacted to message');
+      }
+      reactsObj.uIds.push(userObj.uId);
+    } else {
+      // if the reaction doesn't already exist then make a new reaction object
+      const reactObj: React = {
+        reactId: 1,
+        uIds: [userObj.uId],
+        isThisUserReacted: false,
+      };
+      // isThisUserReacted defaults to false, becomes true when in a copied array
+      // of messages
+      channelMsgObj.reacts.push(reactObj);
+    }
+  } else {
+    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
+    const reactsObj = dmMsgObj.reacts.find(x => x.reactId === reactId);
+    // if the reaction already exists then try to push the userId into the uIds array
+    if (reactsObj) {
+      if (reactsObj.uIds.includes(userObj.uId)) {
+        throw HTTPError(400, 'User has already reacted to message');
+      }
+      reactsObj.uIds.push(userObj.uId);
+      // if the reaction doesn't already exist then make a new reaction object
+    } else {
+      const reactObj: React = {
+        reactId: 1,
+        uIds: [userObj.uId],
+        isThisUserReacted: false,
+      };
+      // isThisUserReacted defaults to false, becomes true when in a copied array
+      // of messages
+      dmMsgObj.reacts.push(reactObj);
+    }
+  }
+  setData(data);
+  return {};
+}
+
+export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1 };

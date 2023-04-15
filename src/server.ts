@@ -12,7 +12,7 @@ import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2, userProfileUploadPhotoV1 } from './user';
 import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
-import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1 } from './message';
+import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1 } from './message';
 import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
 
 // Set up web app
@@ -108,8 +108,8 @@ app.post('/channel/invite/v3', (req: Request, res: Response, next) => {
 
 app.get('/channel/messages/v3', (req: Request, res: Response, next) => {
   const token = req.header('token');
-  const channelId = req.query.channelId as string;
-  const start = req.query.start as string;
+  const channelId = parseInt(req.query.channelId as string);
+  const start = parseInt(req.query.start as string);
   return res.json(channelMessagesV3(token, channelId, start));
 });
 
@@ -253,6 +253,12 @@ app.post('/message/share/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { ogMessageId, message, channelId, dmId } = req.body;
   return res.json(messageShareV1(token, ogMessageId, message, channelId, dmId));
+});
+
+app.post('/message/react/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { messageId, reactId } = req.body;
+  return res.json(messageReactV1(token, messageId, reactId));
 });
 
 /// ////////////////////////////////////////////////////////////
