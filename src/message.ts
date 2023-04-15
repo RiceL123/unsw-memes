@@ -460,7 +460,7 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
 
     dmObj.messages.unshift(newMessageObj);
 
-  // if the message is not being shared to dm, its being shared to a channel
+    // if the message is not being shared to dm, its being shared to a channel
   } else {
     const channelObj = data.channels.find(x => x.channelId === channelId);
 
@@ -524,6 +524,7 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
   if (flag === 'messageInChannel') {
     const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
     const reactsObj = channelMsgObj.reacts.find(x => x.reactId === reactId);
+
     // if the reaction already exists then try to push the userId into the uIds array
     if (reactsObj) {
       if (reactsObj.uIds.includes(userObj.uId)) {
@@ -566,4 +567,71 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
   return {};
 }
 
-export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1 };
+/**
+ * Given a message within a channel or DM the authorised user is part of,
+ * removes a "react" to that particular message
+ * @param {number} messageId
+ * @param {number} reactId
+ *
+ * @returns {{}} - returns empty object if successful
+ */
+function messageUnreactV1(token: string, messageId: number, reactId: number) {
+  const data = getData();
+  token = getHash(token);
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+
+  if (userObj === undefined) {
+    throw HTTPError(403, 'Invalid token');
+  }
+
+  if (reactId !== 1) {
+    throw HTTPError(400, 'Invalid reactId');
+  }
+  // find the corresponding channel and dm
+  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+
+  // if both channels and dms are undefined, the messageId is invalid else determine
+  // if the message was found in a dm or a channel
+  let flag: string;
+  if ((dmObj === undefined) && (channelObj === undefined)) {
+    throw HTTPError(400, 'Invalid messageId');
+  } else {
+    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+  }
+
+  if (flag === 'messageInChannel') {
+    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
+    const reactsObj = channelMsgObj.reacts.find(x => x.reactId === reactId);
+    // if the reaction already exists then try to push the userId into the uIds array
+    if (!reactsObj) {
+      throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
+    } else {
+      if (!reactsObj.uIds.includes(userObj.uId)) {
+        throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
+      }
+      reactsObj.uIds = reactsObj.uIds.filter(x => x !== userObj.uId);
+      if (reactsObj.uIds.length === 0) {
+        channelMsgObj.reacts = channelMsgObj.reacts.filter(x => x.reactId !== reactsObj.reactId);
+      }
+    }
+  } else {
+    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
+    const reactsObj = dmMsgObj.reacts.find(x => x.reactId === reactId);
+    if (!reactsObj) {
+      throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
+    } else {
+      if (!reactsObj.uIds.includes(userObj.uId)) {
+        throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
+      }
+      reactsObj.uIds = reactsObj.uIds.filter(x => x !== userObj.uId);
+      if (reactsObj.uIds.length === 0) {
+        dmMsgObj.reacts = dmMsgObj.reacts.filter(x => x.reactId !== reactsObj.reactId);
+      }
+    }
+  }
+  setData(data);
+  return {};
+}
+export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1 };
