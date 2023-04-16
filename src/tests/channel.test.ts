@@ -1,6 +1,5 @@
-import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner } from './routeRequests';
+import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner, standupStart } from './routeRequests';
 const ERROR = { error: expect.any(String) };
-
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
 
 interface channelObjUser {
@@ -15,6 +14,11 @@ interface channelObjUser {
 beforeEach(() => {
   clear();
 });
+
+function sleep(ms: number) {
+  const start = Date.now();
+  while (Date.now() - start < ms);
+}
 
 describe('channelDetailsV3 ', () => {
   const email = 'z5555555@ad.unsw.edu.au';
@@ -1576,6 +1580,30 @@ describe('/channel/leave/v2', () => {
     expect(channelLeave(Madhav.token, SEM113.channelId)).toEqual({});
     expect(channelJoin(Patrick.token, SEM113.channelId)).toStrictEqual(400);
     expect(channelLeave(Madhav.token, SEM113.channelId)).toEqual(403);
+  });
+
+  test('standup owner cannot leave', () => {
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
+
+    const standupData = standupStart(Madhav.token, SEM113.channelId, 3);
+    const currTime = Math.floor(Date.now() / 1000);
+    const standupTimeFinish = currTime + 3000;
+    expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + 1);
+    expect(channelLeave(Madhav.token, SEM113.channelId)).toStrictEqual(400);
+    sleep(4000);
+  });
+
+  test('standup owner can leave', () => {
+    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
+    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
+
+    const standupData = standupStart(Madhav.token, SEM113.channelId, 3);
+    const currTime = Math.floor(Date.now() / 1000);
+    const standupTimeFinish = currTime + 3000;
+    expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + 1);
+    sleep(4000);
+    expect(channelLeave(Madhav.token, SEM113.channelId)).toStrictEqual({});
   });
 });
 

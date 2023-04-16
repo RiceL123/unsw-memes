@@ -247,6 +247,10 @@ function channelLeaveV2(token: string, channelId: string) {
     throw HTTPError(403, 'invalid uId - user not apart of channel');
   }
 
+  if (channelObj.standupOwner === userObj.uId && channelObj.standupIsActive === true) {
+    throw HTTPError(400, 'Owner of active standup cannot leave');
+  }
+
   // remove the user from the channel - if the user was an owner, they are removed from there aswell
   channelObj.allMembersIds = channelObj.allMembersIds.filter(x => x !== userObj.uId);
   channelObj.ownerMembersIds = channelObj.ownerMembersIds.filter(x => x !== userObj.uId);

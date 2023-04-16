@@ -26,7 +26,6 @@ function sendStandup(uId: number, channelId: number) {
 
   channelObj.messages.unshift(newMessage);
 
-  // channelObj.standupIsActive = false;
   channelObj.currStandUpQueue = [];
   channelObj.standupOwner = -1;
   channelObj.standupTimeFinish = 0;
