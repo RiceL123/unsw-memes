@@ -2034,7 +2034,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
   });
 });
 
-describe('/channel/removeowner/v1', () => {
+describe('/channel/removeowner/v2', () => {
   let userId: number;
   let userId2: number;
   let userToken: string;
@@ -2072,9 +2072,9 @@ describe('/channel/removeowner/v1', () => {
   });
 
   test('user is not the owner of the channel ', () => {
-    const removeData = channelRemoveOwner(userToken, chanId, userId2);
+    const removeData = channelRemoveOwner(userToken2, chanId, userId2);
 
-    expect(removeData).toStrictEqual(400);
+    expect(removeData).toStrictEqual(403);
   });
 
   test('user is a only owner in the channel', () => {

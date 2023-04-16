@@ -1,4 +1,5 @@
 import { Message, Data, React, getData, setData, getHash } from './dataStore';
+import crypto from 'crypto';
 import HTTPError from 'http-errors';
 import { notificationsSend } from './notifications';
 
@@ -10,15 +11,9 @@ import { notificationsSend } from './notifications';
   *
   * @returns {{messageId : Number}} - newly generated unique messageId
  */
-export function generateMessageId(data: Data) {
-  let uniqueMessageId = 1;
-  const messagesIdsinChannels = data.channels.map(x => x.messages.map(y => y.messageId)).flat();
-  const messagesIdsinDms = data.dms.map(x => x.messages.map(y => y.messageId)).flat();
-  const allMessageIds = messagesIdsinChannels.concat(messagesIdsinDms);
-  if (allMessageIds.length > 0) {
-    uniqueMessageId = Math.max.apply(null, allMessageIds) + 1;
-  }
-  return uniqueMessageId;
+
+function generateMessageId() {
+  return crypto.randomInt(0, 281474976710655); // just the max crypto range
 }
 
 /**
@@ -41,12 +36,12 @@ function messageSendV3(token: string, channelId: number, message: string) {
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid Token');
   }
 
   const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (channelObj === undefined) {
+  if (!channelObj) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
@@ -55,7 +50,7 @@ function messageSendV3(token: string, channelId: number, message: string) {
   }
 
   // creates new message ID using a +1 mechanism
-  const messageId = generateMessageId(data);
+  const messageId = generateMessageId();
 
   const newMessage: Message = {
     messageId: messageId,
@@ -97,7 +92,7 @@ function messageEditV3(token: string, messageId: number, message: string) {
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -108,10 +103,10 @@ function messageEditV3(token: string, messageId: number, message: string) {
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
   let flag: string;
-  if (dmObj === undefined && channelObj === undefined) {
+  if (!dmObj && !channelObj) {
     throw HTTPError(400, 'Invalid messageId');
   } else {
-    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
   if (flag === 'messageInChannel') {
@@ -185,7 +180,7 @@ function messageRemoveV3(token: string, messageId: number) {
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -196,10 +191,10 @@ function messageRemoveV3(token: string, messageId: number) {
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
   let flag: string;
-  if (dmObj === undefined && channelObj === undefined) {
+  if (!dmObj && !channelObj) {
     throw HTTPError(400, 'Invalid messageId');
   } else {
-    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
   if (flag === 'messageInChannel') {
@@ -248,7 +243,7 @@ function messageRemoveV3(token: string, messageId: number) {
   *
   * @returns {messageId: messageId} unique messageId- if no error occurs
 */
-function messageSendDmV1(token: string, dmId: number, message: string) {
+function messageSendDmV2(token: string, dmId: number, message: string) {
   const data = getData();
   token = getHash(token);
 
@@ -258,7 +253,7 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -266,7 +261,7 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
   // for dms: go into the dms -> memberIds (check if user is part of it)
   // if is, iterate through messageId for the messages and if not found return error
   const dmObj = data.dms.find(x => x.dmId === dmId);
-  if (dmObj === undefined) {
+  if (!dmObj) {
     throw HTTPError(400, 'Invalid dmId');
   }
 
@@ -275,8 +270,7 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
     throw HTTPError(403, 'Authorised user is not a member of the DM');
   }
 
-  // creates new message ID using a +1 mechanism
-  const messageId = generateMessageId(data);
+  const messageId = generateMessageId();
 
   const newMessage: Message = {
     messageId: messageId,
@@ -310,7 +304,7 @@ function messagePinV1(token: string, messageId: number) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
   // find the corresponding channel and dm
@@ -320,10 +314,10 @@ function messagePinV1(token: string, messageId: number) {
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
   let flag: string;
-  if ((dmObj === undefined) && (channelObj === undefined)) {
+  if ((!dmObj) && (!channelObj)) {
     throw HTTPError(400, 'Invalid messageId');
   } else {
-    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
   if (flag === 'messageInChannel') {
@@ -369,7 +363,7 @@ function messageUnpinV1(token: string, messageId: number) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
   // find the corresponding channel and dm
@@ -379,10 +373,10 @@ function messageUnpinV1(token: string, messageId: number) {
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
   let flag: string;
-  if ((dmObj === undefined) && (channelObj === undefined)) {
+  if ((!dmObj) && (!channelObj)) {
     throw HTTPError(400, 'Invalid messageId');
   } else {
-    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
   if (flag === 'messageInChannel') {
@@ -453,7 +447,7 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
 
   const newMessage = message === '' ? ogMessage : message + ogMessage;
 
-  const sharedMessageId = generateMessageId(data);
+  const sharedMessageId = generateMessageId();
 
   const newMessageObj: Message = {
     messageId: sharedMessageId,
@@ -531,7 +525,7 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -545,10 +539,10 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
   let flag: string;
-  if ((dmObj === undefined) && (channelObj === undefined)) {
+  if ((!dmObj) && (!channelObj)) {
     throw HTTPError(400, 'Invalid messageId');
   } else {
-    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
   if (flag === 'messageInChannel') {
@@ -617,6 +611,123 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
   setData(data);
   return {};
 }
+/**
+ * Sends a message from the authorised user to the channel specified by channelId
+ * automatically at a specified time in the future. The returned messageId will only
+ * be considered valid for other actions
+ *
+ * @param {string} token
+ * @param {number} channelId
+ * @param {string} message
+ * @param {number} timeSent
+ * @returns { messageId: messageId }
+ */
+function messageSendLaterV1(token: string, channelId: number, message: string, timeSent: number) {
+  const data: Data = getData();
+  token = getHash(token);
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+
+  if (message.length < 1 || message.length > 1000) {
+    throw HTTPError(400, 'Invalid message length');
+  }
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    throw HTTPError(403, 'Invalid token');
+  }
+
+  const channelObj = data.channels.find(x => x.channelId === channelId);
+  if (!channelObj) {
+    throw HTTPError(400, 'Invalid channelId');
+  }
+
+  if (!channelObj.allMembersIds.includes(userObj.uId)) {
+    throw HTTPError(403, 'Authorised user is not a member of the channel');
+  }
+
+  if (timeSent < currentTimestamp) {
+    throw HTTPError(400, 'timeSent is in the past');
+  }
+
+  const messageId = generateMessageId();
+  setTimeout(() => {
+    const data: Data = getData();
+
+    const newMessage: Message = {
+      messageId: messageId,
+      uId: userObj.uId,
+      message: message,
+      timeSent: Math.floor(Date.now() / 1000),
+      reacts: [],
+      isPinned: false,
+    };
+
+    const channelObj = data.channels.find(x => x.channelId === channelId);
+    channelObj.messages.unshift(newMessage);
+    setData(data);
+  }, (timeSent - currentTimestamp) * 1000);
+
+  return { messageId: messageId };
+}
+
+/**
+ *  * Sends a message from the authorised user to the dm specified by dmId
+ * automatically at a specified time in the future. The returned messageId will only
+ * be considered valid for other actions
+ *
+ * @param {string} token
+ * @param {number} dmId
+ * @param {string} message
+ * @param {number} timeSent
+ * @returns { messageId: messageId }
+ */
+function messageSendLaterDmV1(token: string, dmId: number, message: string, timeSent: number) {
+  const data: Data = getData();
+  token = getHash(token);
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+
+  if (message.length < 1 || message.length > 1000) {
+    throw HTTPError(400, 'Invalid message length');
+  }
+
+  const userObj = data.users.find(x => x.tokens.includes(token));
+  if (!userObj) {
+    throw HTTPError(403, 'Invalid token');
+  }
+
+  const dmObj = data.dms.find(x => x.dmId === dmId);
+  if (!dmObj) {
+    throw HTTPError(400, 'Invalid dmId');
+  }
+
+  if (!dmObj.memberIds.includes(userObj.uId)) {
+    throw HTTPError(403, 'Authorised user is not a member of the channel');
+  }
+
+  if (timeSent < currentTimestamp) {
+    throw HTTPError(400, 'timeSent is in the past');
+  }
+
+  const messageId = generateMessageId();
+  setTimeout(() => {
+    const data: Data = getData();
+
+    const newMessage: Message = {
+      messageId: messageId,
+      uId: userObj.uId,
+      message: message,
+      timeSent: Math.floor(Date.now() / 1000),
+      reacts: [],
+      isPinned: false,
+    };
+
+    const dmObj = data.dms.find(x => x.dmId === dmId);
+    dmObj.messages.unshift(newMessage);
+    setData(data);
+  }, (timeSent - currentTimestamp) * 1000);
+
+  return { messageId: messageId };
+}
 
 /**
  * Given a message within a channel or DM the authorised user is part of,
@@ -631,8 +742,7 @@ function messageUnreactV1(token: string, messageId: number, reactId: number) {
   token = getHash(token);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
-
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -646,10 +756,10 @@ function messageUnreactV1(token: string, messageId: number, reactId: number) {
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
   let flag: string;
-  if ((dmObj === undefined) && (channelObj === undefined)) {
+  if ((!dmObj) && (!channelObj)) {
     throw HTTPError(400, 'Invalid messageId');
   } else {
-    flag = dmObj === undefined ? 'messageInChannel' : 'messageInDm';
+    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
   if (flag === 'messageInChannel') {
@@ -685,4 +795,4 @@ function messageUnreactV1(token: string, messageId: number, reactId: number) {
   setData(data);
   return {};
 }
-export { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1 };
+export { generateMessageId, messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV2, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1, messageSendLaterV1, messageSendLaterDmV1 };

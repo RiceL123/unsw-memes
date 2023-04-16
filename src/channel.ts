@@ -78,18 +78,16 @@ function channelDetailsV3(token: string, channelId: number) {
  *
  * @returns {{}} - empty object
  */
-function channelJoinV3(token: string, channelId: string) {
+function channelJoinV3(token: string, channelId: number) {
   const data = getData();
   token = getHash(token);
-
-  const chanId = parseInt(channelId);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const channelFind = (data.channels.find(x => x.channelId === chanId));
+  const channelFind = (data.channels.find(x => x.channelId === channelId));
   if (channelFind === undefined) {
     throw HTTPError(400, 'Invalid channelId');
   }
@@ -227,18 +225,16 @@ function channelMessagesV3(token: string, channelId: number, start: number) {
  *
  * @returns {{}}
  */
-function channelLeaveV2(token: string, channelId: string) {
+function channelLeaveV2(token: string, channelId: number) {
   const data: Data = getData();
   token = getHash(token);
-
-  const chanId = parseInt(channelId);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === chanId);
+  const channelObj = data.channels.find(x => x.channelId === channelId);
   if (!channelObj) {
     throw HTTPError(400, 'invalid channelId');
   }
@@ -268,19 +264,16 @@ function channelLeaveV2(token: string, channelId: string) {
  *
  * @returns {{}}
  */
-function channelAddOwnerV2(token: string, channelId: string, uId: string) {
+function channelAddOwnerV2(token: string, channelId: number, uId: number) {
   const data: Data = getData();
   token = getHash(token);
-
-  const chanId = parseInt(channelId);
-  const uuId = parseInt(uId);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === chanId);
+  const channelObj = data.channels.find(x => x.channelId === channelId);
   if (!channelObj) {
     throw HTTPError(400, 'invalid channelId');
   }
@@ -289,20 +282,20 @@ function channelAddOwnerV2(token: string, channelId: string, uId: string) {
     throw HTTPError(403, 'invaild uId - user is not an owner of the channel');
   }
 
-  if (!data.users.some(x => x.uId === uuId)) {
+  if (!data.users.some(x => x.uId === uId)) {
     throw HTTPError(400, 'invalid uId');
   }
 
-  if (!channelObj.allMembersIds.includes(uuId)) {
+  if (!channelObj.allMembersIds.includes(uId)) {
     throw HTTPError(400, 'invaild uId - user not apart of channel');
   }
 
-  if (channelObj.ownerMembersIds.includes(uuId)) {
+  if (channelObj.ownerMembersIds.includes(uId)) {
     throw HTTPError(400, 'uId is already an owner of the channel');
   }
 
   // adding the uId to the channel's ownerMembersIds array
-  channelObj.ownerMembersIds.push(uuId);
+  channelObj.ownerMembersIds.push(uId);
 
   setData(data);
   return {};
@@ -318,7 +311,7 @@ function channelAddOwnerV2(token: string, channelId: string, uId: string) {
   *
   * @returns {{}}
 */
-function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
+function channelRemoveOwnerV2(token: string, channelId: number, uId: number) {
   const data: Data = getData();
   token = getHash(token);
 
@@ -332,15 +325,12 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
     throw HTTPError(400, 'invalid channelId');
   }
 
-  if (!data.users.some(x => x.uId === uId)) {
-    throw HTTPError(400, 'invalid uId');
-  }
-
-  // if (!channelObj.allMembersIds.includes(uId)) {
-  //   throw HTTPError(400, 'invalid uId - user is not apart of the channel');
-  // }
   if (!channelObj.ownerMembersIds.includes(userObj.uId) && userObj.permission !== 1) {
     throw HTTPError(403, 'Invalid uId - user is not an owner of the channel');
+  }
+
+  if (!data.users.some(x => x.uId === uId)) {
+    throw HTTPError(400, 'invalid uId');
   }
 
   if (!channelObj.ownerMembersIds.includes(uId)) {
@@ -356,4 +346,4 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
   return {};
 }
 
-export { channelDetailsV3, channelJoinV3, channelInviteV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 };
+export { channelDetailsV3, channelJoinV3, channelInviteV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV2 };

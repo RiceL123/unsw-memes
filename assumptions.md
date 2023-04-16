@@ -27,8 +27,8 @@ Additionally, as this backend uses node which uses the V8 JavaScript engine, the
 ### 3. /dm/create/v1 `uIds` array contains caller's uId
 The condition explains that if there are any duplicates within the `uIds` array passed in the `/dm/create/v1` route, an error should be thrown. This also means that if the user who calls the `/dm/create/v1` route (the one the inputs their token) has their own corresponding uId within the `uIds` array, an error will also be thrown.
 
-### 4. First user being a global owner
-When a user is registered they become a global owner. However, if clear is called (which wipes out all the users), the next user registered will be a global owner despite not technically being "*the very first user who signs up*" as they are the first in the new data set.
+### 4. Values of channel and dm IDs
+As routes like `message/share` and `notifications/get` require indication of which channel is value using -1 as a flag, it assumes that channel and dm IDs are never -1 since it is saved as a flag. 
 
 ### 5. Leaving a Channel / Dm
 If the user is the only member of a channel or dm and calls `/channel/leave/v1` or `/dm/leave/v1`, the channel / dm will not be removed from the database. In order to remove an entire channel or dm, the routes `/channel/remove/v1` or `/dm/remove/v1` should be called.
@@ -37,7 +37,5 @@ When a channel owner is leaves a channel, they also remove their the channel own
 
 If a user is the original sender of the message, they have the ability to edit / remove it with the `/message/edit/v1` or `/message/remove/v1` routes. However, if the user send the message in a channel or dm that they have left (despite being the original sender), they cannot edit or remove that message unless they join the corresponding message / dm they left.
 
-### 6. Time sent values of messages
-Assume that the time `timeSent` value for messages is in one time zone (e.g. could be UTC). If a user is in another time zone and sends a message, the time stamp will be relative to a one time zone.
-
-For example, someone in New York (16 hours behind Sydney) sends a message at 2am and a person in Sydney sends a message at 3am, the `timeSent` should indicate the Australian would have sent the message 15 hours earlier than the American.
+### 7. Notifications
+When a user reacts to their own message, they will not be notified. On the other hand, a user will be notified when they sent, edited or share a message that tags themself. If the original message tags a user, and the optional message from message/share does not tag that user again, that user will not receive a notification.

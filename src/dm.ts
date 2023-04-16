@@ -162,8 +162,7 @@ function dmDetailsV2(token: string, dmId: number): Error | DmDetailsReturn {
       nameFirst: userObj.nameFirst,
       nameLast: userObj.nameLast,
       handleStr: userObj.handleStr,
-      profileImgUrl: userObj.profileImgUrl,
-
+      profileImgUrl: userObj.profileImgUrl
     });
   }
 

@@ -522,7 +522,6 @@ function messagePin(token: string, messageId: number) {
       json: {
         messageId: messageId,
       },
-
     }
   );
 }
@@ -587,6 +586,40 @@ function messageUnreact(token: string, messageId: number, reactId: number) {
       json: {
         messageId: messageId,
         reactId: reactId,
+      },
+    }
+  );
+}
+
+function messageSendLater(token: string, channelId: number, message: string, timeSent: number) {
+  return requestHelper(
+    'POST',
+    '/message/sendlater/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        channelId: channelId,
+        message: message,
+        timeSent: timeSent
+      },
+    }
+  );
+}
+
+function messageSendLaterDm(token: string, dmId: number, message: string, timeSent: number) {
+  return requestHelper(
+    'POST',
+    '/message/sendlaterdm/v1',
+    {
+      headers: {
+        token: token
+      },
+      json: {
+        dmId: dmId,
+        message: message,
+        timeSent: timeSent
       },
     }
   );
@@ -725,6 +758,8 @@ export {
   messageShare,
   messageReact,
   messageUnreact,
+  messageSendLater,
+  messageSendLaterDm,
   adminUserRemove,
   adminUserPermissionChange,
   standupStart,

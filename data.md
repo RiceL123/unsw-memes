@@ -1,10 +1,15 @@
-
 # UNSW Memes data
-For UNSW Memes, within the backend, data can be read and updated with the two functions `getData()` and `setData()`. The data is **persistent** as it is stored in a file called `database.json` and has constraints as according to the 5 interfaces  `User`, `Channel`, `Dm`, `Message` and `Data`.
+For UNSW Memes, within the backend, data can be read and updated with the two functions `getData()` and `setData()`. The data is **persistent** as it is stored in a file called `database.json` and has constraints as according to the 7 interfaces  `Notification`, `User`, `Channel`, `Dm`, `Message`, `React` and `Data`.
 
-The 6 interfaces are shown below.
+The 7 interfaces are shown below.
 
 ```typescript
+interface Notification {
+  channelId: number;
+  dmId: number;
+  notificationMessage: string;
+}
+
 interface User {
   uId: number;
   nameFirst: string;
@@ -74,34 +79,64 @@ An example of a populated data store is shown below.
       "uId": 1,
       "nameFirst": "Madhav",
       "nameLast": "Mishra",
-      "email": "z5555555@ad.unsw.edu.au",
-      "password": "password1",
+      "email": "z5422235@ad.unsw.edu.au",
+      "password": "33df5eb0bba5780e5ecfee82895c1fa1939e56c6",
       "handleStr": "madhavmishra",
       "permission": 1,
-      "tokens": [ 
-        "d5c5e1ca-e2e0-482e-b53f-e68b56c3bf51"
+      "tokens": [
+        "ff4c531bf5e82e13de6e0a974ebbe5cb20c09e89"
       ],
-      "profileImgUrl": "http://localhost:3200/profileImages/default.jpg",
+      "resetCode": "",
+      "profileImgUrl": "http://localhost:3200/profileImages/cropped_1.jpg",
+      "notifications": [
+        {
+          "channelId": -1,
+          "dmId": 1,
+          "notificationMessage": "joebiden added you to joebiden, madhavmishra"
+        },
+        {
+          "channelId": 0,
+          "dmId": -1,
+          "notificationMessage": "joebiden tagged you in Cool Channel: @madhavmishra you're"
+        }
+      ]
     },
     {
       "uId": 2,
-      "nameFirst": "John",
-      "nameLast": "Smith",
-      "email": "john@gmail.com",
-      "password": "securepassword,1",
-      "handleStr": "johnsmith",
+      "nameFirst": "Joe",
+      "nameLast": "Biden",
+      "email": "email@email.com",
+      "password": "33df5eb0bba5780e5ecfee82895c1fa1939e56c6",
+      "handleStr": "joebiden",
       "permission": 2,
       "tokens": [
-        "a18ab61a-3e70-494c-b146-00a877e58816",
-        "2d30fc17-fa21-47ac-9fb6-9abb25b571bd"
+        "ba860ae6f42fc345d1d7cd6e0c77c635b8237f0c"
       ],
+      "resetCode": "",
       "profileImgUrl": "http://localhost:3200/profileImages/default.jpg",
+      "notifications": [
+        {
+          "channelId": -1,
+          "dmId": 1,
+          "notificationMessage": "madhavmishra reacted to your message in joebiden, madhavmishra"
+        },
+        {
+          "channelId": -1,
+          "dmId": 1,
+          "notificationMessage": "joebiden tagged you in joebiden, madhavmishra: @joebiden my favouri"
+        },
+        {
+          "channelId": 0,
+          "dmId": -1,
+          "notificationMessage": "madhavmishra added you to Cool Channel"
+        }
+      ]
     }
   ],
   "channels": [
     {
       "channelId": 0,
-      "channelName": "study GRINDSET",
+      "channelName": "Cool Channel",
       "ownerMembersIds": [
         1
       ],
@@ -110,24 +145,26 @@ An example of a populated data store is shown below.
         2
       ],
       "isPublic": true,
+      "standupOwner": -1,
       "standupIsActive": false,
-      "standupTimeFinish": 1680372750,
-      "currStandUpQueue": [
-        "jake: 'I ate a catfish",
-        "giuliana: 'I went to kmart",
-      ],
+      "standupTimeFinish": null,
+      "currStandUpQueue": [],
       "messages": [
         {
-          "messageId": 2,
-          "uId": 2,
-          "message": "L bozo🤣🤣🤣",
-          "timeSent": 1680172805
+          "messageId": 89291351416817,
+          "uId": 1,
+          "message": "look at this bozo\n@joebiden my favourite anime is 'A Silent Voice'"
+          "timeSent": 1681662478,
+          "reacts": [],
+          "isPinned": false
         },
         {
-          "messageId": 1,
-          "uId": 1,
-          "message": "💀💀💀 I forgot to study",
-          "timeSent": 1680172750
+          "messageId": 10437316691797,
+          "uId": 2,
+          "message": "@madhavmishra you're a dummy",
+          "timeSent": 1681661991,
+          "reacts": [],
+          "isPinned": true
         }
       ]
     }
@@ -135,7 +172,7 @@ An example of a populated data store is shown below.
   "dms": [
     {
       "dmId": 1,
-      "dmName": "johnsmith, madhavmishra",
+      "dmName": "joebiden, madhavmishra",
       "creatorId": 2,
       "memberIds": [
         1,
@@ -143,10 +180,20 @@ An example of a populated data store is shown below.
       ],
       "messages": [
         {
-          "messageId": 3,
+          "messageId": 154319625872134,
           "uId": 2,
-          "message": "I am respectfully sliding into your dms 😉😉😉",
-          "timeSent": 1680172848
+          "message": "@joebiden my favourite anime is 'A Silent Voice'",
+          "timeSent": 1681662053,
+          "reacts": [
+            {
+              "reactId": 1,
+              "uIds": [
+                1
+              ],
+              "isThisUserReacted": false
+            }
+          ],
+          "isPinned": false
         }
       ]
     }
@@ -159,7 +206,7 @@ An example of a populated data store is shown below.
 ## Using the data
 To use the `getData` and `setData` functions, an import statement is required from the `dataStore.ts` file. Additionally, when updating the data, interfaces can be used to ensure objects added are of the corresponding type. As example of how to import the functions and interfaces is shown below.
 ```typescript
-import { User, Channel, Dm, Message, Data, getData, setData } from './dataStore';
+import { Notification, React, User, Channel, Dm, Message, Data, getData, setData } from './dataStore';
 ```
 
 The aforementioned two functions `getData` and `setData` are used as follows

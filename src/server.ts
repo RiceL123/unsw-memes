@@ -5,17 +5,18 @@ import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
 
-import { clearV1, searchV1 } from './other';
+import { clearV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1, authPasswordResetRequestV1, authPasswordResetResetV1 } from './auth';
 import { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 } from './dm';
 import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2, userProfileUploadPhotoV1 } from './user';
-import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
+import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV2 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
 import { standupActiveV1, standupSendV1, standupStartV1 } from './standup';
-import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1 } from './message';
+import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV2, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1, messageSendLaterV1, messageSendLaterDmV1 } from './message';
 import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
 import { notificationsGetV1 } from './notifications';
+import { searchV1 } from './search';
 
 // Set up web app
 const app = express();
@@ -136,7 +137,7 @@ app.post('/channel/addowner/v2', (req: Request, res: Response, next) => {
 app.post('/channel/removeowner/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { channelId, uId } = req.body;
-  return res.json(channelRemoveOwnerV1(token, channelId, uId));
+  return res.json(channelRemoveOwnerV2(token, channelId, uId));
 });
 
 /// ////////////////////////////////////////////////////////////
@@ -244,7 +245,7 @@ app.delete('/message/remove/v2', (req: Request, res: Response, next) => {
 app.post('/message/senddm/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { dmId, message } = req.body;
-  return res.json(messageSendDmV1(token, dmId, message));
+  return res.json(messageSendDmV2(token, dmId, message));
 });
 
 app.post('/message/pin/v1', (req: Request, res: Response, next) => {
@@ -275,6 +276,18 @@ app.post('/message/unreact/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { messageId, reactId } = req.body;
   return res.json(messageUnreactV1(token, messageId, reactId));
+});
+
+app.post('/message/sendlater/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { channelId, message, timeSent } = req.body;
+  return res.json(messageSendLaterV1(token, channelId, message, timeSent));
+});
+
+app.post('/message/sendlaterdm/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { dmId, message, timeSent } = req.body;
+  return res.json(messageSendLaterDmV1(token, dmId, message, timeSent));
 });
 
 /// ////////////////////////////////////////////////////////////
