@@ -1523,33 +1523,37 @@ describe('/message/share/v1', () => {
     const dmObj2 = dmCreate(userObj.token, []);
     const sharedMessageObj = messageShare(userObj.token, dmOgMessage.messageId, '', -1, dmObj2.dmId);
     expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
-    expect(dmMessages(userObj.token, dmObj2.dmId, 0)).toStrictEqual({
+    const messages = dmMessages(userObj.token, dmObj2.dmId, 0);
+    expect(messages).toStrictEqual({
       start: 0,
       end: -1,
       messages: [
         {
           messageId: sharedMessageObj.sharedMessageId,
           uId: userObj.authUserId,
-          message: 'hello dm',
+          message: expect.any(String),
           timeSent: expect.any(Number),
           reacts: [],
           isPinned: false
         }
       ]
     });
+
+    expect(messages.messages[0].message).toContain('hello dm');
   });
 
   test('valid message share in dm from channel', () => {
     const sharedMessageObj = messageShare(userObj.token, channelOgMessage.messageId, '', -1, dmObj.dmId);
     expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
-    expect(dmMessages(userObj.token, dmObj.dmId, 0)).toStrictEqual({
+    const messages = dmMessages(userObj.token, dmObj.dmId, 0);
+    expect(messages).toStrictEqual({
       start: 0,
       end: -1,
       messages: [
         {
           messageId: sharedMessageObj.sharedMessageId,
           uId: userObj.authUserId,
-          message: 'channel channel',
+          message: expect.any(String),
           timeSent: expect.any(Number),
           reacts: [],
           isPinned: false
@@ -1564,39 +1568,44 @@ describe('/message/share/v1', () => {
         },
       ]
     });
+
+    expect(messages.messages[0].message).toContain('channel channel');
   });
 
   test('valid message share in channel from channel', () => {
     const channelObj2 = channelsCreate(userObj.token, 'new channel', true);
     const sharedMessageObj = messageShare(userObj.token, channelOgMessage.messageId, '', channelObj2.channelId, -1);
     expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
-    expect(channelMessages(userObj.token, channelObj2.channelId, 0)).toStrictEqual({
+    const messages = channelMessages(userObj.token, channelObj2.channelId, 0);
+    expect(messages).toStrictEqual({
       start: 0,
       end: -1,
       messages: [
         {
           messageId: sharedMessageObj.sharedMessageId,
           uId: userObj.authUserId,
-          message: 'channel channel',
+          message: expect.any(String),
           timeSent: expect.any(Number),
           reacts: [],
           isPinned: false
         }
       ]
     });
+    expect(messages.messages[0].message).toContain('channel channel');
   });
 
   test('valid message share in channel from dm', () => {
     const sharedMessageObj = messageShare(userObj.token, dmOgMessage.messageId, '', channelObj.channelId, -1);
     expect(sharedMessageObj).toStrictEqual({ sharedMessageId: expect.any(Number) });
-    expect(channelMessages(userObj.token, channelObj.channelId, 0)).toStrictEqual({
+    const messages = channelMessages(userObj.token, channelObj.channelId, 0);
+    expect(messages).toStrictEqual({
       start: 0,
       end: -1,
       messages: [
         {
           messageId: sharedMessageObj.sharedMessageId,
           uId: userObj.authUserId,
-          message: 'hello dm',
+          message: expect.any(String),
           timeSent: expect.any(Number),
           reacts: [],
           isPinned: false
@@ -1611,6 +1620,7 @@ describe('/message/share/v1', () => {
         }
       ]
     });
+    expect(messages.messages[0].message).toContain('hello dm');
   });
 
   test('valid message share includes ogmessage and message as substrings', () => {

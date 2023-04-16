@@ -1,6 +1,6 @@
 import { Dm, Data, getData, setData, getHash } from './dataStore';
 import HTTPError from 'http-errors';
-
+import { notificationsSend } from './notifications';
 interface Error {
   error: string;
 }
@@ -80,6 +80,10 @@ function dmCreateV2(token: string, uIds: number[]) {
   };
 
   data.dms.push(newDmObj);
+
+  // notify all members expect for creator owner they were added to a dm
+  const usersToNotify = uIds.filter(x => x !== creatorObj.uId);
+  notificationsSend(data, usersToNotify, newDmId, -1, creatorObj.handleStr, newDmName, '', 'add');
 
   setData(data);
 

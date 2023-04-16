@@ -5,7 +5,7 @@ import config from './config.json';
 import cors from 'cors';
 import errorHandler from 'middleware-http-errors';
 
-import { clearV1 } from './other';
+import { clearV1, searchV1 } from './other';
 import { authRegisterV2, authLoginV2, authLogoutV1, authPasswordResetRequestV1, authPasswordResetResetV1 } from './auth';
 import { dmCreateV2, dmDetailsV2, dmLeaveV2, dmRemoveV2, dmListV2, dmMessagesV2 } from './dm';
 import { usersAllV2 } from './users';
@@ -15,6 +15,7 @@ import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels'
 import { standupActiveV1, standupSendV1, standupStartV1 } from './standup';
 import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1 } from './message';
 import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
+import { notificationsGetV1 } from './notifications';
 
 // Set up web app
 const app = express();
@@ -37,6 +38,12 @@ app.get('/echo', (req: Request, res: Response, next) => {
 
 app.delete('/clear/v1', (req: Request, res: Response, next) => {
   return res.json(clearV1());
+});
+
+app.get('/search/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const queryStr = req.query.queryStr as string;
+  return res.json(searchV1(token, queryStr));
 });
 
 /// ////////////////////////////////////////////////////////////
@@ -91,7 +98,7 @@ app.post('/auth/passwordreset/reset/v1', (req: Request, res: Response, next) => 
 /// ////////////////////////////////////////////////////////////
 app.get('/channel/details/v3', (req: Request, res: Response, next) => {
   const token = req.header('token');
-  const channelId = req.query.channelId as string;
+  const channelId = parseInt(req.query.channelId as string);
   return res.json(channelDetailsV3(token, channelId));
 });
 
@@ -269,7 +276,7 @@ app.post('/message/unreact/v1', (req: Request, res: Response, next) => {
 });
 
 /// ////////////////////////////////////////////////////////////
-/// //////////////////   admin routes     ////////////////////
+/// //////////////////   admin routes     //////////////////////
 /// ////////////////////////////////////////////////////////////
 app.delete('/admin/user/remove/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
@@ -302,6 +309,14 @@ app.post('/standup/send/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { channelId, message } = req.body;
   return res.json(standupSendV1(token, channelId, message));
+});
+
+/// ////////////////////////////////////////////////////////////
+/// //////////////// notitifcations routes /////////////////////
+/// ////////////////////////////////////////////////////////////
+app.get('/notifications/get/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  return res.json(notificationsGetV1(token));
 });
 
 // Keep this BENEATH route definitions

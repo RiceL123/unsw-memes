@@ -1,6 +1,12 @@
 import fs from 'fs';
 import crypto from 'crypto';
 
+interface Notification {
+  channelId: number;
+  dmId: number;
+  notificationMessage: string;
+}
+
 interface User {
   uId: number;
   nameFirst: string;
@@ -12,6 +18,7 @@ interface User {
   tokens: string[];
   resetCode: string;
   profileImgUrl: string;
+  notifications: Notification[];
 }
 
 interface React {
@@ -79,4 +86,4 @@ function getHash(string: string): string {
   return crypto.createHmac('sha1', secret).update(string).digest('hex');
 }
 
-export { User, Channel, Dm, Message, React, Data, getData, setData, getHash };
+export { Notification, React, User, Channel, Dm, Message, Data, getData, setData, getHash };

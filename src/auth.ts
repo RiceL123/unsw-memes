@@ -167,6 +167,7 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     tokens: [getHash(newToken)],
     resetCode: '',
     profileImgUrl: `http://${HOST}:${PORT}/profileImages/default.jpg`,
+    notifications: []
   };
 
   data.users.push(newUser);
@@ -203,6 +204,14 @@ function authLogoutV1(token: string) {
   return {};
 }
 
+/** sendEmail is an async function that sends an email to the specified address using
+ * the from the email in the
+ *
+ * @param {string} email - The email address to send the email to.
+ * @param {string} subject - The subject of the email.
+ * @param {string} message - The message body of the email.
+ * @returns {Promise<void>} - A Promise that resolves when the email has been sent.
+*/
 async function sendEmail(email: string, subject: string, message: string) {
   const transport = nodemailer.createTransport({
     host: 'smtp.office365.com',
@@ -222,6 +231,11 @@ async function sendEmail(email: string, subject: string, message: string) {
   });
 }
 
+/** authPasswordResetRequestV1 generates a password reset code for the specified user and sends it to their email address.
+ *
+ * @param {string} email - The email address of the user requesting the password reset.
+ * @returns {object} - An empty object.
+*/
 function authPasswordResetRequestV1(email: string) {
   const data: Data = getData();
   const userObj = data.users.find(x => x.email === email);
@@ -257,6 +271,13 @@ function authPasswordResetRequestV1(email: string) {
   return {};
 }
 
+/** authPasswordResetResetV1 resets the password of the user with the specified reset code to the specified new password.
+ *
+ * @param {string} resetCode - The reset code provided to the user via email to confirm their identity.
+ * @param {string} newPassword - The new password to set for the user.
+ * @returns {object} - An empty object.
+ * @throws {HTTPError} - If the provided reset code is invalid or if the new password is too short.
+*/
 function authPasswordResetResetV1(resetCode: string, newPassword: string) {
   const data: Data = getData();
 

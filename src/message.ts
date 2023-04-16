@@ -1,5 +1,6 @@
 import { Message, Data, React, getData, setData, getHash } from './dataStore';
 import HTTPError from 'http-errors';
+import { notificationsSend } from './notifications';
 
 /**
   * generateMessageId, a helper function that generates a unique messageId using a +1 mechanism
@@ -66,6 +67,11 @@ function messageSendV3(token: string, channelId: number, message: string) {
   };
 
   channelObj.messages.unshift(newMessage);
+
+  // notify all the users who have their handleStr tagged
+  const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
+  notificationsSend(data, usersToNotify, -1, channelId, userObj.handleStr, channelObj.channelName, message);
+
   setData(data);
   return { messageId: messageId };
 }
@@ -129,6 +135,10 @@ function messageEditV3(token: string, messageId: number, message: string) {
     if (message === '') {
       channelObj.messages = channelObj.messages.filter(x => x.messageId !== messageId);
     }
+
+    // notify all the users who have their handleStr tagged
+    const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
+    notificationsSend(data, usersToNotify, -1, channelObj.channelId, userObj.handleStr, channelObj.channelName, message);
   } else {
     // find corresponding messageObj in dm
     const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
@@ -150,6 +160,10 @@ function messageEditV3(token: string, messageId: number, message: string) {
     if (message === '') {
       dmObj.messages = dmObj.messages.filter(x => x.messageId !== messageId);
     }
+
+    // notify all the users who have their handleStr tagged and are still members
+    const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
+    notificationsSend(data, usersToNotify, dmObj.dmId, -1, userObj.handleStr, dmObj.dmName, message);
   }
 
   setData(data);
@@ -274,6 +288,11 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
   };
 
   dmObj.messages.unshift(newMessage);
+
+  // notify all the users who have their handleStr tagged and are still members
+  const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
+  notificationsSend(data, usersToNotify, dmId, -1, userObj.handleStr, dmObj.dmName, message);
+
   setData(data);
   return { messageId: messageId };
 }
@@ -396,14 +415,15 @@ function messageUnpinV1(token: string, messageId: number) {
   return {};
 }
 
-/**
+/** messageShare generates a new message by copying the original message and sending it
+ *  in a channel or dm they are a apart of
  *
  * @param {string[]} token
  * @param {number} ogMessageId
  * @param {string} message
  * @param  {number} channelId
  * @param {number} dmId
- * @returns {} returns sharedMessageId
+ * @returns {{ sharedMessageId: number }} returns sharedMessageId
  */
 function messageShareV1(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
   const data: Data = getData();
@@ -419,8 +439,6 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     throw HTTPError(403, 'invalid token');
   }
 
-  const shareToDm = channelId === -1;
-
   const channelOgMessageObj = data.channels.flatMap(x => x.messages).find(x => x.messageId === ogMessageId);
   const dmOgMessageObj = data.dms.flatMap(x => x.messages).find(x => x.messageId === ogMessageId);
 
@@ -430,7 +448,10 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     throw HTTPError(400, 'ogMessageId does not refer to a valid message within a channel / dm');
   }
 
-  const newMessage = message === '' ? ogMessageObj.message : ogMessageObj.message + '\n' + message;
+  const divider = '===================================================';
+  const ogMessage = divider + '\n' + ogMessageObj.message + '\n' + divider;
+
+  const newMessage = message === '' ? ogMessage : message + ogMessage;
 
   const sharedMessageId = generateMessageId(data);
 
@@ -443,7 +464,8 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     isPinned: false,
   };
 
-  if (shareToDm) {
+  // if channelIf is -1 then share to a corresponding dm
+  if (channelId === -1) {
     const dmObj = data.dms.find(x => x.dmId === dmId);
 
     if (!dmObj) {
@@ -459,6 +481,10 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     }
 
     dmObj.messages.unshift(newMessageObj);
+
+    // notify all the users who have their handleStr tagged that are members of the dm
+    const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
+    notificationsSend(data, usersToNotify, dmId, -1, userObj.handleStr, dmObj.dmName, message);
 
     // if the message is not being shared to dm, its being shared to a channel
   } else {
@@ -477,6 +503,10 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     }
 
     channelObj.messages.unshift(newMessageObj);
+
+    // notify all the users who have their handleStr tagged that are members of the channel
+    const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
+    notificationsSend(data, usersToNotify, -1, channelId, userObj.handleStr, channelObj.channelName, message);
   }
 
   setData(data);
@@ -531,6 +561,11 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
         throw HTTPError(400, 'User has already reacted to message');
       }
       reactsObj.uIds.push(userObj.uId);
+
+      // if user didn't react to their own message, and they are a still member, send a notification
+      if (userObj.uId !== channelMsgObj.uId && channelObj.allMembersIds.includes(channelMsgObj.uId)) {
+        notificationsSend(data, [channelMsgObj.uId], -1, channelObj.channelId, userObj.handleStr, channelObj.channelName, '', 'react');
+      }
     } else {
       // if the reaction doesn't already exist then make a new reaction object
       const reactObj: React = {
@@ -541,6 +576,11 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
       // isThisUserReacted defaults to false, becomes true when in a copied array
       // of messages
       channelMsgObj.reacts.push(reactObj);
+
+      // if user didn't react to their own message, and they are a still member, send a notification
+      if (userObj.uId !== channelMsgObj.uId && channelObj.allMembersIds.includes(channelMsgObj.uId)) {
+        notificationsSend(data, [channelMsgObj.uId], -1, channelObj.channelId, userObj.handleStr, channelObj.channelName, '', 'react');
+      }
     }
   } else {
     const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
@@ -551,6 +591,12 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
         throw HTTPError(400, 'User has already reacted to message');
       }
       reactsObj.uIds.push(userObj.uId);
+
+      // if user didn't react to their own message, and they are a still member, send a notification
+      if (userObj.uId !== dmMsgObj.uId && dmObj.memberIds.includes(dmMsgObj.uId)) {
+        notificationsSend(data, [dmMsgObj.uId], dmObj.dmId, -1, userObj.handleStr, dmObj.dmName, '', 'react');
+      }
+
       // if the reaction doesn't already exist then make a new reaction object
     } else {
       const reactObj: React = {
@@ -561,6 +607,11 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
       // isThisUserReacted defaults to false, becomes true when in a copied array
       // of messages
       dmMsgObj.reacts.push(reactObj);
+
+      // if user didn't react to their own message, and they are a still member, send a notification
+      if (userObj.uId !== dmMsgObj.uId && dmObj.memberIds.includes(dmMsgObj.uId)) {
+        notificationsSend(data, [dmMsgObj.uId], dmObj.dmId, -1, userObj.handleStr, dmObj.dmName, '', 'react');
+      }
     }
   }
   setData(data);
