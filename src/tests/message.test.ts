@@ -18,7 +18,9 @@ import {
   standupStart,
   standupSend,
   messageReact,
-  messageUnreact
+  messageUnreact,
+  messageSendLater,
+  messageSendLaterDm,
 } from './routeRequests';
 
 const VALID_MESSAGE = { messageId: expect.any(Number) };
@@ -955,7 +957,7 @@ describe('messageRemoveV3', () => {
   });
 });
 
-describe('/message/senddm/v1', () => {
+describe('/message/senddm/v2', () => {
   const email = 'z5555555@ad.unsw.edu.au';
   const password = 'password';
   const nameFirst = 'Madhav';
@@ -971,41 +973,33 @@ describe('/message/senddm/v1', () => {
 
   test('invalid token', () => {
     const sendDmData = messageSendDm(userData.token + 1, dmDataId, 'Hello World');
-
     expect(sendDmData).toStrictEqual(403);
   });
 
   test('invalid dmId', () => {
     const sendDmData = messageSendDm(userData.token, dmDataId + 1, 'Hello World');
-
     expect(sendDmData).toStrictEqual(400);
   });
 
   test('invalid message - message.length < 1', () => {
     const sendDmData = messageSendDm(userData.token, dmDataId, '');
-
     expect(sendDmData).toStrictEqual(400);
   });
 
   test('invalid message - message.length < 1000', () => {
     const sendDmData = messageSendDm(userData.token, dmDataId, 'a'.repeat(1001));
-
     expect(sendDmData).toStrictEqual(400);
   });
 
   test('valid dmId, user is not a member of DM', () => {
     const userData2 = authRegister('z4444444@ad.unsw.edu.au', 'password1', 'Charmander', 'Charizard');
-
     const sendDmData = messageSendDm(userData2.token, dmDataId, 'Hello World');
-
     expect(sendDmData).toStrictEqual(403);
   });
 
   test('valid /message/senddm/v1', () => {
     const sendDmData = messageSendDm(userData.token, dmDataId, 'Hello World');
-
-    expect(sendDmData).toStrictEqual({ messageId: expect.any(Number) });
-
+    expect(sendDmData).toStrictEqual(VALID_MESSAGE);
     const messageData = dmMessages(userData.token, dmDataId, 0);
 
     expect(messageData).toStrictEqual({
@@ -1031,9 +1025,9 @@ describe('/message/senddm/v1', () => {
     const sendDmData2 = messageSendDm(userData.token, dmDataId, 'Hello');
     const sendDmData3 = messageSendDm(userData.token, dmDataId, 'Goodbye World');
 
-    expect(sendDmData1).toStrictEqual({ messageId: expect.any(Number) });
-    expect(sendDmData2).toStrictEqual({ messageId: expect.any(Number) });
-    expect(sendDmData3).toStrictEqual({ messageId: expect.any(Number) });
+    expect(sendDmData1).toStrictEqual(VALID_MESSAGE);
+    expect(sendDmData2).toStrictEqual(VALID_MESSAGE);
+    expect(sendDmData3).toStrictEqual(VALID_MESSAGE);
 
     const messageData = dmMessages(userData.token, dmDataId, 0);
 
@@ -2385,5 +2379,373 @@ describe('/message/unreact/v1', () => {
         }
       ]
     });
+  });
+});
+
+describe('/message/sendlater/v1', () => {
+  const timeSent = 1;
+
+  test('Invalid token', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(messageSendLater(Finn.token + 1, candyChannel, 'Princess!', Math.floor(Date.now() / 1000) + timeSent)).toEqual(403);
+  });
+
+  test('Invalid channelId', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(messageSendLater(Finn.token, candyChannel + 1, 'Princess!', Math.floor(Date.now() / 1000) + timeSent)).toEqual(400);
+  });
+
+  test('Invalid message length, message is less than 1', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(messageSendLater(Finn.token, candyChannel, '', Math.floor(Date.now() / 1000) + timeSent)).toEqual(400);
+  });
+
+  test('Invalid message length, message is more than 1000', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(messageSendLater(Finn.token, candyChannel, 'a'.repeat(1001), Math.floor(Date.now() / 1000) + timeSent)).toEqual(400);
+  });
+
+  test('timeSent is in the past', () => {
+    // const pastDate = Math.floor(Date.now() / 1000);
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(messageSendLater(Finn.token, candyChannel, 'Help me im in the past!', Math.floor(Date.now() / 1000) - timeSent)).toEqual(400);
+  });
+
+  test('AuthUser is not apart of the channel', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent)).toEqual(403);
+  });
+
+  test('Valid /message/sendlater/v1', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(channelJoin(Jake.token, candyChannel)).toStrictEqual({});
+    const messageId1 = messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent);
+    const messageId2 = messageSendLater(Finn.token, candyChannel, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent + 1));
+    sleep(3000);
+    const messageData = channelMessages(Finn.token, candyChannel, 0);
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId2.messageId,
+          uId: Finn.authUserId,
+          message: "I think he's in the tree",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId1.messageId,
+          uId: Jake.authUserId,
+          message: 'WHERES BEMO',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
+    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 1 + EXPECTED_TIME_ERROR_MARGIN);
+  });
+
+  test('Valid /message/sendlater/v1, message 2 timeSent is before message 1', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(channelJoin(Jake.token, candyChannel)).toStrictEqual({});
+    const messageId1 = messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 2);
+    const messageId2 = messageSendLater(Finn.token, candyChannel, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent));
+    sleep(3000);
+    const messageData = channelMessages(Finn.token, candyChannel, 0);
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId1.messageId,
+          uId: Jake.authUserId,
+          message: 'WHERES BEMO',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId2.messageId,
+          uId: Finn.authUserId,
+          message: "I think he's in the tree",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 2 + EXPECTED_TIME_ERROR_MARGIN);
+    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
+  });
+
+  test('Valid /message/sendlater/v1, sendMessages with sendMessageLater', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
+
+    expect(channelJoin(Jake.token, candyChannel)).toStrictEqual({});
+    const messageId1 = messageSend(Jake.token, candyChannel, 'Hey Finn!');
+    const messageId2 = messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 1);
+    const messageId3 = messageSend(Finn.token, candyChannel, 'I am not too sure Jake');
+    const messageId4 = messageSendLater(Finn.token, candyChannel, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent));
+    const messageId5 = messageSend(Jake.token, candyChannel, "oh okay Finn, I'll take a look later");
+    sleep(3000);
+    const messageData = channelMessages(Finn.token, candyChannel, 0);
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId2.messageId,
+          uId: Jake.authUserId,
+          message: 'WHERES BEMO',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId4.messageId,
+          uId: Finn.authUserId,
+          message: "I think he's in the tree",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId5.messageId,
+          uId: Jake.authUserId,
+          message: "oh okay Finn, I'll take a look later",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId3.messageId,
+          uId: Finn.authUserId,
+          message: 'I am not too sure Jake',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId1.messageId,
+          uId: Jake.authUserId,
+          message: 'Hey Finn!',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 1 + EXPECTED_TIME_ERROR_MARGIN);
+    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
+  });
+});
+
+describe('/message/sendlaterdm/v1', () => {
+  const timeSent = 1;
+
+  test('Invalid token', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    expect(messageSendLaterDm(Finn.token + 1, iceDm, 'Princess!', Math.floor(Date.now() / 1000) + timeSent)).toEqual(403);
+  });
+
+  test('Invalid channelId', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    expect(messageSendLaterDm(Finn.token, iceDm + 1, 'Princess!', Math.floor(Date.now() / 1000) + timeSent)).toEqual(400);
+  });
+
+  test('Invalid message length, message is less than 1', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    expect(messageSendLaterDm(Finn.token, iceDm, '', Math.floor(Date.now() / 1000) + timeSent)).toEqual(400);
+  });
+
+  test('Invalid message length, message is more than 1000', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    expect(messageSendLaterDm(Finn.token, iceDm, 'a'.repeat(1001), Math.floor(Date.now() / 1000) + timeSent)).toEqual(400);
+  });
+
+  test('timeSent is in the past', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    expect(messageSendLaterDm(Finn.token, iceDm, 'Help me im in the past!', Math.floor(Date.now() / 1000) - timeSent)).toEqual(400);
+  });
+
+  test('AuthUser is not apart of the dm', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const Princess = authRegister('z3333333@ad.unsw.edu.au', 'password', 'Princess', 'Bubblegum');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    expect(messageSendLaterDm(Princess.token, iceDm, 'HEyyyy FInnn ;)', Math.floor(Date.now() / 1000) + timeSent)).toEqual(403);
+  });
+
+  test('Valid /message/sendlaterdm/v1', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    const messageId1 = messageSendLaterDm(Jake.token, iceDm, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent);
+    const messageId2 = messageSendLaterDm(Finn.token, iceDm, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent + 1));
+    sleep(3000);
+    const messageData = dmMessages(Finn.token, iceDm, 0);
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId2.messageId,
+          uId: Finn.authUserId,
+          message: "I think he's in the tree",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId1.messageId,
+          uId: Jake.authUserId,
+          message: 'WHERES BEMO',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
+    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 1 + EXPECTED_TIME_ERROR_MARGIN);
+  });
+
+  test('Valid /message/sendlaterdm/v1, message 2 timeSent is before message 1', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    const messageId1 = messageSendLaterDm(Jake.token, iceDm, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 2);
+    const messageId2 = messageSendLaterDm(Finn.token, iceDm, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent));
+    sleep(3000);
+    const messageData = dmMessages(Finn.token, iceDm, 0);
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId1.messageId,
+          uId: Jake.authUserId,
+          message: 'WHERES BEMO',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId2.messageId,
+          uId: Finn.authUserId,
+          message: "I think he's in the tree",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 2 + EXPECTED_TIME_ERROR_MARGIN);
+    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
+  });
+
+  test('Valid /message/sendlaterdm/v1, sendMessages with sendMessageLater', () => {
+    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
+    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
+    const iceDm = dmCreate(Finn.token, [Jake.authUserId]).dmId;
+
+    const messageId1 = messageSendDm(Jake.token, iceDm, 'Hey Finn!');
+    const messageId2 = messageSendLaterDm(Jake.token, iceDm, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 1);
+    const messageId3 = messageSendDm(Finn.token, iceDm, 'I am not too sure Jake');
+    const messageId4 = messageSendLaterDm(Finn.token, iceDm, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent));
+    const messageId5 = messageSendDm(Jake.token, iceDm, "oh okay Finn, I'll take a look later");
+    sleep(3000);
+    const messageData = dmMessages(Finn.token, iceDm, 0);
+    expect(messageData).toStrictEqual({
+      messages: [
+        {
+          messageId: messageId2.messageId,
+          uId: Jake.authUserId,
+          message: 'WHERES BEMO',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId4.messageId,
+          uId: Finn.authUserId,
+          message: "I think he's in the tree",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId5.messageId,
+          uId: Jake.authUserId,
+          message: "oh okay Finn, I'll take a look later",
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId3.messageId,
+          uId: Finn.authUserId,
+          message: 'I am not too sure Jake',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+        {
+          messageId: messageId1.messageId,
+          uId: Jake.authUserId,
+          message: 'Hey Finn!',
+          timeSent: expect.any(Number),
+          reacts: [],
+          isPinned: false,
+        },
+      ],
+      start: 0,
+      end: -1,
+    });
+    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 1 + EXPECTED_TIME_ERROR_MARGIN);
+    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
   });
 });

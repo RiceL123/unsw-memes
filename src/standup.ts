@@ -14,7 +14,7 @@ function sendStandup(uId: number, channelId: number) {
   const standupMessage = channelObj.currStandUpQueue.join('\n');
   // packaged message is sent to the channel from the user who started the standup
 
-  const messageId = generateMessageId(data);
+  const messageId = generateMessageId();
   const newMessage: Message = {
     messageId: messageId,
     uId: uId,

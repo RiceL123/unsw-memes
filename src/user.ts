@@ -152,7 +152,7 @@ function userProfileSetHandleV2(token: string, handleStr: string) {
 }
 
 function checkURL(url: string): boolean {
-  const regex = /\.(jpg|jpeg)$/;
+  const regex = /(jpg|jpeg)$/i;
   return regex.test(url);
 }
 
