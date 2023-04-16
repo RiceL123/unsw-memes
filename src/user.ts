@@ -194,7 +194,7 @@ function userProfileUploadPhotoV1(token: string, imgUrl: string, xStart: number,
       imgUrl
     );
   } catch (err) {
-    throw HTTPError(400, 'Error getting image');
+    throw HTTPError(400, 'Error cannot get image');
   }
 
   // save image locally
@@ -202,24 +202,24 @@ function userProfileUploadPhotoV1(token: string, imgUrl: string, xStart: number,
 
   // makes a unique url for the profile photo of every user
   const imgPath = `profileImages/${userObj.uId}.jpg`;
-  const cropImage = `profileImages/cropped_${userObj.uId}.jpg`;
+  const croppedImage = `profileImages/cropped_${userObj.uId}.jpg`;
   fs.writeFileSync(imgPath, body, { flag: 'w' });
 
   // get dimensions of uploaded image
   const dimensions = sizeOf(imgPath);
-  const x = dimensions.width;
-  const y = dimensions.height;
+  const imageWidth = dimensions.width;
+  const imageHeight = dimensions.height;
 
   // checks dimension errors
-  if (xEnd > x || xStart < 0 || yEnd > y || yStart < 0 || xStart >= xEnd || yStart >= yEnd) {
+  if (xEnd > imageWidth || xStart < 0 || yEnd > imageHeight || yStart < 0 || xStart >= xEnd || yStart >= yEnd) {
     throw HTTPError(400, 'invalid image dimensions');
   }
 
   // crops image to dimensions
-  sharp(imgPath).extract({ width: xEnd - xStart, height: yEnd - yStart, left: 0, top: 0 }).toFile(cropImage);
+  sharp(imgPath).extract({ width: xEnd - xStart, height: yEnd - yStart, left: 0, top: 0 }).toFile(croppedImage);
 
   // set user's profileiImgUrl
-  userObj.profileImgUrl = `http://${HOST}:${PORT}/${cropImage}`;
+  userObj.profileImgUrl = `http://${HOST}:${PORT}/${croppedImage}`;
 
   setData(data);
   return {};

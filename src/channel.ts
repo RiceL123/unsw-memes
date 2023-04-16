@@ -324,28 +324,31 @@ function channelRemoveOwnerV1(token: string, channelId: number, uId: number) {
 
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (!userObj) {
-    return { error: 'invalid token' };
+    throw HTTPError(403, 'invalid token');
   }
 
   const channelObj = data.channels.find(x => x.channelId === channelId);
   if (!channelObj) {
-    return { error: 'invalid channelId' };
+    throw HTTPError(400, 'invalid channelId');
   }
 
   if (!data.users.some(x => x.uId === uId)) {
-    return { error: 'invalid uId' };
+    throw HTTPError(400, 'invalid uId');
   }
 
-  if (!channelObj.allMembersIds.includes(uId)) {
-    return { error: 'invalid uId - user is not apart of the channel' };
-  }
-
+  // if (!channelObj.allMembersIds.includes(uId)) {
+  //   throw HTTPError(400, 'invalid uId - user is not apart of the channel');
+  // }
   if (!channelObj.ownerMembersIds.includes(userObj.uId) && userObj.permission !== 1) {
-    return { error: 'Invalid uId - user is not an owner of the channel' };
+    throw HTTPError(403, 'Invalid uId - user is not an owner of the channel');
+  }
+
+  if (!channelObj.ownerMembersIds.includes(uId)) {
+    throw HTTPError(400, 'Invalid uId - user is not an owner of the channel');
   }
 
   if (channelObj.ownerMembersIds.length === 1) {
-    return { error: 'invalid uId - user is the only owner of the channel' };
+    throw HTTPError(400, 'invalid uId - user is the only owner of the channel');
   }
 
   channelObj.ownerMembersIds = channelObj.ownerMembersIds.filter(x => x !== uId);

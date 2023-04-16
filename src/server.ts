@@ -55,7 +55,7 @@ app.post('/channels/create/v3', (req: Request, res: Response, next) => {
   return res.json(channelsCreateV3(token, name, isPublic));
 });
 
-app.get('/channels/listall/v3', (req: Request, res: Response, next) => {
+app.get('/channels/listAll/v3', (req: Request, res: Response, next) => {
   const token = req.header('token');
   res.json(channelsListAllV3(token));
 });
@@ -133,8 +133,9 @@ app.post('/channel/addowner/v2', (req: Request, res: Response, next) => {
   return res.json(channelAddOwnerV2(token, channelId, uId));
 });
 
-app.post('/channel/removeowner/v1', (req: Request, res: Response, next) => {
-  const { token, channelId, uId } = req.body;
+app.post('/channel/removeowner/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { channelId, uId } = req.body;
   return res.json(channelRemoveOwnerV1(token, channelId, uId));
 });
 
@@ -222,26 +223,27 @@ app.get('/dm/messages/v2', (req: Request, res: Response, next) => {
 /// ////////////////////////////////////////////////////////////
 /// //////////////////   message routes     ////////////////////
 /// ////////////////////////////////////////////////////////////
-app.post('/message/send/v3', (req: Request, res: Response, next) => {
+app.post('/message/send/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { channelId, message } = req.body;
   return res.json(messageSendV3(token, channelId, message));
 });
 
-app.put('/message/edit/v3', (req: Request, res: Response, next) => {
+app.put('/message/edit/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const { messageId, message } = req.body;
   return res.json(messageEditV3(token, messageId, message));
 });
 
-app.delete('/message/remove/v3', (req: Request, res: Response, next) => {
+app.delete('/message/remove/v2', (req: Request, res: Response, next) => {
   const token = req.header('token');
   const messageId = parseInt(req.query.messageId as string);
   return res.json(messageRemoveV3(token, messageId));
 });
 
-app.post('/message/senddm/v1', (req: Request, res: Response, next) => {
-  const { token, dmId, message } = req.body;
+app.post('/message/senddm/v2', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  const { dmId, message } = req.body;
   return res.json(messageSendDmV1(token, dmId, message));
 });
 

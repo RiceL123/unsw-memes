@@ -1,5 +1,5 @@
 import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner, standupStart } from './routeRequests';
-const ERROR = { error: expect.any(String) };
+
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
 
 interface channelObjUser {
@@ -2056,31 +2056,31 @@ describe('/channel/removeowner/v1', () => {
   test('invalid token', () => {
     const removeData = channelRemoveOwner(userToken2 + userToken, chanId, userId2);
 
-    expect(removeData).toStrictEqual(ERROR);
+    expect(removeData).toStrictEqual(403);
   });
 
   test('invalid channelId', () => {
     const removeData = channelRemoveOwner(userToken, chanId + 1, userId2);
 
-    expect(removeData).toStrictEqual(ERROR);
+    expect(removeData).toStrictEqual(400);
   });
 
   test('invalid uId', () => {
     const removeData = channelRemoveOwner(userToken, chanId, userId2 + userId);
 
-    expect(removeData).toStrictEqual(ERROR);
+    expect(removeData).toStrictEqual(400);
   });
 
   test('user is not the owner of the channel ', () => {
     const removeData = channelRemoveOwner(userToken, chanId, userId2);
 
-    expect(removeData).toStrictEqual(ERROR);
+    expect(removeData).toStrictEqual(400);
   });
 
   test('user is a only owner in the channel', () => {
     const removeData = channelRemoveOwner(userToken, chanId, userId);
 
-    expect(removeData).toStrictEqual(ERROR);
+    expect(removeData).toStrictEqual(400);
   });
 
   test('valid channelId, authorised user is not an owner', () => {
@@ -2089,7 +2089,7 @@ describe('/channel/removeowner/v1', () => {
 
     const removeData = channelRemoveOwner(userToken3, chanId, userId2);
 
-    expect(removeData).toStrictEqual(ERROR);
+    expect(removeData).toStrictEqual(403);
   });
 
   test('valid remove owner - control', () => {
@@ -2364,13 +2364,13 @@ describe('/channel/removeowner/v1', () => {
     expect(channelInvite(userToken3, chanId2, userId)).toStrictEqual({});
 
     // theodore is not a member -> cannot be removed from owner
-    expect(channelRemoveOwner(userToken3, chanId2, userId2)).toStrictEqual(ERROR);
+    expect(channelRemoveOwner(userToken3, chanId2, userId2)).toStrictEqual(400);
 
     // inviting theodore
     expect(channelInvite(userToken3, chanId2, userId2)).toStrictEqual({});
 
     // theodore is not a owner (despite being a member) and cannot remove Simon from being owner
-    expect(channelRemoveOwner(userToken2, chanId2, userId3)).toStrictEqual(ERROR);
+    expect(channelRemoveOwner(userToken2, chanId2, userId3)).toStrictEqual(403);
 
     const addOwnerData = channelAddOwner(userToken3, chanId2, userId2);
     expect(addOwnerData).toStrictEqual({});

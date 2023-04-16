@@ -253,13 +253,13 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
   token = getHash(token);
 
   if (message.length < 1 || message.length > 1000) {
-    return { error: 'Invalid message length' };
+    throw HTTPError(400, 'Invalid message length');
   }
 
   // obtains userId respective to token
   const userObj = data.users.find(x => x.tokens.includes(token));
   if (userObj === undefined) {
-    return { error: 'Invalid token' };
+    throw HTTPError(403, 'Invalid token');
   }
 
   // messageId passed in is not found in the messages that user sent
@@ -267,12 +267,12 @@ function messageSendDmV1(token: string, dmId: number, message: string) {
   // if is, iterate through messageId for the messages and if not found return error
   const dmObj = data.dms.find(x => x.dmId === dmId);
   if (dmObj === undefined) {
-    return { error: 'Invalid dmId' };
+    throw HTTPError(400, 'Invalid dmId');
   }
 
   // the messageId in message != messageId passed in AND user is not creatorId in DM or in OwnerMemberId
   if (!(dmObj.memberIds.some((x: number) => x === userObj.uId))) {
-    return { error: 'Authorised user is not a member of the DM' };
+    throw HTTPError(403, 'Authorised user is not a member of the DM');
   }
 
   // creates new message ID using a +1 mechanism
