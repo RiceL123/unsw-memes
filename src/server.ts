@@ -12,8 +12,8 @@ import { usersAllV2 } from './users';
 import { userProfileV3, userProfileSetNameV2, userProfileSetEmailV2, userProfileSetHandleV2, userProfileUploadPhotoV1 } from './user';
 import { channelDetailsV3, channelInviteV3, channelJoinV3, channelMessagesV3, channelLeaveV2, channelAddOwnerV2, channelRemoveOwnerV1 } from './channel';
 import { channelsCreateV3, channelsListV3, channelsListAllV3 } from './channels';
-import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1 } from './message';
 import { standupActiveV1, standupSendV1, standupStartV1 } from './standup';
+import { messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV1, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1 } from './message';
 import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
 
 // Set up web app

@@ -5,10 +5,6 @@ beforeEach(() => {
   clear();
 });
 
-// afterAll((done) => {
-//   done();
-// });
-
 function sleep(ms: number) {
   const start = Date.now();
   while (Date.now() - start < ms);
@@ -26,7 +22,7 @@ describe('standup/start/v1', () => {
   });
 
   test('invalid channelId', () => {
-    const standupData = standupStart(userToken, chanId + 1, 3);
+    const standupData = standupStart(userToken, chanId + 1, 1);
     expect(standupData).toStrictEqual(400);
   });
 
@@ -36,18 +32,18 @@ describe('standup/start/v1', () => {
   });
 
   test('standup already active', () => {
-    const standupData = standupStart(userToken, chanId, 3);
+    const standupData = standupStart(userToken, chanId, 1);
     const currTime = Math.floor(Date.now() / 1000);
     const standupTimeFinish = currTime + 3000;
     expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
 
     const standupData2 = standupStart(userToken, chanId, 1);
     expect(standupData2).toStrictEqual(400);
-    sleep(3000);
+    sleep(2000);
   });
 
   test('invalid token', () => {
-    const standupData = standupStart(userToken + 1, chanId, 3);
+    const standupData = standupStart(userToken + 1, chanId, 1);
     expect(standupData).toStrictEqual(403);
   });
 
@@ -58,7 +54,7 @@ describe('standup/start/v1', () => {
   });
 
   test('sending one message into standup', () => {
-    const standupData = standupStart(userToken, chanId, 3);
+    const standupData = standupStart(userToken, chanId, 1);
     const currTime = Math.floor(Date.now() / 1000);
     const standupTimeFinish = currTime + 3000;
     expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
@@ -66,7 +62,7 @@ describe('standup/start/v1', () => {
     const sendData = standupSend(userToken, chanId, 'my update is im doing well');
     expect(sendData).toStrictEqual({});
 
-    sleep(3000);
+    sleep(1000);
 
     const messagesData = channelMessages(userToken, chanId, 0);
     expect(messagesData).toStrictEqual({
@@ -86,7 +82,7 @@ describe('standup/start/v1', () => {
   });
 
   test('sending two message into standup same user', () => {
-    const standupData = standupStart(userToken, chanId, 3);
+    const standupData = standupStart(userToken, chanId, 1);
     const currTime = Math.floor(Date.now() / 1000);
     const standupTimeFinish = currTime + 3000;
     expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
@@ -97,7 +93,7 @@ describe('standup/start/v1', () => {
     const sendData2 = standupSend(userToken, chanId, 'my update is im doing good');
     expect(sendData2).toStrictEqual({});
 
-    sleep(3000);
+    sleep(1000);
 
     const messagesData = channelMessages(userToken, chanId, 0);
     expect(messagesData).toStrictEqual({
@@ -130,7 +126,7 @@ describe('standup/start/v1', () => {
     channelJoin(userToken4, chanId);
 
     // start standup
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     expect(startData).toStrictEqual({ timeFinish: expect.any(Number) });
 
     // send four messages into standup
@@ -148,7 +144,7 @@ describe('standup/start/v1', () => {
 
     const messagePackage = 'madhavmishra: I ate a catfish\npatbat: I went to Kmart\npatrat: I ate a toaster\npatcat: my catfish ate a Kmart toaster';
 
-    sleep(3000);
+    sleep(1000);
 
     const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
@@ -169,7 +165,7 @@ describe('standup/start/v1', () => {
 
   test('working case one message sent by owner', () => {
     // start standup
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     expect(startData).toStrictEqual({ timeFinish: expect.any(Number) });
 
     // send messages into standup
@@ -178,7 +174,7 @@ describe('standup/start/v1', () => {
 
     const messagePackage = 'madhavmishra: I ate a catfish';
 
-    sleep(3000);
+    sleep(1000);
 
     const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
@@ -204,7 +200,7 @@ describe('standup/start/v1', () => {
 
     // start standup
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
 
@@ -214,7 +210,7 @@ describe('standup/start/v1', () => {
 
     const messagePackage = 'patbat: I ate a catfish';
 
-    sleep(3000);
+    sleep(1000);
 
     const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
@@ -236,11 +232,11 @@ describe('standup/start/v1', () => {
   test('0 messages sent in standup', () => {
     // start standup
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
 
-    sleep(3000);
+    sleep(1000);
 
     const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
@@ -253,11 +249,11 @@ describe('standup/start/v1', () => {
   test('trying to send message after standup has closed', () => {
     // start standup
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
 
-    sleep(3000);
+    sleep(1000);
 
     const message1 = standupSend(userToken, chanId, 'I ate a catfish');
     expect(message1).toStrictEqual(400);
@@ -276,7 +272,7 @@ describe('standup/start/v1', () => {
     channelJoin(userToken2, chanId);
     // start standup
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
 
@@ -284,7 +280,7 @@ describe('standup/start/v1', () => {
     const message1 = standupSend(userToken, chanId, 'I ate a catfish');
     expect(message1).toStrictEqual({});
 
-    sleep(3000);
+    sleep(1000);
     const message2 = standupSend(userToken2, chanId, 'I ate a chicken');
     expect(message2).toStrictEqual(400);
 
@@ -337,7 +333,7 @@ describe('standup/active/v1', () => {
 
   test('valid channelId but authorised user is not a member', () => {
     const userToken2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon').token;
-    standupStart(userToken, chanId, 3);
+    standupStart(userToken, chanId, 1);
     const activeData = standupActive(userToken2, chanId);
     expect(activeData).toStrictEqual(403);
   });
@@ -348,7 +344,7 @@ describe('standup/active/v1', () => {
     channelJoin(userToken2, chanId);
 
     // start standup
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const currTime = Math.floor(Date.now() / 1000);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
@@ -368,7 +364,7 @@ describe('standup/active/v1', () => {
       timeFinish: expect.any(Number),
     });
 
-    sleep(3000);
+    sleep(2000);
 
     const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
@@ -394,7 +390,7 @@ describe('standup/active/v1', () => {
 
     // start standup
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
 
@@ -413,7 +409,7 @@ describe('standup/active/v1', () => {
       timeFinish: expect.any(Number),
     });
 
-    sleep(3000);
+    sleep(2000);
 
     const messageData = channelMessages(userToken, chanId, 0);
     expect(messageData).toStrictEqual({
@@ -452,20 +448,20 @@ describe('standup/send/v1', () => {
 
   test('invalid channelId', () => {
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
-    sleep(3000);
+    sleep(1000);
     const standupSendData = standupSend(userToken, chanId + 1, 'yo slimes');
     expect(standupSendData).toStrictEqual(400);
   });
 
   test('invalid length', () => {
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
-    sleep(3000);
+    sleep(1000);
     const messageLong = Array(1001).fill(undefined).map(() => Math.random().toString(36)[2]).join('');
     const standupSendData = standupSend(userToken, chanId, messageLong);
     expect(standupSendData).toStrictEqual(400);
@@ -478,10 +474,10 @@ describe('standup/send/v1', () => {
 
   test('invalid token', () => {
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
-    sleep(3000);
+    sleep(1000);
     const standupSendData = standupSend(userToken + 1, chanId, 'yo wassup');
     expect(standupSendData).toStrictEqual(403);
   });
@@ -489,11 +485,11 @@ describe('standup/send/v1', () => {
   test('valid channelId but authorised user is not a member', () => {
     const userToken2 = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon').token;
     const currTime = Math.floor(Date.now() / 1000);
-    const startData = standupStart(userToken, chanId, 3);
+    const startData = standupStart(userToken, chanId, 1);
     const standupTimeFinish = currTime + 3000;
     expect(startData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + EXPECTED_TIME_ERROR_MARGIN);
     const standupSendData = standupSend(userToken2, chanId, 'yo wassup');
     expect(standupSendData).toStrictEqual(403);
-    sleep(3000);
+    sleep(1000);
   });
 });
