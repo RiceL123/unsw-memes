@@ -1,5 +1,6 @@
 import HTTPError from 'http-errors';
 import { Data, getData, setData, getHash } from './dataStore';
+import { notificationsSend } from './notifications';
 
 /**
  * channelDetailsV3 passes authUserId, channelId and creates a new
@@ -12,11 +13,9 @@ import { Data, getData, setData, getHash } from './dataStore';
  * @returns {{name, isPublic, ownerMembers, allMembers}} - returns object with
  * basic details about the channel
  */
-function channelDetailsV3(token: string, channelId: string) {
+function channelDetailsV3(token: string, channelId: number) {
   const data = getData();
   token = getHash(token);
-
-  const id = parseInt(channelId);
 
   const userObj = data.users.find(x => x.tokens.includes(token));
 
@@ -24,7 +23,7 @@ function channelDetailsV3(token: string, channelId: string) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === id);
+  const channelObj = data.channels.find(x => x.channelId === channelId);
 
   if (channelObj === undefined) {
     throw HTTPError(400, 'Invalid channelId');
@@ -122,14 +121,11 @@ function channelJoinV3(token: string, channelId: string) {
  *
  * @returns {{}} - empty object
  */
-function channelInviteV3(token: string, channelId: string, uId: string) {
+function channelInviteV3(token: string, channelId: number, uId: number) {
   const data = getData();
   token = getHash(token);
 
-  const chanId = parseInt(channelId);
-  const uuId = parseInt(uId);
-
-  const userFind = (data.users.find(x => x.uId === uuId));
+  const userFind = (data.users.find(x => x.uId === uId));
   if (userFind === undefined) {
     throw HTTPError(400, 'Invalid uId');
   }
@@ -139,12 +135,12 @@ function channelInviteV3(token: string, channelId: string, uId: string) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const channel = data.channels.find(x => x.channelId === chanId);
+  const channel = data.channels.find(x => x.channelId === channelId);
   if (channel === undefined) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
-  if (channel.allMembersIds.find(x => x === uuId)) {
+  if (channel.allMembersIds.find(x => x === uId)) {
     throw HTTPError(400, 'uId is already a member');
   }
 
@@ -152,7 +148,11 @@ function channelInviteV3(token: string, channelId: string, uId: string) {
     throw HTTPError(403, 'authorised user is not a member of the channel');
   }
 
-  channel.allMembersIds.push(uuId);
+  channel.allMembersIds.push(uId);
+
+  // notify the user that was just invited that they were added
+  notificationsSend(data, [uId], -1, channel.channelId, userObj.handleStr, channel.channelName, '', 'add');
+
   setData(data);
 
   return {};
@@ -245,6 +245,10 @@ function channelLeaveV2(token: string, channelId: string) {
 
   if (!channelObj.allMembersIds.includes(userObj.uId)) {
     throw HTTPError(403, 'invalid uId - user not apart of channel');
+  }
+
+  if (channelObj.standupOwner === userObj.uId && channelObj.standupIsActive === true) {
+    throw HTTPError(400, 'Owner of active standup cannot leave');
   }
 
   // remove the user from the channel - if the user was an owner, they are removed from there aswell

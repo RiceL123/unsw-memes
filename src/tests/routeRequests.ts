@@ -21,6 +21,33 @@ function clear() {
   );
 }
 
+function search(token: string, queryStr: string) {
+  return requestHelper(
+    'GET',
+    '/search/v1',
+    {
+      headers: {
+        token: token
+      },
+      qs: {
+        queryStr: queryStr,
+      }
+    }
+  );
+}
+
+function notificationsGet(token: string) {
+  return requestHelper(
+    'GET',
+    '/notifications/get/v1',
+    {
+      headers: {
+        token: token
+      },
+    }
+  );
+}
+
 // ===================== channels ===================== //
 function channelsCreate(token: string, name: string, isPublic: boolean) {
   return requestHelper(
@@ -641,8 +668,23 @@ function standupSend(token: string, channelId: number, message: string) {
   );
 }
 
+// ======================= notifications ======================== //
+function getNotifications(token: string) {
+  return requestHelper(
+    'GET',
+    '/notifications/get/v1',
+    {
+      headers: {
+        token: token
+      }
+    }
+  );
+}
+
 export {
   clear,
+  search,
+  notificationsGet,
   channelsCreate,
   channelsListAll,
   channelsList,
@@ -683,5 +725,6 @@ export {
   adminUserPermissionChange,
   standupStart,
   standupActive,
-  standupSend
+  standupSend,
+  getNotifications,
 };

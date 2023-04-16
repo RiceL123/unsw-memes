@@ -5,10 +5,6 @@ beforeEach(() => {
   clear();
 });
 
-// afterAll((done) => {
-//   done();
-// });
-
 function sleep(ms: number) {
   const start = Date.now();
   while (Date.now() - start < ms);
