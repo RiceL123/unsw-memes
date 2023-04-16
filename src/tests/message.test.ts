@@ -21,13 +21,6 @@ import {
   messageUnreact
 } from './routeRequests';
 
-import request from 'sync-request';
-
-import { port, url } from '../config.json';
-
-const SERVER_URL = `${url}:${port}`;
-
-const ERROR = { error: expect.any(String) };
 const VALID_MESSAGE = { messageId: expect.any(Number) };
 // 5 seconds to account for the time between the request and the expect (server latency).
 const EXPECTED_TIME_ERROR_MARGIN = 5;
@@ -977,111 +970,39 @@ describe('/message/senddm/v1', () => {
   });
 
   test('invalid token', () => {
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token + 1,
-          dmId: dmDataId,
-          message: 'Hello World'
-        },
-      }
-    );
+    const sendDmData = messageSendDm(userData.token + 1, dmDataId, 'Hello World');
 
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
-
-    expect(sendDmData).toStrictEqual(ERROR);
+    expect(sendDmData).toStrictEqual(403);
   });
 
   test('invalid dmId', () => {
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId + 1,
-          message: 'Hello World'
-        },
-      }
-    );
+    const sendDmData = messageSendDm(userData.token, dmDataId + 1, 'Hello World');
 
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
-
-    expect(sendDmData).toStrictEqual(ERROR);
+    expect(sendDmData).toStrictEqual(400);
   });
 
   test('invalid message - message.length < 1', () => {
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId,
-          message: ''
-        },
-      }
-    );
+    const sendDmData = messageSendDm(userData.token, dmDataId, '');
 
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
-
-    expect(sendDmData).toStrictEqual(ERROR);
+    expect(sendDmData).toStrictEqual(400);
   });
 
   test('invalid message - message.length < 1000', () => {
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId,
-          message: 'a'.repeat(1001)
-        },
-      }
-    );
+    const sendDmData = messageSendDm(userData.token, dmDataId, 'a'.repeat(1001));
 
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
-
-    expect(sendDmData).toStrictEqual(ERROR);
+    expect(sendDmData).toStrictEqual(400);
   });
 
   test('valid dmId, user is not a member of DM', () => {
     const userData2 = authRegister('z4444444@ad.unsw.edu.au', 'password1', 'Charmander', 'Charizard');
 
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData2.token,
-          dmId: dmDataId,
-          message: 'Hello World'
-        },
-      }
-    );
+    const sendDmData = messageSendDm(userData2.token, dmDataId, 'Hello World');
 
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
-
-    expect(sendDmData).toStrictEqual(ERROR);
+    expect(sendDmData).toStrictEqual(403);
   });
 
   test('valid /message/senddm/v1', () => {
-    const sendDmRes = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId,
-          message: 'Hello World'
-        },
-      }
-    );
-
-    const sendDmData = JSON.parse(sendDmRes.getBody() as string);
+    const sendDmData = messageSendDm(userData.token, dmDataId, 'Hello World');
 
     expect(sendDmData).toStrictEqual({ messageId: expect.any(Number) });
 
@@ -1106,45 +1027,9 @@ describe('/message/senddm/v1', () => {
   });
 
   test('valid multiple /message/senddm/v1', () => {
-    const sendDmRes1 = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId,
-          message: 'Hello World'
-        },
-      }
-    );
-
-    const sendDmRes2 = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId,
-          message: 'Hello'
-        },
-      }
-    );
-
-    const sendDmRes3 = request(
-      'POST',
-      SERVER_URL + '/message/senddm/v1',
-      {
-        json: {
-          token: userData.token,
-          dmId: dmDataId,
-          message: 'Goodbye World'
-        },
-      }
-    );
-
-    const sendDmData1 = JSON.parse(sendDmRes1.getBody() as string);
-    const sendDmData2 = JSON.parse(sendDmRes2.getBody() as string);
-    const sendDmData3 = JSON.parse(sendDmRes3.getBody() as string);
+    const sendDmData1 = messageSendDm(userData.token, dmDataId, 'Hello World');
+    const sendDmData2 = messageSendDm(userData.token, dmDataId, 'Hello');
+    const sendDmData3 = messageSendDm(userData.token, dmDataId, 'Goodbye World');
 
     expect(sendDmData1).toStrictEqual({ messageId: expect.any(Number) });
     expect(sendDmData2).toStrictEqual({ messageId: expect.any(Number) });

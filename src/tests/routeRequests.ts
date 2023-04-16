@@ -80,7 +80,7 @@ function channelsList(token: string) {
 function channelsListAll(token: string) {
   return requestHelper(
     'GET',
-    '/channels/listall/v3',
+    '/channels/listAll/v3',
     {
       headers: {
         token: token,
@@ -252,10 +252,12 @@ function channelAddOwner(token: string, channelId: number, uId: number) {
 function channelRemoveOwner(token: string, channelId: number, uId: number) {
   return requestHelper(
     'POST',
-    '/channel/removeowner/v1',
+    '/channel/removeowner/v2',
     {
-      json: {
+      headers: {
         token: token,
+      },
+      json: {
         channelId: channelId,
         uId: uId,
       }
@@ -449,7 +451,7 @@ function dmMessages(token: string, dmId: number, start: number) {
 function messageSend(token: string, channelId: number, message: string) {
   return requestHelper(
     'POST',
-    '/message/send/v3',
+    '/message/send/v2',
     {
       headers: {
         token: token
@@ -465,7 +467,7 @@ function messageSend(token: string, channelId: number, message: string) {
 function messageEdit(token: string, messageId: number, message: string) {
   return requestHelper(
     'PUT',
-    '/message/edit/v3',
+    '/message/edit/v2',
     {
       headers: {
         token: token
@@ -481,7 +483,7 @@ function messageEdit(token: string, messageId: number, message: string) {
 function messageRemove(token: string, messageId: number) {
   return requestHelper(
     'DELETE',
-    '/message/remove/v3',
+    '/message/remove/v2',
     {
       headers: {
         token: token
@@ -496,10 +498,12 @@ function messageRemove(token: string, messageId: number) {
 function messageSendDm(token: string, dmId: number, message: string) {
   return requestHelper(
     'POST',
-    '/message/senddm/v1',
+    '/message/senddm/v2',
     {
+      headers: {
+        token: token
+      },
       json: {
-        token: token,
         dmId: dmId,
         message: message
       },

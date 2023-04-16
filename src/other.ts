@@ -1,4 +1,5 @@
 import { Data, getData, setData, getHash, Message } from './dataStore';
+import fs from 'fs';
 import HTTPError from 'http-errors';
 /**
  * Resets the internal data of the application to its initial state
@@ -12,8 +13,16 @@ function clearV1(): Record<string, never> {
     dms: [],
   };
 
-  setData(data);
+  const defaultImage = 'default.jpg';
+  const directory = 'profileImages';
 
+  fs.readdirSync(directory).forEach(file => {
+    if (file !== defaultImage && file.endsWith('.jpg')) {
+      fs.unlinkSync(`${directory}/${file}`);
+    }
+  });
+
+  setData(data);
   return {};
 }
 
