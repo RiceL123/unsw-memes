@@ -1,5 +1,8 @@
 import { clear, authRegister, dmCreate, dmDetails, dmRemove, dmLeave, dmList, dmMessages, messageSendDm } from './routeRequests';
 
+import { url, port } from '../config.json';
+const SERVER_URL = `${url}:${port}`;
+
 const VALID_DM_RETURN = { dmId: expect.any(Number) };
 
 interface AuthRegisterReturn {
@@ -173,7 +176,7 @@ describe('/dm/details/v2', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ]
     });
@@ -195,7 +198,7 @@ describe('/dm/details/v2', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ]
     });
@@ -213,7 +216,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: userObj2.authUserId,
@@ -221,7 +224,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Clive',
         nameLast: 'Palmer',
         handleStr: 'clivepalmer',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       }
     ];
 
@@ -242,7 +245,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: userObj2.authUserId,
@@ -250,7 +253,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Clive',
         nameLast: 'Palmer',
         handleStr: 'clivepalmer',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: userObj3.authUserId,
@@ -258,7 +261,7 @@ describe('/dm/details/v2', () => {
         nameFirst: 'Pauline',
         nameLast: 'Hanson',
         handleStr: 'paulinehanson',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       }
     ];
 
@@ -322,7 +325,7 @@ describe('/dm/leave/v2', () => {
           nameFirst: 'Clive',
           nameLast: 'Palmer',
           handleStr: 'clivepalmer',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ]
     });
@@ -340,7 +343,7 @@ describe('/dm/leave/v2', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ]
     });
@@ -568,6 +571,7 @@ describe('dmMessagesV2', () => {
       end: -1,
     });
   });
+
   test('pagination of 50', () => {
     // sending 51 messages
     for (let i = 0; i < 51; i++) {

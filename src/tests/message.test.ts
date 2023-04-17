@@ -2508,9 +2508,9 @@ describe('/message/sendlater/v1', () => {
 
     expect(channelJoin(Jake.token, candyChannel)).toStrictEqual({});
     const messageId1 = messageSend(Jake.token, candyChannel, 'Hey Finn!');
-    const messageId2 = messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 1);
+    const messageId2 = messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 1); // last
     const messageId3 = messageSend(Finn.token, candyChannel, 'I am not too sure Jake');
-    const messageId4 = messageSendLater(Finn.token, candyChannel, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent));
+    const messageId4 = messageSendLater(Finn.token, candyChannel, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent)); // second last
     const messageId5 = messageSend(Jake.token, candyChannel, "oh okay Finn, I'll take a look later");
     sleep(3000);
     const messageData = channelMessages(Finn.token, candyChannel, 0);

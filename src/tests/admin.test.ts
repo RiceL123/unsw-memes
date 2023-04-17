@@ -5,6 +5,9 @@ import {
   userProfileSetHandle, userProfileSetEmail,
 } from './routeRequests';
 
+import { url, port } from '../config.json';
+const SERVER_URL = `${url}:${port}`;
+
 interface userObj {
   uId: number;
   email: string;
@@ -76,7 +79,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
 
@@ -87,7 +90,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -110,7 +113,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: removee.authUserId,
@@ -118,7 +121,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Charmander',
         nameLast: 'Pokemon',
         handleStr: 'charmanderpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       }
     ];
 
@@ -134,7 +137,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: expect.any(Array),
@@ -156,7 +159,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: [
@@ -166,7 +169,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -178,7 +181,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -191,7 +194,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
 
@@ -229,7 +232,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: random.authUserId,
@@ -237,7 +240,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
         handleStr: 'charizardpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -253,7 +256,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: expect.any(Array)
@@ -273,7 +276,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: [
@@ -283,7 +286,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -299,7 +302,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -388,7 +391,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: random.authUserId,
@@ -396,7 +399,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
         handleStr: 'charizardpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -414,7 +417,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
 
@@ -448,7 +451,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -460,7 +463,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: random.authUserId,
@@ -468,7 +471,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
         handleStr: 'charizardpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -492,7 +495,7 @@ describe('/admin/user/remove/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -581,7 +584,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: random.authUserId,
@@ -589,7 +592,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Charizard',
         nameLast: 'Pokemon',
         handleStr: 'charizardpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -607,7 +610,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
 
@@ -627,7 +630,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Removed',
         nameLast: 'user',
         handleStr: '',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
 
@@ -638,7 +641,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -655,7 +658,7 @@ describe('/admin/user/remove/v1', () => {
         nameFirst: 'Bob',
         nameLast: 'Stone',
         handleStr: 'charmanderpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
   });
@@ -739,7 +742,7 @@ describe('/admin/userpermission/change/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: person2.authUserId,
@@ -747,7 +750,7 @@ describe('/admin/userpermission/change/v1', () => {
         nameFirst: 'Charmander',
         nameLast: 'Pokemon',
         handleStr: 'charmanderpokemon',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -763,7 +766,7 @@ describe('/admin/userpermission/change/v1', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: expect.any(Array),
@@ -796,7 +799,7 @@ describe('/admin/userpermission/change/v1', () => {
           nameFirst: 'Charmander',
           nameLast: 'Pokemon',
           handleStr: 'charmanderpokemon',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -806,7 +809,7 @@ describe('/admin/userpermission/change/v1', () => {
           nameFirst: 'Charmander',
           nameLast: 'Pokemon',
           handleStr: 'charmanderpokemon',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
     });

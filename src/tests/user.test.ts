@@ -3,6 +3,9 @@ import {
   userProfileSetEmail, userProfileSetHandle, userProfileUploadPhoto
 } from './routeRequests';
 
+import { url, port } from '../config.json';
+const SERVER_URL = `${url}:${port}`;
+
 interface userObj {
   uId: number;
   email: string;
@@ -51,7 +54,7 @@ describe('/user/profile/V3', () => {
           nameFirst: nameFirst,
           nameLast: nameLast,
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       }
     );
@@ -69,7 +72,7 @@ describe('/user/profile/V3', () => {
         nameFirst: 'Charmander',
         nameLast: 'PokemonName1',
         handleStr: 'charmanderpokemonnam',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       }
     });
 
@@ -80,7 +83,7 @@ describe('/user/profile/V3', () => {
         nameFirst: 'Charmeleon',
         nameLast: 'PokemonName2',
         handleStr: 'charmeleonpokemonnam',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
 
@@ -91,7 +94,7 @@ describe('/user/profile/V3', () => {
         nameFirst: 'Charizard',
         nameLast: 'PokemonName3',
         handleStr: 'charizardpokemonname',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     });
   });
@@ -149,7 +152,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'Bruce',
         nameLast: 'Wayne',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -168,7 +171,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'a',
         nameLast: 'Wayne',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -188,7 +191,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx',
         nameLast: 'Wayne',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -207,7 +210,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'Bruce',
         nameLast: 'a',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -227,7 +230,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'Bruce',
         nameLast: 'abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwx',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -250,7 +253,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'Bruce',
         nameLast: 'Wayne',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data2.authUserId,
@@ -258,7 +261,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'Barry',
         nameLast: 'Allen',
         handleStr: 'johnsmith',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data3.authUserId,
@@ -266,7 +269,7 @@ describe('/user/profile/setname/v1', () => {
         nameFirst: 'Clark',
         nameLast: 'Kent',
         handleStr: 'jamessmith',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -324,7 +327,7 @@ describe('/user/profile/setEmail/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -347,7 +350,7 @@ describe('/user/profile/setEmail/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data2.authUserId,
@@ -355,7 +358,7 @@ describe('/user/profile/setEmail/v1', () => {
         nameFirst: 'John',
         nameLast: 'Smith',
         handleStr: 'johnsmith',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data3.authUserId,
@@ -363,7 +366,7 @@ describe('/user/profile/setEmail/v1', () => {
         nameFirst: 'James',
         nameLast: 'Smith',
         handleStr: 'jamessmith',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -439,7 +442,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'batman',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -458,7 +461,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: '123iamvengeance123',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -477,7 +480,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'abc',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -496,7 +499,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'abcdefghijklmnopqrst',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -519,7 +522,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'batman',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data2.authUserId,
@@ -527,7 +530,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'John',
         nameLast: 'Smith',
         handleStr: 'flash',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data3.authUserId,
@@ -535,7 +538,7 @@ describe('/user/profile/sethandle/v1', () => {
         nameFirst: 'James',
         nameLast: 'Smith',
         handleStr: 'superman420',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -614,7 +617,7 @@ describe('/user/profile/uploadphoto/v1', () => {
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       }
     });
   });
@@ -635,7 +638,7 @@ describe('/user/profile/uploadphoto/v1', () => {
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/cropped_1.jpg`,
       }
     });
   });
@@ -656,7 +659,7 @@ describe('/user/profile/uploadphoto/v1', () => {
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/cropped_1.jpg`,
       }
     });
   });
@@ -677,7 +680,7 @@ describe('/user/profile/uploadphoto/v1', () => {
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/cropped_1.jpg`,
       }
     });
 
@@ -696,7 +699,7 @@ describe('/user/profile/uploadphoto/v1', () => {
         nameFirst: nameFirst,
         nameLast: nameLast,
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/cropped_1.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/cropped_1.jpg`,
       }
     });
   });
