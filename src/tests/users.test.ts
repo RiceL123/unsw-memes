@@ -1,5 +1,8 @@
 import { clear, authRegister, usersAll } from './routeRequests';
 
+import { url, port } from '../config.json';
+const SERVER_URL = `${url}:${port}`;
+
 interface userObj {
   uId: number;
   email: string;
@@ -35,7 +38,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -53,7 +56,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -69,7 +72,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data2.authUserId,
@@ -77,7 +80,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Krusty',
         nameLast: 'Krabs',
         handleStr: 'krustykrabs',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 
@@ -101,7 +104,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data2.authUserId,
@@ -109,7 +112,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Charmander',
         nameLast: 'LastName',
         handleStr: 'charmanderlastname',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: data3.authUserId,
@@ -117,7 +120,7 @@ describe('/users/all/v2', () => {
         nameFirst: 'Charizard',
         nameLast: 'LastName',
         handleStr: 'charizardlastname',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
     ];
 

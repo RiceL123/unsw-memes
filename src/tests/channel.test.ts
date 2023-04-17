@@ -1,5 +1,8 @@
 import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner, standupStart } from './routeRequests';
 
+import { url, port } from '../config.json';
+const SERVER_URL = `${url}:${port}`;
+
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
 
 interface channelObjUser {
@@ -78,7 +81,7 @@ describe('channelDetailsV3 ', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: [
@@ -88,7 +91,7 @@ describe('channelDetailsV3 ', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
     });
@@ -120,7 +123,7 @@ describe('channelDetailsV3 ', () => {
           nameFirst: 'Madhav',
           nameLast: 'Mishra',
           handleStr: 'madhavmishra',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       // array needs to account for any permutation
@@ -134,7 +137,7 @@ describe('channelDetailsV3 ', () => {
         nameFirst: 'Madhav',
         nameLast: 'Mishra',
         handleStr: 'madhavmishra',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       },
       {
         uId: person2Data.authUserId,
@@ -142,7 +145,7 @@ describe('channelDetailsV3 ', () => {
         nameFirst: 'Big',
         nameLast: 'Bird',
         handleStr: 'bigbird',
-        profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
       }
     ];
 
@@ -329,554 +332,12 @@ describe('/channel/messages/v3', () => {
     });
   });
 
-  test('valid channelMessagesV1 - 10 messages', () => {
-    const data = authRegister(email, password, nameFirst, nameLast);
-    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
-    const channelObj = channelsCreate(data.token, channelName, true);
-
-    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
-
-    const start = 0;
-
-    const messageArray = [];
-    for (let i = 0; i < 10; i++) {
-      messageArray.push(messageSend(sender.token, channelObj.channelId, 'a').messageId);
-    }
-
-    for (let i = 0; i < 10; i++) {
-      expect(messageArray[i]).toStrictEqual(expect.any(Number));
-    }
-
-    const set = new Set(messageArray);
-
-    expect(set.size).toBe(10);
-
-    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
-      messages: [
-        {
-          messageId: messageArray[10 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[9 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[8 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[7 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[6 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[5 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[4 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[3 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[2 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageArray[1 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-      ],
-      start: 0,
-      end: -1,
-    });
-  });
-
-  test('valid channelMessagesV1 - 50 messages', () => {
-    const data = authRegister(email, password, nameFirst, nameLast);
-    const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
-    const channelObj = channelsCreate(data.token, channelName, true);
-    const start = 0;
-
-    expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
-
-    const messageIdArray = [];
-
-    for (let i = 0; i < 50; i++) {
-      messageIdArray.push(messageSend(sender.token, channelObj.channelId, 'a').messageId);
-    }
-
-    for (let i = 0; i < 50; i++) {
-      expect(messageIdArray[i]).toStrictEqual(expect.any(Number));
-    }
-
-    const set = new Set(messageIdArray);
-
-    expect(set.size).toBe(50);
-
-    expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
-      messages: [
-        {
-          messageId: messageIdArray[50 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[49 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[48 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[47 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[46 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[45 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[44 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[43 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[42 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[41 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[40 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[39 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[38 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[37 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[36 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[35 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[34 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[33 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[32 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[31 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[30 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[29 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[28 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[27 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[26 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[25 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[24 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        }, {
-          messageId: messageIdArray[23 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[22 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[21 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[20 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[19 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[18 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[17 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[16 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[15 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[14 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[13 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[12 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[11 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[10 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[9 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[8 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[7 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[6 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[5 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[4 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[3 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[2 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[1 - 1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-
-      ],
-      start: 0,
-      end: -1,
-    });
-  });
-
   test('valid channelMessagesV1 - 52 messages', () => {
     const data = authRegister(email, password, nameFirst, nameLast);
     const sender = authRegister('z1111111@ad.unsw.edu.au', 'password', 'Charmander', 'Pokemon');
     const channelObj = channelsCreate(data.token, channelName, true);
     const start = 0;
 
-    // const Time = Math.floor((new Date()).getTime() / 1000);
-
     expect(channelInvite(data.token, channelObj.channelId, sender.authUserId)).toStrictEqual({});
 
     const messageIdArray = [];
@@ -884,440 +345,31 @@ describe('/channel/messages/v3', () => {
       messageIdArray.push(messageSend(sender.token, channelObj.channelId, 'a').messageId);
     }
 
-    for (let i = 0; i < 52; i++) {
-      expect(messageIdArray[i]).toStrictEqual(expect.any(Number));
-    }
-
     const set = new Set(messageIdArray);
 
     expect(set.size).toBe(52);
 
+    const expectMessages = [];
+    for (let i = 0; i < 52; i++) {
+      expectMessages.unshift({
+        messageId: messageIdArray[i],
+        uId: sender.authUserId,
+        message: 'a',
+        timeSent: expect.any(Number),
+        reacts: [],
+        isPinned: false,
+      });
+    }
+
     expect(channelMessages(data.token, channelObj.channelId, start)).toStrictEqual({
-      messages: [
-        {
-          messageId: messageIdArray[51],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[50],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[49],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[48],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[47],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[46],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[45],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[44],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[43],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[42],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[41],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[40],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[39],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[38],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[37],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[36],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[35],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[34],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[33],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[32],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[31],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[30],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[29],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[28],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[27],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[26],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[25],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[24],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[23],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        }, {
-          messageId: messageIdArray[22],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[21],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[20],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[19],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[18],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[17],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[16],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[15],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[14],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[13],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[12],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[11],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[10],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[9],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[8],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[7],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[6],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[5],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[4],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[3],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[2],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-      ],
+      messages: expectMessages.slice(0, 50),
       start: 0,
       end: 50,
     });
 
     const newStart = 50;
     expect(channelMessages(data.token, channelObj.channelId, newStart)).toStrictEqual({
-      messages: [
-        {
-          messageId: messageIdArray[1],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageIdArray[0],
-          uId: sender.authUserId,
-          message: 'a',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-      ],
+      messages: expectMessages.slice(50, 52),
       start: 50,
       end: -1,
     });
@@ -1692,7 +744,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1700,7 +752,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -1708,7 +760,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -1718,7 +770,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1726,7 +778,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -1734,7 +786,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -1772,7 +824,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1780,7 +832,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -1790,7 +842,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -1798,7 +850,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1806,7 +858,7 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -1898,7 +950,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1906,7 +958,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -1914,7 +966,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -1924,7 +976,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1932,7 +984,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -1940,7 +992,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -1985,7 +1037,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -1993,7 +1045,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -2001,7 +1053,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2011,7 +1063,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2019,7 +1071,7 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -2027,14 +1079,14 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
   });
 });
 
-describe('/channel/removeowner/v2', () => {
+describe('/channel/removeowner/v1', () => {
   let userId: number;
   let userId2: number;
   let userToken: string;
@@ -2072,9 +1124,9 @@ describe('/channel/removeowner/v2', () => {
   });
 
   test('user is not the owner of the channel ', () => {
-    const removeData = channelRemoveOwner(userToken2, chanId, userId2);
+    const removeData = channelRemoveOwner(userToken, chanId, userId2);
 
-    expect(removeData).toStrictEqual(403);
+    expect(removeData).toStrictEqual(400);
   });
 
   test('user is a only owner in the channel', () => {
@@ -2107,7 +1159,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2115,7 +1167,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2125,7 +1177,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2133,7 +1185,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2153,7 +1205,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
       allMembers: [
@@ -2163,7 +1215,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2171,7 +1223,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ]
     });
@@ -2201,7 +1253,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2209,7 +1261,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -2217,7 +1269,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2227,7 +1279,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2235,7 +1287,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -2243,7 +1295,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2263,7 +1315,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2271,7 +1323,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2281,7 +1333,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2289,7 +1341,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -2297,7 +1349,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2317,7 +1369,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2327,7 +1379,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2335,7 +1387,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId3,
@@ -2343,7 +1395,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2386,7 +1438,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2394,7 +1446,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2404,7 +1456,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -2412,7 +1464,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2420,7 +1472,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2439,7 +1491,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2449,7 +1501,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -2457,7 +1509,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2465,7 +1517,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2484,7 +1536,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -2492,7 +1544,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2502,7 +1554,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Simon',
           nameLast: 'the Chipmunk',
           handleStr: 'simonthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId,
@@ -2510,7 +1562,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2518,7 +1570,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2534,7 +1586,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2544,7 +1596,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2552,7 +1604,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });
@@ -2574,7 +1626,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
       allMembers: [
@@ -2584,7 +1636,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Alvin',
           nameLast: 'the Chipmunk',
           handleStr: 'alvinthechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
         {
           uId: userId2,
@@ -2592,7 +1644,7 @@ describe('/channel/removeowner/v2', () => {
           nameFirst: 'Theodore',
           nameLast: 'the Chipmunk',
           handleStr: 'theodorethechipmunk',
-          profileImgUrl: 'http://localhost:3200/profileImages/default.jpg',
+          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ]
     });

@@ -16,24 +16,14 @@ describe('/auth/register/v3', () => {
   const password = 'password';
   const nameFirst = 'Madhav';
   const nameLast = 'Mishra';
-
-  test.each([
-    // invalid emails
-    { email: 'emailATemail.com', password: password, nameFirst: nameFirst, nameLast: nameLast },
-    { email: 'email@@email.com', password: password, nameFirst: nameFirst, nameLast: nameLast },
-    // invalid password - password.length < 6
-    { email: email, password: '12345', nameFirst: nameFirst, nameLast: nameLast },
-    // invalid nameFirst - nameFirst.length < 1
-    { email: email, password: password, nameFirst: '', nameLast: nameLast },
-    // invalid nameFirst - nameFirst.length > 50
-    { email: email, password: password, nameFirst: '123456789012345678901234567890123456789012345678901', nameLast: nameLast },
-    // invalid nameLast - nameLast.length < 1
-    { email: email, password: password, nameFirst: nameFirst, nameLast: '' },
-    // invalid nameLast - nameLast.length > 50
-    { email: email, password: password, nameFirst: nameFirst, nameLast: '123456789012345678901234567890123456789012345678901' },
-
-  ])('invalid email / password / nameFirst / nameLast inputs', ({ email, password, nameFirst, nameLast }) => {
-    expect(authRegister(email, password, nameFirst, nameLast)).toStrictEqual(400);
+  test('invalid email / password / nameFirst / nameLast inputs', () => {
+    expect(authRegister('emailATemail.com', password, nameFirst, nameLast)).toStrictEqual(400);
+    expect(authRegister('email@@email.com', password, nameFirst, nameLast)).toStrictEqual(400);
+    expect(authRegister(email, '12345', nameFirst, nameLast)).toStrictEqual(400);
+    expect(authRegister(email, password, '', nameLast)).toStrictEqual(400);
+    expect(authRegister(email, password, '123456789012345678901234567890123456789012345678901', nameLast)).toStrictEqual(400);
+    expect(authRegister(email, password, nameFirst, '')).toStrictEqual(400);
+    expect(authRegister(email, password, nameFirst, '123456789012345678901234567890123456789012345678901')).toStrictEqual(400);
   });
 
   test('invalid email already used by another user', () => {
