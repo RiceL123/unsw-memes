@@ -102,6 +102,11 @@ function channelJoinV3(token: string, channelId: number) {
   }
 
   channelFind.allMembersIds.push(userObj.uId);
+
+  // update user stats of user that is joining
+  const numChannelsJoined = userObj.stats.channels.at(-1).numChannelsJoined + 1; // minus 1 to whateva is the most recent number of channel joined
+  userObj.stats.channels.push({ numChannelsJoined: numChannelsJoined, timeStamp: Math.floor(Date.now() / 1000) });
+
   setData(data);
 
   return {};
@@ -150,6 +155,10 @@ function channelInviteV3(token: string, channelId: number, uId: number) {
 
   // notify the user that was just invited that they were added
   notificationsSend(data, [uId], -1, channel.channelId, userObj.handleStr, channel.channelName, '', 'add');
+
+  // update user stats of user that is invited
+  const numChannelsJoined = userFind.stats.channels.at(-1).numChannelsJoined + 1; // plus 1 to whateva is the most recent number of channel joined
+  userFind.stats.channels.push({ numChannelsJoined: numChannelsJoined, timeStamp: Math.floor(Date.now() / 1000) });
 
   setData(data);
 
@@ -250,6 +259,10 @@ function channelLeaveV2(token: string, channelId: number) {
   // remove the user from the channel - if the user was an owner, they are removed from there aswell
   channelObj.allMembersIds = channelObj.allMembersIds.filter(x => x !== userObj.uId);
   channelObj.ownerMembersIds = channelObj.ownerMembersIds.filter(x => x !== userObj.uId);
+
+  // update user stats of user that is leaving
+  const numChannelsJoined = userObj.stats.channels.at(-1).numChannelsJoined - 1; // minus 1 to whateva is the most recent number of channel joined
+  userObj.stats.channels.push({ numChannelsJoined: numChannelsJoined, timeStamp: Math.floor(Date.now() / 1000) });
 
   setData(data);
   return {};

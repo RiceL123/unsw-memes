@@ -18,6 +18,8 @@ import { adminUserRemoveV1, adminUserPermissionChangeV1 } from './admin';
 import { notificationsGetV1 } from './notifications';
 import { searchV1 } from './search';
 
+import { userStats, usersStats } from './stats';
+
 // Set up web app
 const app = express();
 // Use middleware that allows us to access the JSON body of requests
@@ -332,6 +334,19 @@ app.post('/standup/send/v1', (req: Request, res: Response, next) => {
 app.get('/notifications/get/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
   return res.json(notificationsGetV1(token));
+});
+
+/// ////////////////////////////////////////////////////////////
+/// ////////////////  users/stats routes   /////////////////////
+/// ////////////////////////////////////////////////////////////
+app.get('/user/stats/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  return res.json(userStats(token));
+});
+
+app.get('/users/stats/v1', (req: Request, res: Response, next) => {
+  const token = req.header('token');
+  return res.json(usersStats(token));
 });
 
 // Keep this BENEATH route definitions

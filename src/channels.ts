@@ -47,6 +47,15 @@ function channelsCreateV3(token: string, name: string, isPublic: boolean) {
   };
 
   data.channels.push(newChannel);
+
+  // update globalStats
+  const numChannelsExist = data.workspaceStats.channels.at(-1).numChannelsExist + 1;
+  data.workspaceStats.channels.push({ numChannelsExist: numChannelsExist, timeStamp: Math.floor(Date.now() / 1000) });
+
+  // update user stats of user that created the channel
+  const numChannelsJoined = userObj.stats.channels.at(-1).numChannelsJoined + 1;
+  userObj.stats.channels.push({ numChannelsJoined: numChannelsJoined, timeStamp: Math.floor(Date.now() / 1000) });
+
   setData(data);
   return { channelId: newChannelId };
 }

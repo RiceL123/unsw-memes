@@ -7,6 +7,27 @@ interface Notification {
   notificationMessage: string;
 }
 
+interface StatMessage {
+  numMessagesSent: number;
+  timeStamp: number;
+}
+
+interface StatChannels {
+  numChannelsJoined: number;
+  timeStamp: number;
+}
+
+interface StatDms {
+  numDmsJoined: number;
+  timeStamp: number;
+}
+
+interface Stats {
+  messages: StatMessage[];
+  channels: StatChannels[];
+  dms: StatDms[];
+}
+
 interface User {
   uId: number;
   nameFirst: string;
@@ -19,6 +40,7 @@ interface User {
   resetCode: string;
   profileImgUrl: string;
   notifications: Notification[];
+  stats: Stats;
 }
 
 interface React {
@@ -57,7 +79,29 @@ interface Dm {
   messages: Message[];
 }
 
+interface WorkspaceStatsChannel {
+  numChannelsExist: number;
+  timeStamp: number;
+}
+
+interface WorkspaceStatsDm {
+  numDmsExist: number;
+  timeStamp: number;
+}
+
+interface WorkspaceStatsMessage {
+  numMessagesExist: number;
+  timeStamp: number;
+}
+
+interface WorkspaceStats {
+  channels: WorkspaceStatsChannel[],
+  dms: WorkspaceStatsDm[],
+  messages: WorkspaceStatsMessage[],
+}
+
 interface Data {
+  workspaceStats: WorkspaceStats;
   users: User[];
   channels: Channel[];
   dms: Dm[];
@@ -86,4 +130,4 @@ function getHash(string: string): string {
   return crypto.createHmac('sha1', secret).update(string).digest('hex');
 }
 
-export { Notification, React, User, Channel, Dm, Message, Data, getData, setData, getHash };
+export { Notification, Stats, WorkspaceStats, React, User, Channel, Dm, Message, Data, getData, setData, getHash };

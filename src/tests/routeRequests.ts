@@ -718,6 +718,31 @@ function getNotifications(token: string) {
   );
 }
 
+// ======================= stats ======================== //
+function userStats(token: string) {
+  return requestHelper(
+    'GET',
+    '/user/stats/v1',
+    {
+      headers: {
+        token: token
+      }
+    }
+  );
+}
+
+function usersStats(token: string) {
+  return requestHelper(
+    'GET',
+    '/users/stats/v1',
+    {
+      headers: {
+        token: token
+      }
+    }
+  );
+}
+
 export {
   clear,
   search,
@@ -766,4 +791,6 @@ export {
   standupActive,
   standupSend,
   getNotifications,
+  userStats,
+  usersStats
 };

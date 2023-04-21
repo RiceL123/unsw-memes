@@ -52,11 +52,13 @@ function messageSendV3(token: string, channelId: number, message: string) {
   // creates new message ID using a +1 mechanism
   const messageId = generateMessageId();
 
+  const timeSent = Math.floor(Date.now() / 1000);
+
   const newMessage: Message = {
     messageId: messageId,
     uId: userObj.uId,
     message: message,
-    timeSent: Math.floor(Date.now() / 1000),
+    timeSent: timeSent,
     reacts: [],
     isPinned: false,
   };
@@ -66,6 +68,14 @@ function messageSendV3(token: string, channelId: number, message: string) {
   // notify all the users who have their handleStr tagged
   const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
   notificationsSend(data, usersToNotify, -1, channelId, userObj.handleStr, channelObj.channelName, message);
+
+  // update messages sent for user stats
+  const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
+  userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+
+  // update global stats
+  const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+  data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
 
   setData(data);
   return { messageId: messageId };
@@ -212,6 +222,10 @@ function messageRemoveV3(token: string, messageId: number) {
     }
 
     channelObj.messages = channelObj.messages.filter(x => x.messageId !== messageId);
+
+    // update global stats
+    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist - 1;
+    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: Math.floor(Date.now() / 1000) });
   } else {
     // find corresponding messageObj in dm
     const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
@@ -227,6 +241,10 @@ function messageRemoveV3(token: string, messageId: number) {
     }
 
     dmObj.messages = dmObj.messages.filter(x => x.messageId !== messageId);
+
+    // update global stats
+    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist - 1;
+    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: Math.floor(Date.now() / 1000) });
   }
 
   setData(data);
@@ -272,11 +290,13 @@ function messageSendDmV2(token: string, dmId: number, message: string) {
 
   const messageId = generateMessageId();
 
+  const timeSent = Math.floor(Date.now() / 1000);
+
   const newMessage: Message = {
     messageId: messageId,
     uId: userObj.uId,
     message: message,
-    timeSent: Math.floor(Date.now() / 1000),
+    timeSent: timeSent,
     reacts: [],
     isPinned: false,
   };
@@ -286,6 +306,14 @@ function messageSendDmV2(token: string, dmId: number, message: string) {
   // notify all the users who have their handleStr tagged and are still members
   const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
   notificationsSend(data, usersToNotify, dmId, -1, userObj.handleStr, dmObj.dmName, message);
+
+  // update messages sent for user stats
+  const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
+  userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+
+  // update global stats
+  const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+  data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
 
   setData(data);
   return { messageId: messageId };
@@ -449,11 +477,13 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
 
   const sharedMessageId = generateMessageId();
 
+  const timeSent = Math.floor(Date.now() / 1000);
+
   const newMessageObj: Message = {
     messageId: sharedMessageId,
     uId: userObj.uId,
     message: newMessage,
-    timeSent: Math.floor(Date.now() / 1000),
+    timeSent: timeSent,
     reacts: [],
     isPinned: false,
   };
@@ -480,6 +510,14 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
     notificationsSend(data, usersToNotify, dmId, -1, userObj.handleStr, dmObj.dmName, message);
 
+    // update messages sent for user stats
+    const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
+    userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+
+    // update global stats
+    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
+
     // if the message is not being shared to dm, its being shared to a channel
   } else {
     const channelObj = data.channels.find(x => x.channelId === channelId);
@@ -501,6 +539,14 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     // notify all the users who have their handleStr tagged that are members of the channel
     const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
     notificationsSend(data, usersToNotify, -1, channelId, userObj.handleStr, channelObj.channelName, message);
+
+    // update messages sent for user stats
+    const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
+    userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+
+    // update global stats
+    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
   }
 
   setData(data);
@@ -653,17 +699,29 @@ function messageSendLaterV1(token: string, channelId: number, message: string, t
   setTimeout(() => {
     const data: Data = getData();
 
+    const timeSent = Math.floor(Date.now() / 1000);
+
     const newMessage: Message = {
       messageId: messageId,
       uId: userObj.uId,
       message: message,
-      timeSent: Math.floor(Date.now() / 1000),
+      timeSent: timeSent,
       reacts: [],
       isPinned: false,
     };
 
     const channelObj = data.channels.find(x => x.channelId === channelId);
     channelObj.messages.unshift(newMessage);
+
+    // update messages sent for user stats
+    const user = data.users.find(x => x.uId === userObj.uId);
+    const numMessagesSent = user.stats.messages.at(-1).numMessagesSent + 1;
+    user.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+
+    // update global stats
+    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
+
     setData(data);
   }, (timeSent - currentTimestamp) * 1000);
 
@@ -712,17 +770,29 @@ function messageSendLaterDmV1(token: string, dmId: number, message: string, time
   setTimeout(() => {
     const data: Data = getData();
 
+    const timeSent = Math.floor(Date.now() / 1000);
+
     const newMessage: Message = {
       messageId: messageId,
       uId: userObj.uId,
       message: message,
-      timeSent: Math.floor(Date.now() / 1000),
+      timeSent: timeSent,
       reacts: [],
       isPinned: false,
     };
 
     const dmObj = data.dms.find(x => x.dmId === dmId);
     dmObj.messages.unshift(newMessage);
+
+    // update messages sent for user stats
+    const user = data.users.find(x => x.uId === userObj.uId);
+    const numMessagesSent = user.stats.messages.at(-1).numMessagesSent + 1;
+    user.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+
+    // update global stats
+    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
+
     setData(data);
   }, (timeSent - currentTimestamp) * 1000);
 
