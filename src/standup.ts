@@ -26,9 +26,19 @@ function sendStandup(uId: number, channelId: number) {
 
   channelObj.messages.unshift(newMessage);
 
+  // update user stats
+  const userObj = data.users.find(x => x.uId === uId);
+  const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
+  userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: channelObj.standupTimeFinish });
+
+  // update global stats
+  const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
+  data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: Math.floor(Date.now() / 1000) });
+
   channelObj.currStandUpQueue = [];
   channelObj.standupOwner = -1;
   channelObj.standupTimeFinish = 0;
+
   setData(data);
 }
 

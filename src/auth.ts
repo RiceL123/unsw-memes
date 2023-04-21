@@ -1,4 +1,4 @@
-import { User, Data, getData, setData, getHash } from './dataStore';
+import { User, Data, Stats, getData, setData, getHash } from './dataStore';
 import validator from 'validator';
 import { v4 as uuidv4 } from 'uuid';
 import HTTPError from 'http-errors';
@@ -156,6 +156,14 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     permission = 1;
   }
 
+  const timeStamp = Math.floor(Date.now() / 1000);
+
+  const stats: Stats = {
+    messages: [{ numMessagesSent: 0, timeStamp: timeStamp }],
+    channels: [{ numChannelsJoined: 0, timeStamp: timeStamp }],
+    dms: [{ numDmsJoined: 0, timeStamp: timeStamp }]
+  };
+
   const newUser: User = {
     uId: uId,
     nameFirst: nameFirst,
@@ -167,7 +175,8 @@ function authRegisterV2(email: string, password: string, nameFirst: string, name
     tokens: [getHash(newToken)],
     resetCode: '',
     profileImgUrl: `http://${HOST}:${PORT}/profileImages/default.jpg`,
-    notifications: []
+    notifications: [],
+    stats: stats
   };
 
   data.users.push(newUser);

@@ -85,6 +85,17 @@ function dmCreateV2(token: string, uIds: number[]) {
   const usersToNotify = uIds.filter(x => x !== creatorObj.uId);
   notificationsSend(data, usersToNotify, newDmId, -1, creatorObj.handleStr, newDmName, '', 'add');
 
+  // update stats of all new users
+  for (const user of uIds) {
+    const userObj = data.users.find(x => x.uId === user);
+    const numDmsJoined = userObj.stats.dms.at(-1).numDmsJoined + 1;
+    userObj.stats.dms.push({ numDmsJoined: numDmsJoined, timeStamp: Math.floor(Date.now() / 1000) });
+  }
+
+  // update utilizationStats
+  const numDmsExist = data.workspaceStats.dms.at(-1).numDmsExist + 1;
+  data.workspaceStats.dms.push({ numDmsExist: numDmsExist, timeStamp: Math.floor(Date.now() / 1000) });
+
   setData(data);
 
   return { dmId: newDmId };
@@ -120,6 +131,20 @@ function dmRemoveV2(token: string, dmId: number) {
   }
 
   data.dms = data.dms.filter(x => x.dmId !== dmObj.dmId);
+
+  // update stats of all new users
+  for (const user of dmObj.memberIds) {
+    const userObj = data.users.find(x => x.uId === user);
+    const numDmsJoined = userObj.stats.dms.at(-1).numDmsJoined - 1; // minus 1 to whateva is the most recent number of dm joined
+    userObj.stats.dms.push({ numDmsJoined: numDmsJoined, timeStamp: Math.floor(Date.now() / 1000) });
+  }
+
+  // update utilizationStats
+  const numDmsExist = data.workspaceStats.dms.at(-1).numDmsExist - 1;
+  data.workspaceStats.dms.push({ numDmsExist: numDmsExist, timeStamp: Math.floor(Date.now() / 1000) });
+
+  const numMessagesExist = data.dms.flatMap(x => x.messages).length + data.channels.flatMap(x => x.messages).length; // recalculate number of messages
+  data.workspaceStats.messages.push({ numMessagesExist: numMessagesExist, timeStamp: Math.floor(Date.now() / 1000) });
 
   setData(data);
 
@@ -199,6 +224,10 @@ function dmLeaveV2(token: string, dmId: number): Error | Record<string, never> {
   }
 
   dmObj.memberIds = dmObj.memberIds.filter(x => x !== userObj.uId);
+
+  // update stats of leaving user
+  const numDmsJoined = userObj.stats.dms.at(-1).numDmsJoined - 1; // minus 1 to whateva is the most recent number of dm joined
+  userObj.stats.dms.push({ numDmsJoined: numDmsJoined, timeStamp: Math.floor(Date.now() / 1000) });
 
   setData(data);
   return {};
