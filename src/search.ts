@@ -1,4 +1,6 @@
-import { getData, getHash, Message } from './dataStore';
+import { getAllChannelMessagesWhereUserIsMember, getAllDmMessagesWhereUserIsMember } from '../database/dbMessages';
+import { getUserWithToken } from '../database/dbUsers';
+import { Message, getHash } from './dataStore';
 import HTTPError from 'http-errors';
 
 /**
@@ -11,11 +13,10 @@ import HTTPError from 'http-errors';
  * @returns { messages }
  */
 function searchV1(token: string, queryStr: string) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -26,23 +27,19 @@ function searchV1(token: string, queryStr: string) {
   const messages: Message[] = [];
   const searchString = queryStr.toLowerCase();
 
-  data.channels.forEach(channel => {
-    if (channel.allMembersIds.includes(userObj.uId)) {
-      channel.messages.forEach(message => {
-        if (message.message.toLowerCase().includes(searchString)) {
-          messages.unshift(message);
-        }
-      });
+  const channelMessages = getAllChannelMessagesWhereUserIsMember(user.id);
+
+  channelMessages.forEach(x => {
+    if (x.message.toLowerCase().includes(searchString)) {
+      messages.push(x);
     }
   });
 
-  data.dms.forEach(dm => {
-    if (dm.memberIds.includes(userObj.uId)) {
-      dm.messages.forEach(message => {
-        if (message.message.toLowerCase().includes(searchString)) {
-          messages.unshift(message);
-        }
-      });
+  const dmMessages = getAllDmMessagesWhereUserIsMember(user.id);
+
+  dmMessages.forEach(x => {
+    if (x.message.toLowerCase().includes(searchString)) {
+      messages.push(x);
     }
   });
 

@@ -1,4 +1,4 @@
-import { getData } from '../dataStore';
+import { getUser } from '../database/dbUsers';
 import { clear, authRegister, authLogin, authLogout, authPasswordResetRequest, authPasswordResetReset } from './routeRequests';
 
 // this whitebox test will test the password reset function with assumptions on
@@ -8,8 +8,7 @@ import { clear, authRegister, authLogin, authLogout, authPasswordResetRequest, a
 // of email body and how to parse the resetCode)
 
 function getUserResetCode(uId: number) {
-  const data = getData();
-  const resetCode = data.users.find(x => x.uId === uId).resetCode;
+  const resetCode = getUser({ id: uId }).resetCode;
   return resetCode;
 }
 

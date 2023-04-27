@@ -3,7 +3,7 @@ import {
   userProfileSetEmail, userProfileSetHandle, userProfileUploadPhoto
 } from './routeRequests';
 
-import { url, port } from '../config.json';
+import { url, port } from '../src/config.json';
 const SERVER_URL = `${url}:${port}`;
 
 interface userObj {

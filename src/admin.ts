@@ -1,4 +1,8 @@
-import { getData, setData, getHash } from './dataStore';
+import { removeUserAsMemberOfAllChannels, removeUserAsOwnerOfAllChannels } from '../database/dbChannels';
+import { removeUserAsMemberOfAllDms, removeUserAsOwnerOfAllDms } from '../database/dbDms';
+import { updateUserChannelMessages, updateUserDmMessages } from '../database/dbMessages';
+import { getUserWithToken, getUser, getAllUsersWithPermission, updateUserInfo, removeAllUserSessions } from '../database/dbUsers';
+import { getHash } from './dataStore';
 import HTTPError from 'http-errors';
 
 /**
@@ -9,70 +13,42 @@ import HTTPError from 'http-errors';
   * @param {number} uId - the user being removed
   * @returns {} - returns nothing
 */
-function adminUserRemoveV1(token: string, uId: string) {
-  const data = getData();
-  const id = parseInt(uId);
+function adminUserRemoveV1(token: string, uId: number) {
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const userFind = (data.users.find(x => x.uId === id));
-  if (userFind === undefined) {
+  const userFind = getUser({ id: uId });
+  if (!userFind) {
     throw HTTPError(400, 'Invalid uId');
   }
 
-  if (userObj.permission !== 1) {
+  if (user.permission !== 1) {
     throw HTTPError(403, 'Invalid authUserId, authorised user is not a global owner');
   }
 
-  let ownerCounter = 0;
-  for (const user of data.users) {
-    if (user.permission === 1) {
-      ownerCounter++;
-    }
-  }
+  const globalOwners = getAllUsersWithPermission(1);
 
-  if (id === userObj.uId && userObj.permission === 1 && ownerCounter === 1) {
+  if (uId === user.id && globalOwners.length === 1) {
     throw HTTPError(400, 'uId refers to the only global owner');
   }
 
-  // remove them from all channels and set messages to "Removed user"
-  for (const leaverChannel of data.channels) {
-    leaverChannel.allMembersIds = leaverChannel.allMembersIds.filter(x => x !== id);
-    leaverChannel.ownerMembersIds = leaverChannel.ownerMembersIds.filter(x => x !== id);
-    for (const message of leaverChannel.messages) {
-      if (message.uId === id) {
-        message.message = 'Removed user';
-      }
-    }
-  }
+  removeUserAsMemberOfAllChannels(uId);
+  removeUserAsOwnerOfAllChannels(uId);
+  removeUserAsMemberOfAllDms(uId);
+  removeUserAsOwnerOfAllDms(uId);
 
-  // remove them from all dms and set messages to "Removed user"
-  for (const leaverDm of data.dms) {
-    leaverDm.memberIds = leaverDm.memberIds.filter(x => x !== id);
-    for (const dm of leaverDm.messages) {
-      if (dm.uId === id) {
-        dm.message = 'Removed user';
-      }
-    }
-  }
+  updateUserChannelMessages(uId, 'Removed user');
+  updateUserDmMessages(uId, 'Removed user');
 
-  // change their nameFirst to "Removed" and nameLast to "user", make email and handleStr reusuable
-  userFind.nameFirst = 'Removed';
-  userFind.nameLast = 'user';
-  userFind.email = '';
-  userFind.handleStr = '';
-  userFind.permission = 420;
+  updateUserInfo(uId, { nameFirst: 'Removed', nameLast: 'user', email: '', handleStr: '', permission: 420, resetCode: '' });
 
-  // logging out of all sessions and invalidating reset code
-  userFind.tokens = [];
-  userFind.resetCode = '';
+  removeAllUserSessions(uId);
 
-  setData(data);
   return {};
 }
 
@@ -84,38 +60,32 @@ function adminUserRemoveV1(token: string, uId: string) {
   * @param {string} permissionId - the level of permission to change to
   * @returns {} - returns nothing
 */
-function adminUserPermissionChangeV1(token: string, uId: string, permissionId: number) {
-  const data = getData();
-  const id = parseInt(uId);
+function adminUserPermissionChangeV1(token: string, uId: number, permissionId: number) {
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const userFind = (data.users.find(x => x.uId === id));
-  if (userFind === undefined) {
+  const userFind = getUser({ id: uId });
+  if (!userFind) {
     throw HTTPError(400, 'Invalid uId');
   }
 
-  if (userObj.permission !== 1) {
+  if (user.permission !== 1) {
     throw HTTPError(403, 'Invalid authUserId, authorised user is not a global owner');
   }
 
-  let ownerCounter = 0;
-  for (const user of data.users) {
-    if (user.permission === 1) {
-      ownerCounter++;
-    }
-  }
+  const globalOwners = getAllUsersWithPermission(1);
 
-  if (id === userObj.uId && userObj.permission === 1 && ownerCounter === 1) {
+  // a user cannot demote themselves from global owner if they are the only global owner
+  if (uId === user.id && permissionId !== 1 && globalOwners.length === 1) {
     throw HTTPError(400, 'uId refers to the only global owner');
   }
 
-  if (permissionId !== 1 && permissionId !== 2) {
+  if (permissionId !== 1 && permissionId !== 2 && permissionId !== 420) {
     throw HTTPError(400, 'Invalid permissionId');
   }
 
@@ -123,9 +93,8 @@ function adminUserPermissionChangeV1(token: string, uId: string, permissionId: n
     throw HTTPError(400, 'user already has that level of permission');
   }
 
-  userFind.permission = permissionId;
+  updateUserInfo(uId, { permission: permissionId });
 
-  setData(data);
   return {};
 }
 

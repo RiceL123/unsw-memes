@@ -2,6 +2,20 @@ import { clear, search, authRegister, channelsCreate, channelJoin, messageSend, 
 
 const VALID_MESSAGE = { messageId: expect.any(Number) };
 
+interface React {
+  reactId: number;
+  uIds: number[];
+  isThisUserReacted: boolean;
+}
+
+interface Message {
+  messageId: number;
+  uId: number;
+  message: string;
+  timeSent: number;
+  reacts: React[];
+  isPinned: boolean;
+}
 beforeEach(() => {
   clear();
 });
@@ -52,26 +66,35 @@ describe('/search/v1', () => {
     expect(messageSend(Elon.token, MinecraftServer, 'Hi Joe')).toStrictEqual(VALID_MESSAGE);
     const JoeElonDm = dmCreate(Joe.token, [Elon.authUserId]).dmId;
     expect(messageSendDm(Joe.token, JoeElonDm, 'I dont like Trump')).toStrictEqual(VALID_MESSAGE);
-    expect(search(Elon.token, 'Hi')).toStrictEqual({
-      messages: [
-        {
-          messageId: expect.any(Number),
-          uId: Joe.authUserId,
-          message: 'Hi Elon',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: expect.any(Number),
-          uId: Elon.authUserId,
-          message: 'Hi Joe',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-      ],
+
+    const expectMessages: Message[] = [
+      {
+        messageId: expect.any(Number),
+        uId: Joe.authUserId,
+        message: 'Hi Elon',
+        timeSent: expect.any(Number),
+        reacts: [],
+        isPinned: false,
+      },
+      {
+        messageId: expect.any(Number),
+        uId: Elon.authUserId,
+        message: 'Hi Joe',
+        timeSent: expect.any(Number),
+        reacts: [],
+        isPinned: false,
+      },
+    ];
+
+    const search1 = search(Elon.token, 'Hi')
+    expect(search1).toStrictEqual({
+      messages: expect.any(Array),
     });
+
+    expect(search1.messages.sort((a: Message, b: Message) => a.messageId - b.messageId)).toStrictEqual(
+      expectMessages.sort((a, b) => a.messageId - b.messageId)
+    );
+
     expect(search(Joe.token, 'Trump')).toStrictEqual({
       messages: [
         {

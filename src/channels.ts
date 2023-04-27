@@ -1,4 +1,6 @@
-import { Channel, getData, setData, getHash } from './dataStore';
+import { getUserWithToken } from '../database/dbUsers';
+import { getUserChannels, insertChannel, getAllChannels, insertChannelMember, insertChannelOwner } from '../database/dbChannels';
+import { getHash } from './dataStore';
 import HTTPError from 'http-errors';
 
 /**
@@ -14,50 +16,25 @@ import HTTPError from 'http-errors';
  */
 
 function channelsCreateV3(token: string, name: string, isPublic: boolean) {
-  const data = getData();
   token = getHash(token);
 
   if (name.length < 1 || name.length > 20) {
     throw HTTPError(400, 'Invalid channel name length');
   }
 
-  // obtains userId respective to token
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  // creates new channel ID using a +1 mechanism
-  let newChannelId = 0;
-  if (data.channels.length > 0) {
-    newChannelId = Math.max.apply(null, data.channels.map(x => x.channelId)) + 1;
-  }
+  // inserts a new channel - insertChannel generates a new id
+  const channelId = insertChannel(name, isPublic);
 
-  const newChannel: Channel = {
-    channelId: newChannelId,
-    channelName: name,
-    ownerMembersIds: [userObj.uId],
-    allMembersIds: [userObj.uId],
-    isPublic: isPublic,
-    standupOwner: -1,
-    standupIsActive: false,
-    standupTimeFinish: 0,
-    currStandUpQueue: [],
-    messages: [],
-  };
+  insertChannelMember(user.id, channelId);
+  insertChannelOwner(user.id, channelId);
 
-  data.channels.push(newChannel);
-
-  // update globalStats
-  const numChannelsExist = data.workspaceStats.channels.at(-1).numChannelsExist + 1;
-  data.workspaceStats.channels.push({ numChannelsExist: numChannelsExist, timeStamp: Math.floor(Date.now() / 1000) });
-
-  // update user stats of user that created the channel
-  const numChannelsJoined = userObj.stats.channels.at(-1).numChannelsJoined + 1;
-  userObj.stats.channels.push({ numChannelsJoined: numChannelsJoined, timeStamp: Math.floor(Date.now() / 1000) });
-
-  setData(data);
-  return { channelId: newChannelId };
+  return { channelId: channelId };
 }
 
 /**
@@ -69,18 +46,16 @@ function channelsCreateV3(token: string, name: string, isPublic: boolean) {
   * @returns {{ channels: [{channelId: Number, name: string} ]}} - Array of objects containing infomation about channelId and channelName
  */
 function channelsListV3(token : string) {
-  const data = getData();
   token = getHash(token);
 
-  // obtains userId respective to token
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const channelsArr = data.channels.filter(x => x.allMembersIds.includes(userObj.uId)).map(y => ({ channelId: y.channelId, name: y.channelName }));
+  const channels = getUserChannels(user.id).map(x => ({ channelId: x.id, name: x.name }));
 
-  return { channels: channelsArr };
+  return { channels: channels };
 }
 
 /**
@@ -92,23 +67,16 @@ function channelsListV3(token : string) {
  * @returns { allChannels } - returns array of all channels when authUserId valid
  */
 function channelsListAllV3(token: string) {
-  const data = getData();
   token = getHash(token);
 
-  if (!data.users.some(x => x.tokens.includes(token))) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  const allChannels = [];
-  for (const item of data.channels) {
-    const usersChannels = {
-      channelId: item.channelId,
-      name: item.channelName,
-    };
-    allChannels.push(usersChannels);
-  }
+  const channels = getAllChannels().map(x => ({ channelId: x.id, name: x.name }));
 
-  return { channels: allChannels };
+  return { channels: channels };
 }
 
 export { channelsCreateV3, channelsListV3, channelsListAllV3 };

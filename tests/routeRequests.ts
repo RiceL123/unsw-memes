@@ -1,5 +1,5 @@
 import request, { HttpVerb } from 'sync-request';
-import { port, url } from '../config.json';
+import { port, url } from '../src/config.json';
 const SERVER_URL = `${url}:${port}`;
 
 function requestHelper(method: HttpVerb, path: string, payload: object) {
