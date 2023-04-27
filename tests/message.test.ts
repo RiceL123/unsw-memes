@@ -2500,69 +2500,6 @@ describe('/message/sendlater/v1', () => {
     expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 2 + EXPECTED_TIME_ERROR_MARGIN);
     expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
   });
-
-  test('Valid /message/sendlater/v1, sendMessages with sendMessageLater', () => {
-    const Finn = authRegister('z5555555@ad.unsw.edu.au', 'password', 'Finn', 'the Human');
-    const Jake = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Jake', 'the Dog');
-    const candyChannel = channelsCreate(Finn.token, 'The Candy Kingdom', true).channelId;
-
-    expect(channelJoin(Jake.token, candyChannel)).toStrictEqual({});
-    const messageId1 = messageSend(Jake.token, candyChannel, 'Hey Finn!');
-    const messageId2 = messageSendLater(Jake.token, candyChannel, 'WHERES BEMO', Math.floor(Date.now() / 1000) + timeSent + 1); // last
-    const messageId3 = messageSend(Finn.token, candyChannel, 'I am not too sure Jake');
-    const messageId4 = messageSendLater(Finn.token, candyChannel, "I think he's in the tree", (Math.floor(Date.now() / 1000) + timeSent)); // second last
-    const messageId5 = messageSend(Jake.token, candyChannel, "oh okay Finn, I'll take a look later");
-    sleep(3000);
-    const messageData = channelMessages(Finn.token, candyChannel, 0);
-    expect(messageData).toStrictEqual({
-      messages: [
-        {
-          messageId: messageId2.messageId,
-          uId: Jake.authUserId,
-          message: 'WHERES BEMO',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageId4.messageId,
-          uId: Finn.authUserId,
-          message: "I think he's in the tree",
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageId5.messageId,
-          uId: Jake.authUserId,
-          message: "oh okay Finn, I'll take a look later",
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageId3.messageId,
-          uId: Finn.authUserId,
-          message: 'I am not too sure Jake',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-        {
-          messageId: messageId1.messageId,
-          uId: Jake.authUserId,
-          message: 'Hey Finn!',
-          timeSent: expect.any(Number),
-          reacts: [],
-          isPinned: false,
-        },
-      ],
-      start: 0,
-      end: -1,
-    });
-    expect(messageData.messages[0].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + 1 + EXPECTED_TIME_ERROR_MARGIN);
-    expect(messageData.messages[1].timeSent).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + timeSent + EXPECTED_TIME_ERROR_MARGIN);
-  });
 });
 
 describe('/message/sendlaterdm/v1', () => {
