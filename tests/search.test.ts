@@ -62,24 +62,24 @@ describe('/search/v1', () => {
     const Joe = authRegister('z4444444@ad.unsw.edu.au', 'password', 'Joe', 'Biden');
     const MinecraftServer = channelsCreate(Elon.token, 'Minecraft Server', true).channelId;
     expect(channelJoin(Joe.token, MinecraftServer)).toStrictEqual({});
-    expect(messageSend(Joe.token, MinecraftServer, 'Hi Elon')).toStrictEqual(VALID_MESSAGE);
-    expect(messageSend(Elon.token, MinecraftServer, 'Hi Joe')).toStrictEqual(VALID_MESSAGE);
+    const message1 = messageSend(Joe.token, MinecraftServer, 'Hi Elon');
+    const message2 = messageSend(Elon.token, MinecraftServer, 'Hi Joe');
     const JoeElonDm = dmCreate(Joe.token, [Elon.authUserId]).dmId;
     expect(messageSendDm(Joe.token, JoeElonDm, 'I dont like Trump')).toStrictEqual(VALID_MESSAGE);
 
     const expectMessages: Message[] = [
       {
-        messageId: expect.any(Number),
-        uId: Joe.authUserId,
-        message: 'Hi Elon',
+        messageId: message2.messageId,
+        uId: Elon.authUserId,
+        message: 'Hi Joe',
         timeSent: expect.any(Number),
         reacts: [],
         isPinned: false,
       },
       {
-        messageId: expect.any(Number),
-        uId: Elon.authUserId,
-        message: 'Hi Joe',
+        messageId: message1.messageId,
+        uId: Joe.authUserId,
+        message: 'Hi Elon',
         timeSent: expect.any(Number),
         reacts: [],
         isPinned: false,
