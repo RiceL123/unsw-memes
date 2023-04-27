@@ -1,4 +1,5 @@
-import { getData, getHash } from './dataStore';
+import { getAllUsers, getUserWithToken } from '../database/dbUsers';
+import { getHash } from './dataStore';
 import HTTPError from 'http-errors';
 
 /**
@@ -9,20 +10,21 @@ import HTTPError from 'http-errors';
  * nameLast, email and handleStr
  */
 function usersAllV2(token: string) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const userObj = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!userObj) {
     throw HTTPError(403, 'invalid token');
   }
 
+  const allUsers = getAllUsers();
+
   const returnedUsers = [];
-  for (const user of data.users) {
+  for (const user of allUsers) {
     if (user.permission !== 420) {
       const eachUser = {
-        uId: user.uId,
+        uId: user.id,
         nameFirst: user.nameFirst,
         nameLast: user.nameLast,
         email: user.email,

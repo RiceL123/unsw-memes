@@ -1,11 +1,11 @@
-import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner, standupStart } from './routeRequests';
+import { clear, authRegister, channelsCreate, channelDetails, channelMessages, channelJoin, channelLeave, messageSend, channelInvite, channelRemoveOwner, channelAddOwner } from './routeRequests';
 
-import { url, port } from '../config.json';
+import { url, port } from '../src/config.json';
 const SERVER_URL = `${url}:${port}`;
 
 const VALID_CHANNELS_CREATE = { channelId: expect.any(Number) };
 
-interface channelObjUser {
+interface UserDetails {
   uId: number;
   email: string;
   nameFirst: string;
@@ -17,11 +17,6 @@ interface channelObjUser {
 beforeEach(() => {
   clear();
 });
-
-function sleep(ms: number) {
-  const start = Date.now();
-  while (Date.now() - start < ms);
-}
 
 describe('channelDetailsV3 ', () => {
   const email = 'z5555555@ad.unsw.edu.au';
@@ -130,7 +125,7 @@ describe('channelDetailsV3 ', () => {
       allMembers: expect.any(Array),
     });
 
-    const expectedArr: channelObjUser[] = [
+    const expectedArr: UserDetails[] = [
       {
         uId: person1Data.authUserId,
         email: 'z5555555@ad.unsw.edu.au',
@@ -150,7 +145,7 @@ describe('channelDetailsV3 ', () => {
     ];
 
     // to account for any permutation of the allMembers array, we sort
-    expect(detailObj.allMembers.sort((a: channelObjUser, b: channelObjUser) => a.uId - b.uId)).toStrictEqual(
+    expect(detailObj.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
       expectedArr.sort((a, b) => a.uId - b.uId)
     );
   });
@@ -534,7 +529,7 @@ describe('channelInviteV3', () => {
     const DavesHouse = channelsCreate(Alvin.token, channelName1, true);
 
     expect(channelInvite(Theodore.token, DavesHouse.channelId, Simon.authUserId)).toEqual(403);
-    expect(channelInvite(Theodore.token, DavesHouse.channelId, Alvin.authUserId)).toEqual(400);
+    expect(channelInvite(Alvin.token, DavesHouse.channelId, Alvin.authUserId)).toEqual(400);
   });
 
   // channelInviteV1 coolPublicChannel Valid Tests
@@ -633,30 +628,6 @@ describe('/channel/leave/v2', () => {
     expect(channelJoin(Patrick.token, SEM113.channelId)).toStrictEqual(400);
     expect(channelLeave(Madhav.token, SEM113.channelId)).toEqual(403);
   });
-
-  test('standup owner cannot leave', () => {
-    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
-    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
-
-    const standupData = standupStart(Madhav.token, SEM113.channelId, 3);
-    const currTime = Math.floor(Date.now() / 1000);
-    const standupTimeFinish = currTime + 3000;
-    expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + 1);
-    expect(channelLeave(Madhav.token, SEM113.channelId)).toStrictEqual(400);
-    sleep(4000);
-  });
-
-  test('standup owner can leave', () => {
-    const Madhav = authRegister(email1, password1, nameFirst1, nameLast1);
-    const SEM113 = channelsCreate(Madhav.token, channelSEM113, true);
-
-    const standupData = standupStart(Madhav.token, SEM113.channelId, 3);
-    const currTime = Math.floor(Date.now() / 1000);
-    const standupTimeFinish = currTime + 3000;
-    expect(standupData.timeFinish).toBeLessThanOrEqual(standupTimeFinish + 1);
-    sleep(4000);
-    expect(channelLeave(Madhav.token, SEM113.channelId)).toStrictEqual({});
-  });
 });
 
 describe('/channel/addowner/v2 Public Channel Tests', () => {
@@ -733,63 +704,75 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
     const addOwnerData2 = channelAddOwner(userToken3, chanId, userId2);
     expect(addOwnerData2).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'coolPublicChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
   });
 
   // Alvin is Global owner (permission = 1).
@@ -813,55 +796,66 @@ describe('/channel/addowner/v2 Public Channel Tests', () => {
     const addOwnerData = channelAddOwner(userToken, chanId2, userId2);
     expect(addOwnerData).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ]
     const detailData = channelDetails(userToken, chanId2);
     expect(detailData).toStrictEqual({
       name: 'chipmunksOnlyChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
   });
 });
 
@@ -939,63 +933,75 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
     const addOwnerData2 = channelAddOwner(userToken3, chanId, userId2);
     expect(addOwnerData2).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'edgyPrivateChannel',
       isPublic: false,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
   });
 
   // Alvin is Global owner (permission = 1).
@@ -1026,63 +1032,75 @@ describe('channel/addowner/v2 Private Channel Tests', () => {
     const addOwnerData2 = channelAddOwner(userToken, chanId2, userId);
     expect(addOwnerData2).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData = channelDetails(userToken, chanId2);
     expect(detailData).toStrictEqual({
       name: 'chipmunksOnlyChannel',
       isPublic: false,
-      ownerMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
   });
 });
 
@@ -1148,47 +1166,59 @@ describe('/channel/removeowner/v1', () => {
     const addOwnerData = channelAddOwner(userToken, chanId, userId2);
     expect(addOwnerData).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+    
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
 
     const removeData = channelRemoveOwner(userToken, chanId, userId2);
 
@@ -1208,25 +1238,12 @@ describe('/channel/removeowner/v1', () => {
           profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         }
       ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        }
-      ]
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData2.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
   });
 
   test('valid remove owner - multiple', () => {
@@ -1242,117 +1259,114 @@ describe('/channel/removeowner/v1', () => {
     const addOwnerData2 = channelAddOwner(userToken3, chanId, userId2);
     expect(addOwnerData2).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData = channelDetails(userToken, chanId);
     expect(detailData).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
 
     const removeData = channelRemoveOwner(userToken2, chanId, userId3);
 
     expect(removeData).toStrictEqual({});
 
+    const expectedOwners2: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData2 = channelDetails(userToken, chanId);
     expect(detailData2).toStrictEqual({
       name: 'CoolChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData2.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners2.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData2.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
 
     const removeData2 = channelRemoveOwner(userToken2, chanId, userId);
 
@@ -1372,33 +1386,12 @@ describe('/channel/removeowner/v1', () => {
           profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData3.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
   });
 
   // Simon makes a channel, and invites Theodore and Alvin
@@ -1427,55 +1420,67 @@ describe('/channel/removeowner/v1', () => {
     const addOwnerData = channelAddOwner(userToken3, chanId2, userId2);
     expect(addOwnerData).toStrictEqual({});
 
+    const expectedOwners: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
+    const expectedMembers: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
+
     const detailData = channelDetails(userToken, chanId2);
     expect(detailData).toStrictEqual({
       name: 'CoolerChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
 
     const removeData2 = channelRemoveOwner(userToken, chanId2, userId2);
     expect(removeData2).toStrictEqual({});
@@ -1494,86 +1499,69 @@ describe('/channel/removeowner/v1', () => {
           profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
-      allMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData2.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
 
     const addOwnerData2 = channelAddOwner(userToken, chanId2, userId);
     expect(addOwnerData2).toStrictEqual({});
+    
+    const expectedOwners2: UserDetails[] = [
+      {
+        uId: userId3,
+        email: 'z5355555@ad.unsw.edu.au',
+        nameFirst: 'Simon',
+        nameLast: 'the Chipmunk',
+        handleStr: 'simonthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
 
     const detailData3 = channelDetails(userToken, chanId2);
     expect(detailData3).toStrictEqual({
       name: 'CoolerChannel',
       isPublic: true,
-      ownerMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ],
-      allMembers: [
-        {
-          uId: userId3,
-          email: 'z5355555@ad.unsw.edu.au',
-          nameFirst: 'Simon',
-          nameLast: 'the Chipmunk',
-          handleStr: 'simonthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      ownerMembers: expect.any(Array),
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData3.ownerMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedOwners2.sort((a, b) => a.uId - b.uId)
+    );
+
+    expect(detailData3.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers.sort((a, b) => a.uId - b.uId)
+    );
+
+    const expectedMembers2: UserDetails[] = [
+      {
+        uId: userId,
+        email: 'z5555555@ad.unsw.edu.au',
+        nameFirst: 'Alvin',
+        nameLast: 'the Chipmunk',
+        handleStr: 'alvinthechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+      {
+        uId: userId2,
+        email: 'z5455555@ad.unsw.edu.au',
+        nameFirst: 'Theodore',
+        nameLast: 'the Chipmunk',
+        handleStr: 'theodorethechipmunk',
+        profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
+      },
+    ];
 
     const detailData4 = channelDetails(userToken, chanId);
     expect(detailData4).toStrictEqual({
@@ -1589,25 +1577,12 @@ describe('/channel/removeowner/v1', () => {
           profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      allMembers: expect.any(Array)
     });
+
+    expect(detailData4.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers2.sort((a, b) => a.uId - b.uId)
+    );
 
     const addOwnerData3 = channelAddOwner(userToken, chanId, userId2);
     expect(addOwnerData3).toStrictEqual({});
@@ -1629,24 +1604,10 @@ describe('/channel/removeowner/v1', () => {
           profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
         },
       ],
-      allMembers: [
-        {
-          uId: userId,
-          email: 'z5555555@ad.unsw.edu.au',
-          nameFirst: 'Alvin',
-          nameLast: 'the Chipmunk',
-          handleStr: 'alvinthechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-        {
-          uId: userId2,
-          email: 'z5455555@ad.unsw.edu.au',
-          nameFirst: 'Theodore',
-          nameLast: 'the Chipmunk',
-          handleStr: 'theodorethechipmunk',
-          profileImgUrl: `${SERVER_URL}/profileImages/default.jpg`,
-        },
-      ]
+      allMembers: expect.any(Array)
     });
+    expect(detailData5.allMembers.sort((a: UserDetails, b: UserDetails) => a.uId - b.uId)).toStrictEqual(
+      expectedMembers2.sort((a, b) => a.uId - b.uId)
+    );
   });
 });

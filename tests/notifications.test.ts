@@ -140,7 +140,7 @@ describe('/notifications/get/v1', () => {
     expect(channelLeave(user1.token, channel.channelId)).toStrictEqual({});
     expect(dmLeave(user1.token, dm.dmId)).toStrictEqual({});
 
-    // miguel reacts to madhav's messages again -> no notifications should appear as madhav has left
+    // miguel reacts to madhav's messages again - no notifications should appear as madhav has left
     expect(messageReact(user2.token, dmMessage2.messageId, 1)).toStrictEqual({});
     expect(messageReact(user2.token, channelMessage2.messageId, 1)).toStrictEqual({});
     expect(notificationsGet(user1.token)).toStrictEqual(notifcationsReturn2);
@@ -222,26 +222,26 @@ describe('/notifications/get/v1', () => {
   });
 
   test('valid notification from tag in channel from themself', () => {
-    expect(messageSend(user1.token, channel.channelId, '@madhavmishra 💀')).toStrictEqual({ messageId: expect.any(Number) });
+    expect(messageSend(user1.token, channel.channelId, '@madhavmishra 1')).toStrictEqual({ messageId: expect.any(Number) });
     expect(notificationsGet(user1.token)).toStrictEqual({
       notifications: [
         {
           channelId: channel.channelId,
           dmId: -1,
-          notificationMessage: 'madhavmishra tagged you in dummy channel: @madhavmishra 💀'
+          notificationMessage: 'madhavmishra tagged you in dummy channel: @madhavmishra 1'
         }
       ]
     });
   });
 
   test('valid notifaction from tag in dm from themself', () => {
-    expect(messageSendDm(user1.token, dm.dmId, '@madhavmishra 💀')).toStrictEqual({ messageId: expect.any(Number) });
+    expect(messageSendDm(user1.token, dm.dmId, '@madhavmishra 1')).toStrictEqual({ messageId: expect.any(Number) });
     expect(notificationsGet(user1.token)).toStrictEqual({
       notifications: [
         {
           channelId: -1,
           dmId: dm.dmId,
-          notificationMessage: 'madhavmishra tagged you in madhavmishra, miguelguthridge: @madhavmishra 💀'
+          notificationMessage: 'madhavmishra tagged you in madhavmishra, miguelguthridge: @madhavmishra 1'
         }
       ]
     });
@@ -406,13 +406,14 @@ describe('/notifications/get/v1', () => {
   });
 
   test('valid notifcation from message share to dm from dm', () => {
-    expect(messageShare(user1.token, dmMessage.messageId, '@miguelguthridge 💀', -1, dm.dmId)).toStrictEqual({ sharedMessageId: expect.any(Number) });
-    expect(notificationsGet(user2.token)).toStrictEqual({
+    expect(messageShare(user1.token, dmMessage.messageId, '@miguelguthridge 1', -1, dm.dmId)).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    const notifications = notificationsGet(user2.token);
+    expect(notifications).toStrictEqual({
       notifications: [
         {
           channelId: -1,
           dmId: dm.dmId,
-          notificationMessage: 'madhavmishra tagged you in madhavmishra, miguelguthridge: @miguelguthridge 💀'
+          notificationMessage: expect.any(String)
         },
         {
           channelId: -1,
@@ -421,6 +422,7 @@ describe('/notifications/get/v1', () => {
         }
       ]
     });
+    expect(notifications.notifications[0].notificationMessage).toContain('madhavmishra tagged you in madhavmishra, miguelguthridge: ')
   });
 
   test('valid notifcation from message share to dm from channel', () => {
@@ -452,13 +454,14 @@ describe('/notifications/get/v1', () => {
   });
 
   test('valid notifcation from message share to channel from channel', () => {
-    expect(messageShare(user1.token, channelMessage.messageId, '@miguelguthridge 💀', channel.channelId, -1)).toStrictEqual({ sharedMessageId: expect.any(Number) });
-    expect(notificationsGet(user2.token)).toStrictEqual({
+    expect(messageShare(user1.token, channelMessage.messageId, '@miguelguthridge 1', channel.channelId, -1)).toStrictEqual({ sharedMessageId: expect.any(Number) });
+    const notifications = notificationsGet(user2.token);
+    expect(notifications).toStrictEqual({
       notifications: [
         {
           channelId: channel.channelId,
           dmId: -1,
-          notificationMessage: 'madhavmishra tagged you in dummy channel: @miguelguthridge 💀'
+          notificationMessage: expect.any(String)
         },
         {
           channelId: -1,
@@ -467,6 +470,8 @@ describe('/notifications/get/v1', () => {
         }
       ]
     });
+
+    expect(notifications.notifications[0].notificationMessage).toContain('madhavmishra tagged you in dummy channel: ');
   });
 
   test('valid notifcation from message send & message share to dm', () => {

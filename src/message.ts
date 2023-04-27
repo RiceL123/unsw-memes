@@ -1,7 +1,10 @@
-import { Message, Data, React, getData, setData, getHash } from './dataStore';
+import { getHash } from './dataStore';
 import crypto from 'crypto';
 import HTTPError from 'http-errors';
-import { notificationsSend } from './notifications';
+import { getUserWithToken } from '../database/dbUsers';
+import { getChannel, isChannelMember, isChannelOwner } from '../database/dbChannels';
+import { getChannelMessage, getDmMessage, insertChannelMessage, insertChannelMessageReact, insertDmMessage, insertDmMessageReact, isThisUserReactedChannel, isThisUserReactedDm, removeChannelMessage, removeChannelMessageReact, removeDmMessage, removeDmMessageReact, updateChannelMessage, updateDmMessage } from '../database/dbMessages';
+import { getDm, isDmMember, isDmOwner } from '../database/dbDms';
 
 /**
   * generateMessageId, a helper function that generates a unique messageId using a +1 mechanism
@@ -27,7 +30,6 @@ function generateMessageId() {
   * @returns {messageId: messageId} unique messageId- if no error occurs
  */
 function messageSendV3(token: string, channelId: number, message: string) {
-  const data = getData();
   token = getHash(token);
 
   if (message.length > 1000 || message.length < 1) {
@@ -35,49 +37,25 @@ function messageSendV3(token: string, channelId: number, message: string) {
   }
 
   // obtains userId respective to token
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (!channelObj) {
+  const channel = getChannel(channelId);
+  if (!channel) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
-  if (!(channelObj.allMembersIds.some((x: number) => x === userObj.uId))) {
+  if (!isChannelMember(user.id, channelId)) {
     throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
   // creates new message ID using a +1 mechanism
   const messageId = generateMessageId();
 
-  const timeSent = Math.floor(Date.now() / 1000);
+  insertChannelMessage(messageId, user.id, channelId, message);
 
-  const newMessage: Message = {
-    messageId: messageId,
-    uId: userObj.uId,
-    message: message,
-    timeSent: timeSent,
-    reacts: [],
-    isPinned: false,
-  };
-
-  channelObj.messages.unshift(newMessage);
-
-  // notify all the users who have their handleStr tagged
-  const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
-  notificationsSend(data, usersToNotify, -1, channelId, userObj.handleStr, channelObj.channelName, message);
-
-  // update messages sent for user stats
-  const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
-  userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
-
-  // update global stats
-  const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-  data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
-
-  setData(data);
   return { messageId: messageId };
 }
 
@@ -93,7 +71,6 @@ function messageSendV3(token: string, channelId: number, message: string) {
   * @returns {} - if no error occurs
  */
 function messageEditV3(token: string, messageId: number, message: string) {
-  const data = getData();
   token = getHash(token);
 
   if (message.length > 1000) {
@@ -101,77 +78,58 @@ function messageEditV3(token: string, messageId: number, message: string) {
   }
 
   // obtains userId respective to token
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  // find the corresponding channel and dm
-  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
-  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  // find the corresponding channel or dm message
+  const channelMsg = getChannelMessage(messageId);
+  const dmMsg = getDmMessage(messageId);
 
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
-  let flag: string;
-  if (!dmObj && !channelObj) {
+  if (!dmMsg && !channelMsg) {
     throw HTTPError(400, 'Invalid messageId');
-  } else {
-    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
-  if (flag === 'messageInChannel') {
-    // find corresponding messageObj in channel
-    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-
+  // if the dmMsg returns null
+  if (!dmMsg) {
     // even if you sent the original message, you cannot edit ur own message if you left the channel
-    if (!channelObj.allMembersIds.includes(userObj.uId)) {
+    if (!isChannelMember(user.id, channelMsg.channel)) {
       throw HTTPError(403, 'User is not a member or the channel');
     }
 
     // only if the user is a channel owner or the original person who sent the message, then they can edit the message
-    if (!(channelObj.ownerMembersIds.includes(userObj.uId) || channelMsgObj.uId === userObj.uId)) {
+    if (!(isChannelOwner(user.id, channelMsg.channel) || channelMsg.user === user.id)) {
       throw HTTPError(403, 'User is not owner or original message sender');
     }
 
-    // update the message to new message
-    channelMsgObj.message = message;
-
-    // the message is empty, then delete the messageObj from the channel
+    // if the message is empty remove it, else update the message
     if (message === '') {
-      channelObj.messages = channelObj.messages.filter(x => x.messageId !== messageId);
+      removeChannelMessage(messageId);
+    } else {
+      updateChannelMessage(messageId, { message: message }, channelMsg.channel, user.handleStr);
     }
-
-    // notify all the users who have their handleStr tagged
-    const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
-    notificationsSend(data, usersToNotify, -1, channelObj.channelId, userObj.handleStr, channelObj.channelName, message);
   } else {
-    // find corresponding messageObj in dm
-    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-
     // even if you sent the original message, you cannot edit ur own message if you left the dm
-    if (!dmObj.memberIds.includes(userObj.uId)) {
+    if (!isDmMember(user.id, dmMsg.dm)) {
       throw HTTPError(403, 'User is not a member or the channel');
     }
 
     // only if the user is the dm owner or the orinal person who sent the message, then they can edit the message
-    if (!(dmObj.creatorId === userObj.uId || dmMsgObj.uId === userObj.uId)) {
+    if (!(isDmOwner(user.id, dmMsg.dm) || dmMsg.user === user.id)) {
       throw HTTPError(403, 'User is not owner or original message sender');
     }
 
-    // update the message to new message
-    dmMsgObj.message = message;
-
-    // the message is empty, then delete the messageObj from the dm
+    // if the message is empty delete it else update the message
     if (message === '') {
-      dmObj.messages = dmObj.messages.filter(x => x.messageId !== messageId);
+      removeDmMessage(messageId);
+    } else {
+      updateDmMessage(messageId, { message: message }, dmMsg.dm, user.handleStr);
     }
-
-    // notify all the users who have their handleStr tagged and are still members
-    const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
-    notificationsSend(data, usersToNotify, dmObj.dmId, -1, userObj.handleStr, dmObj.dmName, message);
   }
 
-  setData(data);
   return {};
 }
 
@@ -185,69 +143,51 @@ function messageEditV3(token: string, messageId: number, message: string) {
   * @returns {} - if no error occurs
 */
 function messageRemoveV3(token: string, messageId: number) {
-  const data = getData();
   token = getHash(token);
 
   // obtains userId respective to token
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  // find the corresponding channel and dm
-  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
-  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  // find the corresponding channel or dm message
+  const channelMsg = getChannelMessage(messageId);
+  const dmMsg = getDmMessage(messageId);
 
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
-  let flag: string;
-  if (!dmObj && !channelObj) {
+  if (!channelMsg && !dmMsg) {
     throw HTTPError(400, 'Invalid messageId');
-  } else {
-    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
-  if (flag === 'messageInChannel') {
-    // find corresponding messageObj in channel
-    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-
+  // if the sent message was from a channel
+  if (!dmMsg) {
     // even if you sent the original message, you cannot edit ur own message if you left the channel
-    if (!channelObj.allMembersIds.includes(userObj.uId)) {
+    if (!isChannelMember(user.id, channelMsg.channel)) {
       throw HTTPError(403, 'User is not a member or the channel');
     }
 
     // only if the user is a channel owner or the orinal person who sent the message, then they can edit the message
-    if (!(channelObj.ownerMembersIds.includes(userObj.uId) || channelMsgObj.uId === userObj.uId)) {
+    if (!(isChannelOwner(user.id, channelMsg.channel) || channelMsg.user === user.id)) {
       throw HTTPError(403, 'User is not owner or original message sender');
     }
 
-    channelObj.messages = channelObj.messages.filter(x => x.messageId !== messageId);
-
-    // update global stats
-    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist - 1;
-    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: Math.floor(Date.now() / 1000) });
+    removeChannelMessage(messageId);
   } else {
-    // find corresponding messageObj in dm
-    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-
     // even if you sent the original message, you cannot remove ur own message if you left the dm
-    if (!dmObj.memberIds.includes(userObj.uId)) {
+    if (!isDmMember(user.id, dmMsg.dm)) {
       throw HTTPError(403, 'User is not a member or the channel');
     }
 
     // only if the user is the dm owner or the orinal person who sent the message, then they can remove the message
-    if (!(dmObj.creatorId === userObj.uId || dmMsgObj.uId === userObj.uId)) {
+    if (!(isDmOwner(user.id, dmMsg.dm) || dmMsg.user === user.id)) {
       throw HTTPError(403, 'User is not owner or original message sender');
     }
 
-    dmObj.messages = dmObj.messages.filter(x => x.messageId !== messageId);
-
-    // update global stats
-    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist - 1;
-    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: Math.floor(Date.now() / 1000) });
+    removeDmMessage(messageId);
   }
 
-  setData(data);
   return {};
 }
 
@@ -262,7 +202,6 @@ function messageRemoveV3(token: string, messageId: number) {
   * @returns {messageId: messageId} unique messageId- if no error occurs
 */
 function messageSendDmV2(token: string, dmId: number, message: string) {
-  const data = getData();
   token = getHash(token);
 
   if (message.length < 1 || message.length > 1000) {
@@ -270,52 +209,27 @@ function messageSendDmV2(token: string, dmId: number, message: string) {
   }
 
   // obtains userId respective to token
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
   // messageId passed in is not found in the messages that user sent
   // for dms: go into the dms -> memberIds (check if user is part of it)
   // if is, iterate through messageId for the messages and if not found return error
-  const dmObj = data.dms.find(x => x.dmId === dmId);
+  const dmObj = getDm(dmId);
   if (!dmObj) {
     throw HTTPError(400, 'Invalid dmId');
   }
 
-  // the messageId in message != messageId passed in AND user is not creatorId in DM or in OwnerMemberId
-  if (!(dmObj.memberIds.some((x: number) => x === userObj.uId))) {
+  if (!isDmMember(user.id, dmId)) {
     throw HTTPError(403, 'Authorised user is not a member of the DM');
   }
 
   const messageId = generateMessageId();
 
-  const timeSent = Math.floor(Date.now() / 1000);
+  insertDmMessage(messageId, user.id, dmId, message);
 
-  const newMessage: Message = {
-    messageId: messageId,
-    uId: userObj.uId,
-    message: message,
-    timeSent: timeSent,
-    reacts: [],
-    isPinned: false,
-  };
-
-  dmObj.messages.unshift(newMessage);
-
-  // notify all the users who have their handleStr tagged and are still members
-  const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
-  notificationsSend(data, usersToNotify, dmId, -1, userObj.handleStr, dmObj.dmName, message);
-
-  // update messages sent for user stats
-  const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
-  userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
-
-  // update global stats
-  const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-  data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
-
-  setData(data);
   return { messageId: messageId };
 }
 
@@ -327,54 +241,49 @@ function messageSendDmV2(token: string, dmId: number, message: string) {
  * @returns {{}} - returns empty object if no error
  */
 function messagePinV1(token: string, messageId: number) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (!userObj) {
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
-  // find the corresponding channel and dm
-  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
-  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  // find the corresponding channel and dm msg
+  const channelMsg = getChannelMessage(messageId);
+  const dmMsg = getDmMessage(messageId);
 
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
-  let flag: string;
-  if ((!dmObj) && (!channelObj)) {
+  if (!dmMsg && !channelMsg) {
     throw HTTPError(400, 'Invalid messageId');
-  } else {
-    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
-  if (flag === 'messageInChannel') {
-    // find corresponding messageObj in channel
-    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-
-    if (channelMsgObj.isPinned === true) {
-      throw HTTPError(400, 'Message is already pinned');
-    }
+  // if the dmMsg is null then update the corresponding channel message
+  if (!dmMsg) {
     // only if user is channel owner or global owner
-    if (!channelObj.ownerMembersIds.includes(userObj.uId) && (userObj.permission !== 1)) {
+    if (!isChannelOwner(user.id, channelMsg.channel) && (user.permission !== 1)) {
       throw HTTPError(403, 'User does not have owner permission');
     }
 
-    channelMsgObj.isPinned = true;
-  } else {
-    // find corresponding messageObj in dm
-    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-
-    if (dmMsgObj.isPinned === true) {
+    // if the message is already pinned throw an error
+    if (channelMsg.isPinned) {
       throw HTTPError(400, 'Message is already pinned');
     }
+
+    updateChannelMessage(messageId, { isPinned: +true });
+  } else {
     // only if the user is the dm owner
-    if (!(dmObj.creatorId === userObj.uId)) {
+    if (!isDmOwner(user.id, dmMsg.dm)) {
       throw HTTPError(403, 'User does not have owner permissions');
     }
-    dmMsgObj.isPinned = true;
+
+    // if the dm is already pinned throw an error
+    if (dmMsg.isPinned) {
+      throw HTTPError(400, 'Message is already pinned');
+    }
+
+    updateDmMessage(messageId, { isPinned: +true });
   }
-  setData(data);
   return {};
 }
 
@@ -386,55 +295,72 @@ function messagePinV1(token: string, messageId: number) {
  * @returns {{}} - returns empty object if no error
  */
 function messageUnpinV1(token: string, messageId: number) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
-  // find the corresponding channel and dm
-  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
-  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  // find the corresponding channel and dm msg
+  const channelMsg = getChannelMessage(messageId);
+  const dmMsg = getDmMessage(messageId);
 
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
-  let flag: string;
-  if ((!dmObj) && (!channelObj)) {
+  if (!dmMsg && !channelMsg) {
     throw HTTPError(400, 'Invalid messageId');
-  } else {
-    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
-  if (flag === 'messageInChannel') {
-    // find corresponding messageObj in channel
-    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-
-    if (channelMsgObj.isPinned === false) {
-      throw HTTPError(400, 'Message is unpinned');
-    }
+  // if the dmMsg is null then update the corresponding channel message
+  if (!dmMsg) {
     // only if user is channel owner or global owner
-    if (!channelObj.ownerMembersIds.includes(userObj.uId) && (userObj.permission !== 1)) {
+    if (!isChannelOwner(user.id, channelMsg.channel) && (user.permission !== 1)) {
       throw HTTPError(403, 'User does not have owner permission');
     }
 
-    channelMsgObj.isPinned = false;
-  } else {
-    // find corresponding messageObj in dm
-    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-
-    if (dmMsgObj.isPinned === false) {
+    if (!channelMsg.isPinned) {
       throw HTTPError(400, 'Message is unpinned');
     }
+
+    updateChannelMessage(messageId, { isPinned: +false });
+  } else {
     // only if the user is the dm owner
-    if (!(dmObj.creatorId === userObj.uId)) {
+    if (!isDmOwner(user.id, dmMsg.dm)) {
       throw HTTPError(403, 'User does not have owner permissions');
     }
-    dmMsgObj.isPinned = false;
+
+    if (!dmMsg.isPinned) {
+      throw HTTPError(400, 'Message is unpinned');
+    }
+
+    updateDmMessage(messageId, { isPinned: +false });
   }
-  setData(data);
+
   return {};
+}
+
+function messageShareToChannel(channelId: number, uId: number, messageId: number, message: string) {
+  const channel = getChannel(channelId);
+  if (!channel) {
+    throw HTTPError(400, 'invalid channelId');
+  }
+
+  if (!isChannelMember(uId, channelId)) {
+    throw HTTPError(403, 'the authorised user has not joined the channel to share to');
+  }
+  insertChannelMessage(messageId, uId, channelId, message);
+}
+
+function messageShareToDm(dmId: number, uId: number, messageId: number, message: string) {
+  const dm = getDm(dmId);
+  if (!dm) {
+    throw HTTPError(400, 'invalid dmId');
+  }
+
+  if (!isDmMember(uId, dmId)) {
+    throw HTTPError(403, 'the authorised user has not joined the dm to share to');
+  }
+  insertDmMessage(messageId, uId, dmId, message);
 }
 
 /** messageShare generates a new message by copying the original message and sending it
@@ -448,7 +374,6 @@ function messageUnpinV1(token: string, messageId: number) {
  * @returns {{ sharedMessageId: number }} returns sharedMessageId
  */
 function messageShareV1(token: string, ogMessageId: number, message: string, channelId: number, dmId: number) {
-  const data: Data = getData();
   token = getHash(token);
 
   // nxor - if both / neither are channelId and dmId are equal to -1 then through an error
@@ -456,100 +381,66 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
     throw HTTPError(400, 'both / neither channelId and dmId are valid');
   }
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const channelOgMessageObj = data.channels.flatMap(x => x.messages).find(x => x.messageId === ogMessageId);
-  const dmOgMessageObj = data.dms.flatMap(x => x.messages).find(x => x.messageId === ogMessageId);
+  const channelOgMessage = getChannelMessage(ogMessageId);
+  const dmOgMessage = getDmMessage(ogMessageId);
 
-  const ogMessageObj = !channelOgMessageObj ? dmOgMessageObj : channelOgMessageObj;
-
-  if (!ogMessageObj) {
+  if (!channelOgMessage && !dmOgMessage) {
     throw HTTPError(400, 'ogMessageId does not refer to a valid message within a channel / dm');
   }
 
-  const divider = '===================================================';
-  const ogMessage = divider + '\n' + ogMessageObj.message + '\n' + divider;
-
-  const newMessage = message === '' ? ogMessage : message + ogMessage;
-
   const sharedMessageId = generateMessageId();
 
-  const timeSent = Math.floor(Date.now() / 1000);
-
-  const newMessageObj: Message = {
-    messageId: sharedMessageId,
-    uId: userObj.uId,
-    message: newMessage,
-    timeSent: timeSent,
-    reacts: [],
-    isPinned: false,
-  };
-
   // if channelIf is -1 then share to a corresponding dm
-  if (channelId === -1) {
-    const dmObj = data.dms.find(x => x.dmId === dmId);
-
-    if (!dmObj) {
-      throw HTTPError(400, 'invalid dmId');
-    }
-
-    if (!dmObj.memberIds.includes(userObj.uId)) {
-      throw HTTPError(403, 'the authorised user has not joined the dm');
+  if (!channelOgMessage) {
+    // user must be sharing a message to a dm they are a part of
+    if (!isDmMember(user.id, dmOgMessage.dm)) {
+      throw HTTPError(403, 'the authorised user has not joined the dm where the og message exists');
     }
 
     if (message.length > 1000) {
       throw HTTPError(400, 'length of optional message is more than 1000 characters');
     }
 
-    dmObj.messages.unshift(newMessageObj);
+    const divider = '\n===================================================';
+    const messageToShare = divider + '\n' + dmOgMessage.message + divider;
 
-    // notify all the users who have their handleStr tagged that are members of the dm
-    const usersToNotify = dmObj.memberIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
-    notificationsSend(data, usersToNotify, dmId, -1, userObj.handleStr, dmObj.dmName, message);
+    const newMessage = message === '' ? messageToShare : message + messageToShare;
 
-    // update messages sent for user stats
-    const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
-    userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
-
-    // update global stats
-    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
+    // check where to share to
+    if (dmId === -1) {
+      messageShareToChannel(channelId, user.id, sharedMessageId, newMessage);
+    } else {
+      messageShareToDm(dmId, user.id, sharedMessageId, newMessage);
+    }
 
     // if the message is not being shared to dm, its being shared to a channel
   } else {
-    const channelObj = data.channels.find(x => x.channelId === channelId);
-
-    if (!channelObj) {
-      throw HTTPError(400, 'invalid channelId');
-    }
-
-    if (!channelObj.allMembersIds.includes(userObj.uId)) {
-      throw HTTPError(403, 'the authorised user has not joined the dm');
-    }
-
     if (message.length > 1000) {
       throw HTTPError(400, 'length of optional message is more than 1000 characters');
     }
 
-    channelObj.messages.unshift(newMessageObj);
+    if (!isChannelMember(user.id, channelOgMessage.channel)) {
+      throw HTTPError(403, 'the authorised user has not joined the channel the where the og message exists');
+    }
 
-    // notify all the users who have their handleStr tagged that are members of the channel
-    const usersToNotify = channelObj.allMembersIds.filter(x => message.includes(data.users.find(y => y.uId === x).handleStr));
-    notificationsSend(data, usersToNotify, -1, channelId, userObj.handleStr, channelObj.channelName, message);
+    const divider = '\n===================================================';
+    const messageToShare = divider + '\n' + channelOgMessage.message + divider;
 
-    // update messages sent for user stats
-    const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
-    userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
+    const newMessage = message === '' ? messageToShare : message + messageToShare;
 
-    // update global stats
-    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
+    // check where to share to
+    if (dmId === -1) {
+      messageShareToChannel(channelId, user.id, sharedMessageId, newMessage);
+    } else {
+      messageShareToDm(dmId, user.id, sharedMessageId, newMessage);
+    }
   }
 
-  setData(data);
   return {
     sharedMessageId: sharedMessageId
   };
@@ -566,95 +457,43 @@ function messageShareV1(token: string, ogMessageId: number, message: string, cha
  * @returns {{}} - returns empty object if successful
  */
 function messageReactV1(token: string, messageId: number, reactId: number) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (!userObj) {
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
   if (reactId !== 1) {
     throw HTTPError(400, 'Invalid reactId');
   }
-  // find the corresponding channel and dm
-  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
-  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+
+  // find the corresponding channel and dm msg
+  const channelMsg = getChannelMessage(messageId);
+  const dmMsg = getDmMessage(messageId);
 
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
-  let flag: string;
-  if ((!dmObj) && (!channelObj)) {
+  if (!channelMsg && !dmMsg) {
     throw HTTPError(400, 'Invalid messageId');
-  } else {
-    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
-  if (flag === 'messageInChannel') {
-    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-    const reactsObj = channelMsgObj.reacts.find(x => x.reactId === reactId);
-
-    // if the reaction already exists then try to push the userId into the uIds array
-    if (reactsObj) {
-      if (reactsObj.uIds.includes(userObj.uId)) {
-        throw HTTPError(400, 'User has already reacted to message');
-      }
-      reactsObj.uIds.push(userObj.uId);
-
-      // if user didn't react to their own message, and they are a still member, send a notification
-      if (userObj.uId !== channelMsgObj.uId && channelObj.allMembersIds.includes(channelMsgObj.uId)) {
-        notificationsSend(data, [channelMsgObj.uId], -1, channelObj.channelId, userObj.handleStr, channelObj.channelName, '', 'react');
-      }
-    } else {
-      // if the reaction doesn't already exist then make a new reaction object
-      const reactObj: React = {
-        reactId: 1,
-        uIds: [userObj.uId],
-        isThisUserReacted: false,
-      };
-      // isThisUserReacted defaults to false, becomes true when in a copied array
-      // of messages
-      channelMsgObj.reacts.push(reactObj);
-
-      // if user didn't react to their own message, and they are a still member, send a notification
-      if (userObj.uId !== channelMsgObj.uId && channelObj.allMembersIds.includes(channelMsgObj.uId)) {
-        notificationsSend(data, [channelMsgObj.uId], -1, channelObj.channelId, userObj.handleStr, channelObj.channelName, '', 'react');
-      }
+  // if the dmMsg is null then edit the channel message reacts accordingly else the dm message reacts
+  if (!dmMsg) {
+    if (isThisUserReactedChannel(user.id, messageId, reactId)) {
+      throw HTTPError(400, 'User has already reacted to message');
     }
+
+    insertChannelMessageReact(user.id, user.handleStr, messageId, reactId, channelMsg.user, channelMsg.channel);
   } else {
-    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-    const reactsObj = dmMsgObj.reacts.find(x => x.reactId === reactId);
-    // if the reaction already exists then try to push the userId into the uIds array
-    if (reactsObj) {
-      if (reactsObj.uIds.includes(userObj.uId)) {
-        throw HTTPError(400, 'User has already reacted to message');
-      }
-      reactsObj.uIds.push(userObj.uId);
-
-      // if user didn't react to their own message, and they are a still member, send a notification
-      if (userObj.uId !== dmMsgObj.uId && dmObj.memberIds.includes(dmMsgObj.uId)) {
-        notificationsSend(data, [dmMsgObj.uId], dmObj.dmId, -1, userObj.handleStr, dmObj.dmName, '', 'react');
-      }
-
-      // if the reaction doesn't already exist then make a new reaction object
-    } else {
-      const reactObj: React = {
-        reactId: 1,
-        uIds: [userObj.uId],
-        isThisUserReacted: false,
-      };
-      // isThisUserReacted defaults to false, becomes true when in a copied array
-      // of messages
-      dmMsgObj.reacts.push(reactObj);
-
-      // if user didn't react to their own message, and they are a still member, send a notification
-      if (userObj.uId !== dmMsgObj.uId && dmObj.memberIds.includes(dmMsgObj.uId)) {
-        notificationsSend(data, [dmMsgObj.uId], dmObj.dmId, -1, userObj.handleStr, dmObj.dmName, '', 'react');
-      }
+    if (isThisUserReactedDm(user.id, messageId, reactId)) {
+      throw HTTPError(400, 'User has already reacted to message');
     }
+
+    insertDmMessageReact(user.id, user.handleStr, messageId, reactId, dmMsg.user, dmMsg.dm);
   }
-  setData(data);
+
   return {};
 }
 /**
@@ -669,25 +508,24 @@ function messageReactV1(token: string, messageId: number, reactId: number) {
  * @returns { messageId: messageId }
  */
 function messageSendLaterV1(token: string, channelId: number, message: string, timeSent: number) {
-  const data: Data = getData();
-  token = getHash(token);
   const currentTimestamp = Math.floor(Date.now() / 1000);
+  token = getHash(token);
 
   if (message.length < 1 || message.length > 1000) {
     throw HTTPError(400, 'Invalid message length');
   }
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (!channelObj) {
+  const channel = getChannel(channelId);
+  if (!channel) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
-  if (!channelObj.allMembersIds.includes(userObj.uId)) {
+  if (!isChannelMember(user.id, channelId)) {
     throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
@@ -696,33 +534,9 @@ function messageSendLaterV1(token: string, channelId: number, message: string, t
   }
 
   const messageId = generateMessageId();
+
   setTimeout(() => {
-    const data: Data = getData();
-
-    const timeSent = Math.floor(Date.now() / 1000);
-
-    const newMessage: Message = {
-      messageId: messageId,
-      uId: userObj.uId,
-      message: message,
-      timeSent: timeSent,
-      reacts: [],
-      isPinned: false,
-    };
-
-    const channelObj = data.channels.find(x => x.channelId === channelId);
-    channelObj.messages.unshift(newMessage);
-
-    // update messages sent for user stats
-    const user = data.users.find(x => x.uId === userObj.uId);
-    const numMessagesSent = user.stats.messages.at(-1).numMessagesSent + 1;
-    user.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
-
-    // update global stats
-    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
-
-    setData(data);
+    insertChannelMessage(messageId, user.id, channelId, message);
   }, (timeSent - currentTimestamp) * 1000);
 
   return { messageId: messageId };
@@ -740,25 +554,24 @@ function messageSendLaterV1(token: string, channelId: number, message: string, t
  * @returns { messageId: messageId }
  */
 function messageSendLaterDmV1(token: string, dmId: number, message: string, timeSent: number) {
-  const data: Data = getData();
-  token = getHash(token);
   const currentTimestamp = Math.floor(Date.now() / 1000);
+  token = getHash(token);
 
   if (message.length < 1 || message.length > 1000) {
     throw HTTPError(400, 'Invalid message length');
   }
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
-  const dmObj = data.dms.find(x => x.dmId === dmId);
-  if (!dmObj) {
+  const dm = getDm(dmId);
+  if (!dm) {
     throw HTTPError(400, 'Invalid dmId');
   }
 
-  if (!dmObj.memberIds.includes(userObj.uId)) {
+  if (!isDmMember(user.id, dmId)) {
     throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
@@ -768,32 +581,7 @@ function messageSendLaterDmV1(token: string, dmId: number, message: string, time
 
   const messageId = generateMessageId();
   setTimeout(() => {
-    const data: Data = getData();
-
-    const timeSent = Math.floor(Date.now() / 1000);
-
-    const newMessage: Message = {
-      messageId: messageId,
-      uId: userObj.uId,
-      message: message,
-      timeSent: timeSent,
-      reacts: [],
-      isPinned: false,
-    };
-
-    const dmObj = data.dms.find(x => x.dmId === dmId);
-    dmObj.messages.unshift(newMessage);
-
-    // update messages sent for user stats
-    const user = data.users.find(x => x.uId === userObj.uId);
-    const numMessagesSent = user.stats.messages.at(-1).numMessagesSent + 1;
-    user.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: timeSent });
-
-    // update global stats
-    const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-    data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: timeSent });
-
-    setData(data);
+    insertDmMessage(messageId, user.id, dmId, message);
   }, (timeSent - currentTimestamp) * 1000);
 
   return { messageId: messageId };
@@ -808,11 +596,10 @@ function messageSendLaterDmV1(token: string, dmId: number, message: string, time
  * @returns {{}} - returns empty object if successful
  */
 function messageUnreactV1(token: string, messageId: number, reactId: number) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid token');
   }
 
@@ -820,49 +607,29 @@ function messageUnreactV1(token: string, messageId: number, reactId: number) {
     throw HTTPError(400, 'Invalid reactId');
   }
   // find the corresponding channel and dm
-  const channelObj = data.channels.find(x => x.messages.map(y => y.messageId).includes(messageId));
-  const dmObj = data.dms.find(x => x.messages.map(y => y.messageId).includes(messageId));
+  const channelMsg = getChannelMessage(messageId);
+  const dmMsg = getDmMessage(messageId);
 
   // if both channels and dms are undefined, the messageId is invalid else determine
   // if the message was found in a dm or a channel
-  let flag: string;
-  if ((!dmObj) && (!channelObj)) {
+  if (!channelMsg && !dmMsg) {
     throw HTTPError(400, 'Invalid messageId');
-  } else {
-    flag = !dmObj ? 'messageInChannel' : 'messageInDm';
   }
 
-  if (flag === 'messageInChannel') {
-    const channelMsgObj = channelObj.messages.find(x => x.messageId === messageId);
-    const reactsObj = channelMsgObj.reacts.find(x => x.reactId === reactId);
-    // if the reaction already exists then try to push the userId into the uIds array
-    if (!reactsObj) {
+  if (!dmMsg) {
+    if (!isThisUserReactedChannel(user.id, messageId, reactId)) {
       throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
-    } else {
-      if (!reactsObj.uIds.includes(userObj.uId)) {
-        throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
-      }
-      reactsObj.uIds = reactsObj.uIds.filter(x => x !== userObj.uId);
-      if (reactsObj.uIds.length === 0) {
-        channelMsgObj.reacts = channelMsgObj.reacts.filter(x => x.reactId !== reactsObj.reactId);
-      }
     }
+
+    removeChannelMessageReact(user.id, messageId, reactId);
   } else {
-    const dmMsgObj = dmObj.messages.find(x => x.messageId === messageId);
-    const reactsObj = dmMsgObj.reacts.find(x => x.reactId === reactId);
-    if (!reactsObj) {
+    if (!isThisUserReactedDm(user.id, messageId, reactId)) {
       throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
-    } else {
-      if (!reactsObj.uIds.includes(userObj.uId)) {
-        throw HTTPError(400, 'User cannot unreact to message they have not reacted to');
-      }
-      reactsObj.uIds = reactsObj.uIds.filter(x => x !== userObj.uId);
-      if (reactsObj.uIds.length === 0) {
-        dmMsgObj.reacts = dmMsgObj.reacts.filter(x => x.reactId !== reactsObj.reactId);
-      }
     }
+
+    removeDmMessageReact(user.id, messageId, reactId);
   }
-  setData(data);
+
   return {};
 }
 export { generateMessageId, messageSendV3, messageEditV3, messageRemoveV3, messageSendDmV2, messagePinV1, messageUnpinV1, messageShareV1, messageReactV1, messageUnreactV1, messageSendLaterV1, messageSendLaterDmV1 };

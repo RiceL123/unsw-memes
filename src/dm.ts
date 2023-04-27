@@ -1,6 +1,9 @@
-import { Dm, Data, getData, setData, getHash } from './dataStore';
+import { getHash } from './dataStore';
 import HTTPError from 'http-errors';
-import { notificationsSend } from './notifications';
+
+import { getUser, getUserWithToken } from '../database/dbUsers';
+import { insertDm, insertDmOwner, insertDmMember, getDm, isDmMember, isDmOwner, removeDm, getDmMembers, removeDmMember, getUserDms } from '../database/dbDms';
+import { getDmMessages } from '../database/dbMessages';
 interface Error {
   error: string;
 }
@@ -24,13 +27,8 @@ interface DmDetailsReturn {
  * @param {Data} data
  * @returns
  */
-function generateDmName(uIds: number[], data: Data) {
-  return data
-    .users
-    .filter(x => uIds.includes(x.uId))
-    .map(x => x.handleStr)
-    .sort((a, b) => a.localeCompare(b))
-    .join(', ');
+function generateDmName(uIds: number[]) {
+  return uIds.map(x => getUser({ id: x }).handleStr).sort((a, b) => a.localeCompare(b)).join(', ');
 }
 
 /** Given an array of uids and the user than calls the function, makes a
@@ -42,18 +40,17 @@ function generateDmName(uIds: number[], data: Data) {
  * @returns {{ dmId: number }}
  */
 function dmCreateV2(token: string, uIds: number[]) {
-  const data: Data = getData();
   token = getHash(token);
 
-  const creatorObj = data.users.find(x => x.tokens.includes(token));
-  if (!creatorObj) {
+  const creator = getUserWithToken(token);
+  if (!creator) {
     throw HTTPError(403, 'invalid token');
   }
 
-  uIds.push(creatorObj.uId);
+  uIds.push(creator.id);
 
   // check every uId in the array references a valid user
-  if (!(uIds.every(x => data.users.some(y => y.uId === x)))) {
+  if (!(uIds.every(x => getUser({ id: x })))) {
     throw HTTPError(400, 'invalid uId - does not refer to existing user');
   }
 
@@ -62,43 +59,24 @@ function dmCreateV2(token: string, uIds: number[]) {
     throw HTTPError(400, 'invalid uId - cannot contain duplicates');
   }
 
-  // generate new unique dmId
-  let newDmId = 1;
-  if (data.dms.length > 0) {
-    newDmId = Math.max.apply(null, data.dms.map(x => x.dmId)) + 1;
-  }
-
   // generate dmName
-  const newDmName = generateDmName(uIds, data);
+  const newDmName = generateDmName(uIds);
 
-  const newDmObj: Dm = {
-    dmId: newDmId,
-    dmName: newDmName,
-    creatorId: creatorObj.uId,
-    memberIds: uIds,
-    messages: [],
-  };
+  // insertDm will generate a new unique dmId
+  const dmId = insertDm(newDmName);
 
-  data.dms.push(newDmObj);
+  insertDmOwner(creator.id, dmId);
 
-  // notify all members expect for creator owner they were added to a dm
-  const usersToNotify = uIds.filter(x => x !== creatorObj.uId);
-  notificationsSend(data, usersToNotify, newDmId, -1, creatorObj.handleStr, newDmName, '', 'add');
+  uIds.forEach(x => {
+    // notify all non-creator members
+    if (x !== creator.id) {
+      insertDmMember(x, dmId, creator.handleStr, newDmName);
+    } else {
+      insertDmMember(x, dmId);
+    }
+  });
 
-  // update stats of all new users
-  for (const user of uIds) {
-    const userObj = data.users.find(x => x.uId === user);
-    const numDmsJoined = userObj.stats.dms.at(-1).numDmsJoined + 1;
-    userObj.stats.dms.push({ numDmsJoined: numDmsJoined, timeStamp: Math.floor(Date.now() / 1000) });
-  }
-
-  // update utilizationStats
-  const numDmsExist = data.workspaceStats.dms.at(-1).numDmsExist + 1;
-  data.workspaceStats.dms.push({ numDmsExist: numDmsExist, timeStamp: Math.floor(Date.now() / 1000) });
-
-  setData(data);
-
-  return { dmId: newDmId };
+  return { dmId: dmId };
 }
 
 /** Given a token of user and dmId, removes an existing DM, so all members are
@@ -109,44 +87,27 @@ function dmCreateV2(token: string, uIds: number[]) {
  * @returns
  */
 function dmRemoveV2(token: string, dmId: number) {
-  const data: Data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const dmObj = data.dms.find(x => x.dmId === dmId);
-  if (!dmObj) {
+  const dm = getDm(dmId);
+  if (!dm) {
     throw HTTPError(400, 'dmId does not refer to a valid DMn');
   }
 
-  if (!dmObj.memberIds.includes(userObj.uId)) {
+  if (!isDmMember(user.id, dmId)) {
     throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
-  if (dmObj.creatorId !== userObj.uId) {
+  if (!isDmOwner(user.id, dmId)) {
     throw HTTPError(403, 'The authorised user is not the original DM creator');
   }
 
-  data.dms = data.dms.filter(x => x.dmId !== dmObj.dmId);
-
-  // update stats of all new users
-  for (const user of dmObj.memberIds) {
-    const userObj = data.users.find(x => x.uId === user);
-    const numDmsJoined = userObj.stats.dms.at(-1).numDmsJoined - 1; // minus 1 to whateva is the most recent number of dm joined
-    userObj.stats.dms.push({ numDmsJoined: numDmsJoined, timeStamp: Math.floor(Date.now() / 1000) });
-  }
-
-  // update utilizationStats
-  const numDmsExist = data.workspaceStats.dms.at(-1).numDmsExist - 1;
-  data.workspaceStats.dms.push({ numDmsExist: numDmsExist, timeStamp: Math.floor(Date.now() / 1000) });
-
-  const numMessagesExist = data.dms.flatMap(x => x.messages).length + data.channels.flatMap(x => x.messages).length; // recalculate number of messages
-  data.workspaceStats.messages.push({ numMessagesExist: numMessagesExist, timeStamp: Math.floor(Date.now() / 1000) });
-
-  setData(data);
+  removeDm(dmId);
 
   return {};
 }
@@ -160,39 +121,33 @@ function dmRemoveV2(token: string, dmId: number) {
  * @returns {{ name: string, members: User[] }}
  */
 function dmDetailsV2(token: string, dmId: number): Error | DmDetailsReturn {
-  const data: Data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const dmObj = data.dms.find(x => x.dmId === dmId);
-  if (!dmObj) {
+  const dm = getDm(dmId);
+  if (!dm) {
     throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
-  if (!dmObj.memberIds.includes(userObj.uId)) {
+  if (!isDmMember(user.id, dmId)) {
     throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
-  const members = [];
-  for (const memberId of dmObj.memberIds) {
-    const userObj = data.users.find(x => x.uId === memberId);
-
-    members.push({
-      uId: userObj.uId,
-      email: userObj.email,
-      nameFirst: userObj.nameFirst,
-      nameLast: userObj.nameLast,
-      handleStr: userObj.handleStr,
-      profileImgUrl: userObj.profileImgUrl
-    });
-  }
+  const members = getDmMembers(dmId).map(x => ({
+    uId: x.id,
+    email: x.email,
+    nameFirst: x.nameFirst,
+    nameLast: x.nameLast,
+    handleStr: x.handleStr,
+    profileImgUrl: x.profileImgUrl
+  }));
 
   return {
-    name: dmObj.dmName,
+    name: dm.name,
     members: members
   };
 }
@@ -206,30 +161,24 @@ function dmDetailsV2(token: string, dmId: number): Error | DmDetailsReturn {
  * @returns {{}}
  */
 function dmLeaveV2(token: string, dmId: number): Error | Record<string, never> {
-  const data: Data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const dmObj = data.dms.find(x => x.dmId === dmId);
-  if (!dmObj) {
+  const dm = getDm(dmId);
+  if (!dm) {
     throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
-  if (!dmObj.memberIds.includes(userObj.uId)) {
+  if (!isDmMember(user.id, dmId)) {
     throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
-  dmObj.memberIds = dmObj.memberIds.filter(x => x !== userObj.uId);
+  removeDmMember(user.id, dmId);
 
-  // update stats of leaving user
-  const numDmsJoined = userObj.stats.dms.at(-1).numDmsJoined - 1; // minus 1 to whateva is the most recent number of dm joined
-  userObj.stats.dms.push({ numDmsJoined: numDmsJoined, timeStamp: Math.floor(Date.now() / 1000) });
-
-  setData(data);
   return {};
 }
 
@@ -241,26 +190,18 @@ function dmLeaveV2(token: string, dmId: number): Error | Record<string, never> {
  * @returns {{dms}}
  */
 function dmListV2(token: string) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (!userObj) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const dmsArray = [];
+  const dmsArray = getUserDms(user.id).map(x => ({
+    dmId: x.id,
+    name: x.name
+  }));
 
-  for (const dm of data.dms) {
-    if (dm.memberIds.some((x: number) => x === userObj.uId)) {
-      dmsArray.push({
-        dmId: dm.dmId,
-        name: dm.dmName,
-      });
-    }
-  }
-
-  setData(data);
   return { dms: dmsArray };
 }
 
@@ -281,45 +222,38 @@ function dmListV2(token: string) {
  */
 
 function dmMessagesV2(token: string, dmId: number, start: number) {
-  const data = getData();
   token = getHash(token);
 
   const pagination = 50;
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (!userObj) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  if (!(data.dms.some(x => x.dmId === dmId))) {
+  const dm = getDm(dmId);
+  if (!dm) {
     throw HTTPError(400, 'dmId does not refer to a valid DM');
   }
 
-  const dmObj = (data.dms.find(x => x.dmId === dmId));
-  if (!(dmObj.memberIds.includes(userObj.uId))) {
+  if (!isDmMember(user.id, dmId)) {
     throw HTTPError(403, 'The authorised user is not in the DM');
   }
 
-  if (start < 0 || start > dmObj.messages.length) {
+  const messages = getDmMessages(user.id, dmId);
+
+  if (start < 0 || start > messages.length) {
     throw HTTPError(400, 'invalid start value');
   }
 
-  // if start + pagination > messages.length -> slice will slice appropiately according to length
-  const messages = dmObj.messages.slice(start, start + pagination);
+  // if start + pagination > messages.length - slice will slice appropiately according to length
+  const messagesSliced = messages.slice(start, start + pagination);
 
-  // for all the react objects where the uIds includes the callers uId, change the default
-  // isThisUserReacted value from false to true
-  messages.flatMap(x => x.reacts).forEach(x => {
-    if (x.uIds.includes(userObj.uId)) {
-      x.isThisUserReacted = true;
-    }
-  });
-
-  const end = start + pagination >= dmObj.messages.length ? -1 : start + pagination;
+  const end = start + pagination >= messages.length ? -1 : start + pagination;
 
   return {
-    messages: messages,
+    messages: messagesSliced,
     start: start,
     end: end,
   };

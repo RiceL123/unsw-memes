@@ -1,45 +1,36 @@
-import { Message, getData, setData, getHash } from './dataStore';
+import { getHash } from './dataStore';
 import HTTPError from 'http-errors';
 import { generateMessageId } from './message';
+import { getUserWithToken } from '../database/dbUsers';
+import { getChannel, getStandupMessages, insertStandupMessage, isChannelMember, removeStandupMessages, updateChannel } from '../database/dbChannels';
+import { insertChannelMessage } from '../database/dbMessages';
 
+/**
+ * sendStandup combines all standup messages sent in a channel during a standup and sends them as a single
+ * message to the channel.
+ *
+ * @param {number} uId - the user ID associated with the standup message.
+ * @param {number} channelId - the ID of the channel where the standup message was sent.
+ */
 function sendStandup(uId: number, channelId: number) {
-  const data = getData();
-  const channelObj = data.channels.find(x => x.channelId === channelId);
-  channelObj.standupIsActive = false;
-  setData(data);
+  updateChannel(channelId, { standupIsActive: +false, standupTimeFinish: 0, standupOwner: null });
+
+  const standupMessages = getStandupMessages(channelId);
+
   // combining all messages sent during standup into one
-  if (channelObj.currStandUpQueue.length === 0) {
+  if (standupMessages.length === 0) {
     return;
   }
-  const standupMessage = channelObj.currStandUpQueue.join('\n');
+
   // packaged message is sent to the channel from the user who started the standup
+  const standupMessage = standupMessages.join('\n');
 
   const messageId = generateMessageId();
-  const newMessage: Message = {
-    messageId: messageId,
-    uId: uId,
-    message: standupMessage,
-    timeSent: channelObj.standupTimeFinish,
-    reacts: [],
-    isPinned: false,
-  };
 
-  channelObj.messages.unshift(newMessage);
+  insertChannelMessage(messageId, uId, channelId, standupMessage);
 
-  // update user stats
-  const userObj = data.users.find(x => x.uId === uId);
-  const numMessagesSent = userObj.stats.messages.at(-1).numMessagesSent + 1;
-  userObj.stats.messages.push({ numMessagesSent: numMessagesSent, timeStamp: channelObj.standupTimeFinish });
-
-  // update global stats
-  const numMessages = data.workspaceStats.messages.at(-1).numMessagesExist + 1;
-  data.workspaceStats.messages.push({ numMessagesExist: numMessages, timeStamp: Math.floor(Date.now() / 1000) });
-
-  channelObj.currStandUpQueue = [];
-  channelObj.standupOwner = -1;
-  channelObj.standupTimeFinish = 0;
-
-  setData(data);
+  // reset the standup queue for the channel
+  removeStandupMessages(channelId);
 }
 
 /**
@@ -53,21 +44,20 @@ function sendStandup(uId: number, channelId: number) {
   * @returns {timeFinish: number} unique messageId- if no error occurs
 */
 function standupStartV1(token: string, channelId: number, length: number) {
-  const data = getData();
   token = getHash(token);
   const currTime = Math.floor(Date.now() / 1000);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (channelObj === undefined) {
+  const channel = getChannel(channelId);
+  if (!channel) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
-  if (channelObj.standupIsActive === true) {
+  if (channel.standupIsActive) {
     throw HTTPError(400, 'Standup is currently active');
   }
 
@@ -75,21 +65,19 @@ function standupStartV1(token: string, channelId: number, length: number) {
     throw HTTPError(400, 'Length cannot be negative');
   }
 
-  if (!(channelObj.allMembersIds.some((x: number) => x === userObj.uId))) {
+  if (!isChannelMember(user.id, channelId)) {
     throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
-  channelObj.standupTimeFinish = currTime + length;
-  channelObj.standupOwner = userObj.uId;
-  channelObj.standupIsActive = true;
-  setData(data);
+  const timeFinish = currTime + length;
+  updateChannel(channelId, { standupIsActive: +true, standupOwner: user.id, standupTimeFinish: timeFinish });
 
   // when the standup ends, combine all the messages that were sent into one.
   // send that blob using messages and then clear the standup queue.
   const bufferTime = length * 1000;
   // setTimeout(sendStandup, bufferTime);
-  setTimeout(() => sendStandup(userObj.uId, channelId), bufferTime);
-  return { timeFinish: channelObj.standupTimeFinish };
+  setTimeout(() => sendStandup(user.id, channelId), bufferTime);
+  return { timeFinish: timeFinish };
 }
 
 /**
@@ -102,32 +90,27 @@ function standupStartV1(token: string, channelId: number, length: number) {
   *
 */
 function standupActiveV1(token: string, channelId: number) {
-  const data = getData();
   token = getHash(token);
 
-  // Assuming that users cannot access standup infomation if they are not part of channel
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (channelObj === undefined) {
+  const channel = getChannel(channelId);
+  if (!channel) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
-  if (!(channelObj.allMembersIds.some((x: number) => x === userObj.uId))) {
+  if (!isChannelMember(user.id, channelId)) {
     throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
-  if (channelObj.standupIsActive === false) {
-    channelObj.standupTimeFinish = null;
-  }
+  const timeFinish = !channel.standupIsActive ? null : channel.standupTimeFinish;
 
-  setData(data);
   return {
-    isActive: channelObj.standupIsActive,
-    timeFinish: channelObj.standupTimeFinish,
+    isActive: !!channel.standupIsActive,
+    timeFinish: timeFinish,
   };
 }
 
@@ -141,16 +124,15 @@ function standupActiveV1(token: string, channelId: number) {
   *
 */
 function standupSendV1(token: string, channelId: number, message: string) {
-  const data = getData();
   token = getHash(token);
-  console.log(token);
-  const userObj = data.users.find(x => x.tokens.includes(token));
-  if (userObj === undefined) {
+
+  const user = getUserWithToken(token);
+  if (!user) {
     throw HTTPError(403, 'Invalid Token');
   }
 
-  const channelObj = data.channels.find(x => x.channelId === channelId);
-  if (channelObj === undefined) {
+  const channel = getChannel(channelId);
+  if (!channel) {
     throw HTTPError(400, 'Invalid channelId');
   }
 
@@ -158,17 +140,17 @@ function standupSendV1(token: string, channelId: number, message: string) {
     throw HTTPError(400, 'Invalid message length');
   }
 
-  if (channelObj.standupIsActive === false) {
+  if (!channel.standupIsActive) {
     throw HTTPError(400, 'Standup is not currently active');
   }
 
-  if (!(channelObj.allMembersIds.some((x: number) => x === userObj.uId))) {
+  if (!isChannelMember(user.id, channelId)) {
     throw HTTPError(403, 'Authorised user is not a member of the channel');
   }
 
-  const formattedMessage = userObj.handleStr + ': ' + message;
-  channelObj.currStandUpQueue.push(formattedMessage);
-  setData(data);
+  const formattedMessage = user.handleStr + ': ' + message;
+
+  insertStandupMessage(channelId, formattedMessage);
 
   return {};
 }

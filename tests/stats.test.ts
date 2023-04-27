@@ -350,6 +350,7 @@ describe('users/stats/v1', () => {
           { numMessagesExist: 3, timeStamp: expect.any(Number) },
           { numMessagesExist: 4, timeStamp: expect.any(Number) },
           { numMessagesExist: 3, timeStamp: expect.any(Number) }, // message/remove removes 1 message
+          { numMessagesExist: 2, timeStamp: expect.any(Number) },
           { numMessagesExist: 1, timeStamp: expect.any(Number) } // dm/remove removes 2 messages in 1 call
         ],
         utilizationRate: 1

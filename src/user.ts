@@ -1,4 +1,6 @@
-import { getData, setData, getHash } from './dataStore';
+import { getHash } from './dataStore';
+import { getUser, getUserWithToken, updateUserInfo } from '../database/dbUsers';
+
 import validator from 'validator';
 import HTTPError from 'http-errors';
 import request from 'sync-request';
@@ -16,30 +18,28 @@ import config from './config.json';
   *
   * @returns {{ user }} - returns information about their user ID, email, first name, last name, and handle
 */
-function userProfileV3(token: string, uId: string) {
-  const id = parseInt(uId);
+function userProfileV3(token: string, uId: number) {
   token = getHash(token);
-  const data = getData();
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
-  const userFind = (data.users.find(x => x.uId === id));
-  if ((userFind) === undefined) {
-    throw HTTPError(400, 'invalid uID');
+  const userToView = getUser({ id: uId });
+  if (!userToView) {
+    throw HTTPError(400, 'invalid uId');
   }
 
   return {
     user: {
-      uId: userFind.uId,
-      nameFirst: userFind.nameFirst,
-      nameLast: userFind.nameLast,
-      email: userFind.email,
-      handleStr: userFind.handleStr,
-      profileImgUrl: userFind.profileImgUrl,
+      uId: userToView.id,
+      nameFirst: userToView.nameFirst,
+      nameLast: userToView.nameLast,
+      email: userToView.email,
+      handleStr: userToView.handleStr,
+      profileImgUrl: userToView.profileImgUrl,
     }
   };
 }
@@ -52,14 +52,12 @@ function userProfileV3(token: string, uId: string) {
   * @param {string} nameLast - new last name
   * @returns {} - returns an empty object
 */
-
 function userProfileSetNameV2(token: string, nameFirst: string, nameLast: string) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
@@ -71,11 +69,8 @@ function userProfileSetNameV2(token: string, nameFirst: string, nameLast: string
     throw HTTPError(400, 'nameLast.length not between 1 and 50 inclusive');
   }
 
-  const user = data.users.find(x => x.uId === userObj.uId);
-  user.nameFirst = nameFirst;
-  user.nameLast = nameLast;
+  updateUserInfo(user.id, { nameFirst: nameFirst, nameLast: nameLast });
 
-  setData(data);
   return {};
 }
 
@@ -87,12 +82,11 @@ function userProfileSetNameV2(token: string, nameFirst: string, nameLast: string
   * @returns {} - returns an empty object
 */
 function userProfileSetEmailV2(token: string, email: string) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
@@ -100,14 +94,9 @@ function userProfileSetEmailV2(token: string, email: string) {
     throw HTTPError(400, 'invalid email');
   }
 
-  if (data.users.some(existingUsers => existingUsers.email === email)) {
-    throw HTTPError(400, 'email already exists');
-  }
+  // the db will throw a 400 error if the email is not unique
+  updateUserInfo(user.id, { email: email });
 
-  const user = data.users.find(x => x.uId === userObj.uId);
-  user.email = email;
-
-  setData(data);
   return {};
 }
 
@@ -123,12 +112,11 @@ function isAlphanumeric(str: string) {
   * @returns {} - returns an empty object
 */
 function userProfileSetHandleV2(token: string, handleStr: string) {
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
@@ -140,14 +128,9 @@ function userProfileSetHandleV2(token: string, handleStr: string) {
     throw HTTPError(400, 'handleStr contains characters that are not alphanumeric');
   }
 
-  if (data.users.some(existingUsers => existingUsers.handleStr === handleStr)) {
-    throw HTTPError(400, 'handleStr already exists');
-  }
+  // the db schema will throw a 400 error if the handleStr is not unique
+  updateUserInfo(user.id, { handleStr: handleStr });
 
-  const user = data.users.find(x => x.uId === userObj.uId);
-  user.handleStr = handleStr;
-
-  setData(data);
   return {};
 }
 
@@ -170,12 +153,11 @@ function checkURL(url: string): boolean {
 function userProfileUploadPhotoV1(token: string, imgUrl: string, xStart: number, yStart: number, xEnd: number, yEnd: number) {
   sharp.cache(false);
 
-  const data = getData();
   token = getHash(token);
 
-  const userObj = data.users.find(x => x.tokens.includes(token));
+  const user = getUserWithToken(token);
 
-  if (userObj === undefined) {
+  if (!user) {
     throw HTTPError(403, 'invalid token');
   }
 
@@ -201,8 +183,8 @@ function userProfileUploadPhotoV1(token: string, imgUrl: string, xStart: number,
   const body = res.body;
 
   // makes a unique url for the profile photo of every user
-  const imgPath = `profileImages/${userObj.uId}.jpg`;
-  const croppedImage = `profileImages/cropped_${userObj.uId}.jpg`;
+  const imgPath = `profileImages/${user.id}.jpg`;
+  const croppedImage = `profileImages/cropped_${user.id}.jpg`;
   fs.writeFileSync(imgPath, body, { flag: 'w' });
 
   // get dimensions of uploaded image
@@ -219,9 +201,8 @@ function userProfileUploadPhotoV1(token: string, imgUrl: string, xStart: number,
   sharp(imgPath).extract({ width: xEnd - xStart, height: yEnd - yStart, left: 0, top: 0 }).toFile(croppedImage);
 
   // set user's profileiImgUrl
-  userObj.profileImgUrl = `http://${HOST}:${PORT}/${croppedImage}`;
+  updateUserInfo(user.id, { profileImgUrl: `http://${HOST}:${PORT}/${croppedImage}` });
 
-  setData(data);
   return {};
 }
 

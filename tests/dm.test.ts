@@ -1,6 +1,6 @@
 import { clear, authRegister, dmCreate, dmDetails, dmRemove, dmLeave, dmList, dmMessages, messageSendDm } from './routeRequests';
 
-import { url, port } from '../config.json';
+import { url, port } from '../src/config.json';
 const SERVER_URL = `${url}:${port}`;
 
 const VALID_DM_RETURN = { dmId: expect.any(Number) };

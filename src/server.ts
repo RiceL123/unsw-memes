@@ -155,7 +155,7 @@ app.get('/users/all/v2', (req: Request, res: Response, next) => {
 /// ////////////////////////////////////////////////////////////
 app.get('/user/profile/v3', (req: Request, res: Response, next) => {
   const token = req.header('token');
-  const id = req.query.uId as string;
+  const id = parseInt(req.query.uId as string);
   return res.json(userProfileV3(token, id));
 });
 
@@ -297,7 +297,7 @@ app.post('/message/sendlaterdm/v1', (req: Request, res: Response, next) => {
 /// ////////////////////////////////////////////////////////////
 app.delete('/admin/user/remove/v1', (req: Request, res: Response, next) => {
   const token = req.header('token');
-  const uId = req.query.uId as string;
+  const uId = parseInt(req.query.uId as string);
   return res.json(adminUserRemoveV1(token, uId));
 });
 
